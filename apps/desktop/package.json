@@ -1,10 +1,10 @@
 {
-  "name": "hermes",
-  "productName": "Hermes",
+  "name": "stella",
+  "productName": "Stella",
   "private": true,
   "version": "0.17.2",
-  "description": "Native desktop shell for Hermes Agent.",
-  "author": "Nous Research",
+  "description": "Native desktop shell for Project Stella & Stellarium Engine.",
+  "author": "Master Ilunaa",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NousResearch/hermes-agent.git"
