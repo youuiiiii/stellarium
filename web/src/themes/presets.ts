@@ -38,6 +38,42 @@ const DEFAULT_LAYOUT: ThemeLayout = {
 // Themes
 // ---------------------------------------------------------------------------
 
+export const stellaTheme: DashboardTheme = {
+  name: "stella",
+  label: "Stella Astral",
+  description: "Project Stella signature deep cosmic obsidian & lavender",
+  palette: {
+    background: { hex: "#09090f", alpha: 1 },
+    midground: { hex: "#f5f3ff", alpha: 1 },
+    foreground: { hex: "#ffffff", alpha: 0 },
+    warmGlow: "rgba(157, 114, 255, 0.35)",
+    noiseOpacity: 0.7,
+  },
+  typography: {
+    ...DEFAULT_TYPOGRAPHY,
+    fontSans: `"Inter", ${SYSTEM_SANS}`,
+    fontMono: `"JetBrains Mono", ${SYSTEM_MONO}`,
+    fontUrl:
+      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap",
+    letterSpacing: "-0.01em",
+  },
+  layout: {
+    ...DEFAULT_LAYOUT,
+    radius: "0.625rem",
+  },
+  terminalBackground: "#08080f",
+  terminalForeground: "#f5f3ff",
+  colorOverrides: {
+    destructive: "#f43f5e",
+    warning: "#fbbf24",
+  },
+  seriesColors: {
+    inputTokenAccent: "#9d72ff",
+    outputTokenAccent: "#c084fc",
+  },
+  swatchColors: ["#09090f", "#9d72ff", "#c084fc"],
+};
+
 export const defaultTheme: DashboardTheme = {
   name: "default",
   label: "Hermes Teal",
@@ -229,6 +265,7 @@ export const defaultLargeTheme: DashboardTheme = {
 };
 
 export const BUILTIN_THEMES: Record<string, DashboardTheme> = {
+  stella: stellaTheme,
   default: defaultTheme,
   "default-large": defaultLargeTheme,
   "nous-blue": nousBlueTheme,

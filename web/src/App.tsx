@@ -77,6 +77,7 @@ import { useSystemActions } from "@/contexts/useSystemActions";
 import type { SystemAction } from "@/contexts/system-actions-context";
 // Route pages are lazy-loaded so the initial dashboard shell does not pay for
 // every admin surface (and heavy deps like xterm) up front.
+const OverviewPage = lazy(() => import("@/pages/OverviewPage"));
 const ConfigPage = lazy(() => import("@/pages/ConfigPage"));
 const DocsPage = lazy(() => import("@/pages/DocsPage"));
 const EnvPage = lazy(() => import("@/pages/EnvPage"));
@@ -123,23 +124,27 @@ function RouteFallback({ label = "Loading…" }: { label?: string }) {
   );
 }
 
-function RootRedirect() {
-  return <Navigate to="/sessions" replace />;
-}
-
 function UnknownRouteFallback({ pluginsLoading }: { pluginsLoading: boolean }) {
   if (pluginsLoading) {
     // Render nothing during the plugin-load window — a spinner here would just flash.
     return null;
   }
-  return <Navigate to="/sessions" replace />;
+  return <Navigate to="/" replace />;
 }
+
+const OVERVIEW_NAV_ITEM: NavItem = {
+  path: "/",
+  label: "Overview",
+  icon: Activity,
+  category: "Command",
+};
 
 const CHAT_NAV_ITEM: NavItem = {
   path: "/chat",
   labelKey: "chat",
   label: "Chat",
   icon: Terminal,
+  category: "Command",
 };
 
 /**
@@ -154,7 +159,7 @@ const CHAT_NAV_ITEM: NavItem = {
  * keep working.
  */
 const BUILTIN_ROUTES_CORE: Record<string, ComponentType> = {
-  "/": RootRedirect,
+  "/": OverviewPage,
   "/sessions": SessionsPage,
   "/files": FilesPage,
   "/analytics": AnalyticsPage,
@@ -184,42 +189,125 @@ function ChatRouteSink() {
 }
 
 const BUILTIN_NAV_REST: NavItem[] = [
+  // Command
   {
     path: "/sessions",
     labelKey: "sessions",
     label: "Sessions",
     icon: MessageSquare,
+    category: "Command",
   },
-  { path: "/files", label: "Files", icon: FolderOpen },
   {
-    path: "/analytics",
-    labelKey: "analytics",
-    label: "Analytics",
-    icon: BarChart3,
+    path: "/files",
+    label: "Files",
+    icon: FolderOpen,
+    category: "Command",
   },
+
+  // Intelligence
   {
     path: "/models",
     labelKey: "models",
     label: "Models",
     icon: Cpu,
+    category: "Intelligence",
   },
-  { path: "/logs", labelKey: "logs", label: "Logs", icon: FileText },
-  { path: "/cron", labelKey: "cron", label: "Cron", icon: Clock },
-  { path: "/skills", labelKey: "skills", label: "Skills", icon: Package },
-  { path: "/plugins", labelKey: "plugins", label: "Plugins", icon: Puzzle },
-  { path: "/mcp", label: "MCP", icon: Plug },
-  { path: "/channels", label: "Channels", icon: Radio },
-  { path: "/webhooks", label: "Webhooks", icon: Webhook },
-  { path: "/pairing", label: "Pairing", icon: ShieldCheck },
-  { path: "/profiles", labelKey: "profiles", label: "Profiles", icon: Users },
-  { path: "/config", labelKey: "config", label: "Config", icon: Settings },
-  { path: "/env", labelKey: "keys", label: "Keys", icon: KeyRound },
-  { path: "/system", label: "System", icon: Wrench },
+  {
+    path: "/skills",
+    labelKey: "skills",
+    label: "Skills",
+    icon: Package,
+    category: "Intelligence",
+  },
+  {
+    path: "/plugins",
+    labelKey: "plugins",
+    label: "Plugins",
+    icon: Puzzle,
+    category: "Intelligence",
+  },
+  {
+    path: "/mcp",
+    label: "MCP",
+    icon: Plug,
+    category: "Intelligence",
+  },
+  {
+    path: "/analytics",
+    labelKey: "analytics",
+    label: "Analytics",
+    icon: BarChart3,
+    category: "Intelligence",
+  },
+
+  // Automation
+  {
+    path: "/cron",
+    labelKey: "cron",
+    label: "Cron",
+    icon: Clock,
+    category: "Automation",
+  },
+  {
+    path: "/channels",
+    label: "Channels",
+    icon: Radio,
+    category: "Automation",
+  },
+  {
+    path: "/webhooks",
+    label: "Webhooks",
+    icon: Webhook,
+    category: "Automation",
+  },
+  {
+    path: "/pairing",
+    label: "Pairing",
+    icon: ShieldCheck,
+    category: "Automation",
+  },
+
+  // System & Config
+  {
+    path: "/system",
+    label: "System",
+    icon: Wrench,
+    category: "System",
+  },
+  {
+    path: "/profiles",
+    labelKey: "profiles",
+    label: "Profiles",
+    icon: Users,
+    category: "System",
+  },
+  {
+    path: "/config",
+    labelKey: "config",
+    label: "Config",
+    icon: Settings,
+    category: "System",
+  },
+  {
+    path: "/env",
+    labelKey: "keys",
+    label: "Keys",
+    icon: KeyRound,
+    category: "System",
+  },
+  {
+    path: "/logs",
+    labelKey: "logs",
+    label: "Logs",
+    icon: FileText,
+    category: "System",
+  },
   {
     path: "/docs",
     labelKey: "documentation",
     label: "Documentation",
     icon: BookOpen,
+    category: "System",
   },
 ];
 
@@ -302,6 +390,23 @@ function partitionSidebarNav(
     else pluginItems.push(item);
   }
   return { coreItems, pluginItems };
+}
+
+function groupNavItemsByCategory(
+  items: NavItem[],
+): Array<{ category: string; items: NavItem[] }> {
+  const groups: Array<{ category: string; items: NavItem[] }> = [];
+  const map = new Map<string, NavItem[]>();
+  for (const item of items) {
+    const cat = item.category || "General";
+    if (!map.has(cat)) {
+      const list: NavItem[] = [];
+      map.set(cat, list);
+      groups.push({ category: cat, items: list });
+    }
+    map.get(cat)!.push(item);
+  }
+  return groups;
 }
 
 function buildRoutes(
@@ -458,8 +563,8 @@ export default function App() {
 
   const builtinNav = useMemo(() => {
     const base = embeddedChat
-      ? [CHAT_NAV_ITEM, ...BUILTIN_NAV_REST]
-      : BUILTIN_NAV_REST;
+      ? [OVERVIEW_NAV_ITEM, CHAT_NAV_ITEM, ...BUILTIN_NAV_REST]
+      : [OVERVIEW_NAV_ITEM, ...BUILTIN_NAV_REST];
     return showTokenAnalytics
       ? base
       : base.filter((n) => n.path !== "/analytics");
@@ -653,18 +758,35 @@ export default function App() {
               className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden border-t border-current/10 py-2"
               aria-label={t.app.navigation}
             >
-              <ul className="flex flex-col">
-                {sidebarNav.coreItems.map((item) => (
-                  <SidebarNavLink
-                    closeMobile={closeMobile}
-                    collapsed={isDesktopCollapsed}
-                    item={item}
-                    key={item.path}
-                    t={t}
-                    tooltipWarmRef={tooltipWarmRef}
-                  />
-                ))}
-              </ul>
+              {groupNavItemsByCategory(sidebarNav.coreItems).map(
+                ({ category, items }) => (
+                  <div key={category} className="mb-2 flex flex-col">
+                    <span
+                      className={cn(
+                        "flex items-center gap-1.5 px-5 pt-2.5 pb-1",
+                        "font-sans text-[10px] font-bold tracking-[0.14em] uppercase text-text-tertiary",
+                        isDesktopCollapsed && "lg:hidden",
+                      )}
+                    >
+                      <span className="text-[#9d72ff] opacity-80">✦</span>
+                      <span>{category}</span>
+                    </span>
+
+                    <ul className="flex flex-col">
+                      {items.map((item) => (
+                        <SidebarNavLink
+                          closeMobile={closeMobile}
+                          collapsed={isDesktopCollapsed}
+                          item={item}
+                          key={item.path}
+                          t={t}
+                          tooltipWarmRef={tooltipWarmRef}
+                        />
+                      ))}
+                    </ul>
+                  </div>
+                ),
+              )}
 
               {sidebarNav.pluginItems.length > 0 && (
                 <div
@@ -876,7 +998,7 @@ function SidebarNavLink({
     >
       <NavLink
         to={path}
-        end={path === "/sessions"}
+        end={path === "/sessions" || path === "/"}
         onClick={closeMobile}
         aria-label={collapsed ? navLabel : undefined}
         onFocus={collapsed ? showTooltip : undefined}
@@ -1348,6 +1470,7 @@ interface NavItem {
   label: string;
   labelKey?: string;
   path: string;
+  category?: string;
 }
 
 interface SidebarIconWithTooltipProps {
