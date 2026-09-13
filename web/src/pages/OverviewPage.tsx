@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Activity,
   ArrowUpRight,
   BarChart3,
   Clock,
+  Cpu,
+  Layers,
   MessageSquare,
-  Music,
+  Package,
+  Plug,
   Radio,
   RefreshCw,
   Terminal,
@@ -14,8 +17,12 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import type {
+  AnalyticsDailyEntry,
   AnalyticsResponse,
+  CronJob,
+  McpServer,
   SessionInfo,
+  SkillInfo,
   StatusResponse,
 } from "@/lib/api";
 import { cn, timeAgo } from "@/lib/utils";
@@ -26,6 +33,68 @@ import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/c
 import { Badge } from "@nous-research/ui/ui/components/badge";
 import { Spinner } from "@nous-research/ui/ui/components/spinner";
 
+function getDynamicGreeting(profileName?: string) {
+  const hour = new Date().getHours();
+  let timeStr = "Good evening";
+  if (hour >= 5 && hour < 12) timeStr = "Good morning";
+  else if (hour >= 12 && hour < 18) timeStr = "Good afternoon";
+
+  if (profileName && profileName !== "default" && profileName !== "all") {
+    return `${timeStr}, ${profileName}`;
+  }
+  return `${timeStr}, Master Ilunaa`;
+}
+
+function generateAreaPath(daily: AnalyticsDailyEntry[] = []): {
+  areaPath: string;
+  strokePath: string;
+  maxVal: number;
+  points: Array<{ x: number; y: number; label: string; tokens: number }>;
+} {
+  if (!daily || daily.length === 0) {
+    return {
+      areaPath: "M0,140 L600,140 L600,160 L0,160 Z",
+      strokePath: "M0,140 L600,140",
+      maxVal: 0,
+      points: [],
+    };
+  }
+
+  const values = daily.map(
+    (d) => (d.input_tokens || 0) + (d.output_tokens || 0)
+  );
+  const maxVal = Math.max(...values, 1000);
+  const n = daily.length;
+  const width = 600;
+  const height = 110;
+  const topPadding = 25;
+
+  const pts = daily.map((d, i) => {
+    const x = n > 1 ? (i / (n - 1)) * width : width / 2;
+    const val = (d.input_tokens || 0) + (d.output_tokens || 0);
+    const y = topPadding + (height - (val / maxVal) * height);
+    return {
+      x,
+      y,
+      label: d.day ? d.day.slice(5) : `D${i + 1}`,
+      tokens: val,
+    };
+  });
+
+  let pathD = `M${pts[0].x},${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const cX = (prev.x + curr.x) / 2;
+    pathD += ` C${cX},${prev.y} ${cX},${curr.y} ${curr.x},${curr.y}`;
+  }
+
+  const strokePath = pathD;
+  const areaPath = `${pathD} L${pts[pts.length - 1].x},160 L${pts[0].x},160 Z`;
+
+  return { areaPath, strokePath, maxVal, points: pts };
+}
+
 export default function OverviewPage() {
   const navigate = useNavigate();
   const { setTitle, setAfterTitle, setEnd } = usePageHeader();
@@ -34,9 +103,12 @@ export default function OverviewPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [status, setStatus] = useState<StatusResponse | null>(null);
+  const [cronJobs, setCronJobs] = useState<CronJob[]>([]);
   const [recentSessions, setRecentSessions] = useState<SessionInfo[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
+  const [skills, setSkills] = useState<SkillInfo[]>([]);
+  const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
 
   useLayoutEffect(() => {
     setTitle("Mission Control");
@@ -46,21 +118,35 @@ export default function OverviewPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [statusRes, sessionsRes, analyticsRes, configRes] =
-        await Promise.allSettled([
-          api.getStatus(),
-          api.getSessions(6, 0, profile || "all", "recent"),
-          api.getAnalytics(7, profile || undefined),
-          api.getConfig(profile || undefined),
-        ]);
+      const [
+        statusRes,
+        cronRes,
+        sessionsRes,
+        analyticsRes,
+        configRes,
+        skillsRes,
+        mcpRes,
+      ] = await Promise.allSettled([
+        api.getStatus(),
+        api.getCronJobs(profile || "all"),
+        api.getSessions(6, 0, profile || "all", "recent"),
+        api.getAnalytics(7, profile || undefined),
+        api.getConfig(profile || undefined),
+        api.getSkills(profile || undefined),
+        api.getMcpServers(),
+      ]);
 
       if (statusRes.status === "fulfilled") setStatus(statusRes.value);
+      if (cronRes.status === "fulfilled") setCronJobs(cronRes.value || []);
       if (sessionsRes.status === "fulfilled")
         setRecentSessions(sessionsRes.value.sessions || []);
       if (analyticsRes.status === "fulfilled")
         setAnalytics(analyticsRes.value);
       if (configRes.status === "fulfilled")
         setConfig((configRes.value as Record<string, unknown>) || {});
+      if (skillsRes.status === "fulfilled") setSkills(skillsRes.value || []);
+      if (mcpRes.status === "fulfilled")
+        setMcpServers(mcpRes.value.servers || []);
     } catch {
       // Best-effort load
     } finally {
@@ -80,40 +166,54 @@ export default function OverviewPage() {
     loadData();
   };
 
-  // Active Model & Provider derivation
+  // 1. Dynamic Model info
   const activeModel =
     (config?.model as string) ||
     ((config?.models as Record<string, string>)?.default) ||
-    "Claude 3.7 Sonnet";
+    "Auto-Router";
 
-  // Host Memory telemetry
+  // 2. Dynamic Memory telemetry
   const memoryInfo = status?.memory;
   const systemTotalMb = memoryInfo?.system_total_mb || 16384;
   const systemAvailMb = memoryInfo?.system_available_mb || 2048;
-  const usedMb = systemTotalMb - systemAvailMb;
+  const usedMb = Math.max(0, systemTotalMb - systemAvailMb);
   const memPct = Math.min(100, Math.round((usedMb / systemTotalMb) * 100));
 
-  // Disk telemetry
+  // 3. Dynamic Disk telemetry
   const diskFreeGb = status?.disk?.free_mb
     ? (status.disk.free_mb / 1024).toFixed(1)
     : "105.2";
 
-  // Gateway platforms count
+  // 4. Dynamic Gateway Platforms
   const platformEntries = Object.entries(status?.gateway_platforms || {});
   const activePlatformsCount = platformEntries.filter(
-    ([, p]) => p.state === "connected" || p.state === "online" || p.state !== "offline"
+    ([, p]) =>
+      p.state === "connected" ||
+      p.state === "online" ||
+      (p.state !== "offline" && p.state !== "disabled")
   ).length;
 
+  // 5. Dynamic Cronjob / Automation
+  const activeJobs = cronJobs.filter((j) => j.enabled);
+  const nextJob = activeJobs.find((j) => j.next_run_at) || activeJobs[0];
+
+  // 6. Dynamic Analytics tokens
   const totalTokens = analytics?.totals
     ? (analytics.totals.total_input || 0) + (analytics.totals.total_output || 0)
-    : 148250;
+    : 0;
+
+  // 7. Dynamic Curve Data
+  const chartData = useMemo(
+    () => generateAreaPath(analytics?.daily || []),
+    [analytics]
+  );
 
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <Spinner />
-          <span>Synchronizing Stellarium Cockpit…</span>
+          <span>Synchronizing Mission Control Telemetry…</span>
         </div>
       </div>
     );
@@ -121,7 +221,7 @@ export default function OverviewPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
-      {/* Top Banner & Quick Trigger Strip */}
+      {/* Top Welcome Banner */}
       <div className="flex flex-col justify-between gap-4 rounded-xl border border-[rgba(157,114,255,0.25)] bg-[rgba(157,114,255,0.04)] p-5 backdrop-blur-md md:flex-row md:items-center">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c3aed] to-[#9d72ff] text-xl text-white shadow-[0_0_20px_rgba(157,114,255,0.35)]">
@@ -130,14 +230,16 @@ export default function OverviewPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold tracking-tight text-white md:text-xl">
-                Selamat malam, Master Ilunaa
+                {getDynamicGreeting(profile || undefined)}
               </h1>
               <span className="hidden rounded-full border border-[#9d72ff]/40 bg-[#9d72ff]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#c084fc] md:inline-block">
-                CORE ONLINE
+                {status?.gateway_running ? "GATEWAY LIVE" : "STANDBY"}
               </span>
             </div>
             <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
-              All gateway channels operational · Mei standing by · Host system healthy
+              {platformEntries.length > 0
+                ? `${activePlatformsCount} of ${platformEntries.length} messaging platforms connected · Engine v${status?.version || "0.21.2"}`
+                : `Engine v${status?.version || "0.21.2"} · All local systems operational`}
             </p>
           </div>
         </div>
@@ -166,30 +268,48 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* 4 KPI Telemetry Cards (shadcn / Tremor Inspired) */}
+      {/* 4 KPI Telemetry Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* KPI 1: Gateway & Channels */}
+        {/* KPI 1: Gateway Status */}
         <Card className="relative overflow-hidden border-white/10 bg-[#11101a] transition-all hover:-translate-y-0.5 hover:border-[#9d72ff]/40 hover:shadow-lg">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#34d399] to-transparent" />
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               GATEWAY STATUS
             </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-              ONLINE
+            <span
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-semibold",
+                status?.gateway_running
+                  ? "bg-emerald-500/10 text-emerald-400"
+                  : "bg-zinc-500/10 text-zinc-400"
+              )}
+            >
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  status?.gateway_running
+                    ? "bg-emerald-400 shadow-[0_0_6px_#34d399]"
+                    : "bg-zinc-400"
+                )}
+              />
+              {status?.gateway_running ? "ONLINE" : "OFFLINE"}
             </span>
           </CardHeader>
           <CardContent>
             <div className="font-mono text-2xl font-bold tracking-tight text-white">
-              {status?.gateway_running ? "Connected" : "Standby"}
+              {activePlatformsCount > 0
+                ? `${activePlatformsCount} Connected`
+                : status?.gateway_running
+                ? "Active"
+                : "Standby"}
             </div>
             <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Radio className="h-3.5 w-3.5 text-emerald-400" />
               <span>
-                {activePlatformsCount > 0
-                  ? `${activePlatformsCount} active platforms (Discord)`
-                  : "6 Channels Synced"}
+                {platformEntries.length > 0
+                  ? platformEntries.map(([k]) => k).join(", ")
+                  : "Local Loopback"}
               </span>
             </p>
           </CardContent>
@@ -208,14 +328,14 @@ export default function OverviewPage() {
           </CardHeader>
           <CardContent>
             <div className="truncate font-mono text-xl font-bold tracking-tight text-white">
-              {activeModel.split("/").pop() || "Claude 3.7"}
+              {activeModel.split("/").pop()}
             </div>
             <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Zap className="h-3.5 w-3.5 text-[#c084fc]" />
               <span>
                 {totalTokens > 0
-                  ? `${(totalTokens / 1000).toFixed(1)}k tokens used`
-                  : "200k context window"}
+                  ? `${(totalTokens / 1000).toFixed(1)}k tokens (7d)`
+                  : "Smart Auto-Routing"}
               </span>
             </p>
           </CardContent>
@@ -226,32 +346,36 @@ export default function OverviewPage() {
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              NEXT CRONJOB
+              AUTOMATION
             </span>
             <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10.5px] font-semibold text-blue-400">
-              SCHEDULED
+              {activeJobs.length > 0 ? `${activeJobs.length} JOBS` : "IDLE"}
             </span>
           </CardHeader>
           <CardContent>
-            <div className="font-mono text-2xl font-bold tracking-tight text-white">
-              13:00 WIB
+            <div className="truncate font-mono text-2xl font-bold tracking-tight text-white">
+              {nextJob
+                ? nextJob.schedule_display || nextJob.next_run_at || "Active"
+                : "No Jobs"}
             </div>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5 text-blue-400" />
-              <span>🏋️ Daily Fitness Directive</span>
+            <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+              <span className="truncate">
+                {nextJob?.name || nextJob?.prompt?.slice(0, 24) || "None scheduled"}
+              </span>
             </p>
           </CardContent>
         </Card>
 
-        {/* KPI 4: Host Telemetry (PC Hardware) */}
+        {/* KPI 4: Host Telemetry */}
         <Card className="relative overflow-hidden border-white/10 bg-[#11101a] transition-all hover:-translate-y-0.5 hover:border-[#9d72ff]/40 hover:shadow-lg">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              HOST HARDWARE
+              HOST VITALS
             </span>
             <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[10.5px] font-semibold text-amber-300">
-              RYZEN PC
+              {status?.memory?.pressure ? `MEM ${status.memory.pressure.toUpperCase()}` : "NORMAL"}
             </span>
           </CardHeader>
           <CardContent>
@@ -265,39 +389,46 @@ export default function OverviewPage() {
               />
             </div>
             <p className="mt-1.5 text-[11px] text-muted-foreground">
-              RAM: {memPct}% · Drive D: {diskFreeGb} GB free
+              RAM: {memPct}% · Storage: {diskFreeGb} GB free
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Middle Section: Weekly Activity Trend Curve & Subsystems */}
+      {/* Middle Section: Activity Curve + Subsystems */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left Column (2 Cols): Ingestion & Activity Area Curve */}
+        {/* Left Column: Dynamic Ingestion Curve */}
         <Card className="border-white/10 bg-[#11101a] lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-white/5">
             <div>
               <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
                 <BarChart3 className="h-4 w-4 text-[#9d72ff]" />
-                <span>Agent Activity & Ingestion Trends (7 Days)</span>
+                <span>Token Ingestion & Activity Trends (7 Days)</span>
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Tokens consumed and task executions across all active channels
+                Daily token throughput across interactive chat and automated runs
               </p>
             </div>
-            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-400">
-              ↗ +18.4% this cycle
-            </span>
+            <Button
+              type="button"
+              ghost
+              size="sm"
+              onClick={() => navigate("/analytics")}
+              className="h-7 text-xs text-[#c084fc] hover:bg-[#9d72ff]/10"
+            >
+              <span>Full Analytics</span>
+              <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+            </Button>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="flex items-baseline gap-3">
               <span className="font-mono text-3xl font-bold tracking-tight text-white">
-                {totalTokens.toLocaleString()}
+                {totalTokens > 0 ? totalTokens.toLocaleString() : "0"}
               </span>
-              <span className="text-xs text-muted-foreground">total tokens processed</span>
+              <span className="text-xs text-muted-foreground">total tokens in period</span>
             </div>
 
-            {/* Smooth SVG Area Chart Curve (Tremor style) */}
+            {/* Render dynamically calculated SVG spline */}
             <div className="mt-4 h-40 w-full">
               <svg
                 viewBox="0 0 600 160"
@@ -305,106 +436,138 @@ export default function OverviewPage() {
                 preserveAspectRatio="none"
               >
                 <defs>
-                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#9d72ff" stopOpacity="0.4" />
+                  <linearGradient id="dynamicAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#9d72ff" stopOpacity="0.38" />
                     <stop offset="100%" stopColor="#9d72ff" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
-                {/* Grid Lines */}
                 <line x1="0" y1="35" x2="600" y2="35" stroke="rgba(255,255,255,0.04)" strokeDasharray="3,3" />
                 <line x1="0" y1="85" x2="600" y2="85" stroke="rgba(255,255,255,0.04)" strokeDasharray="3,3" />
                 <line x1="0" y1="135" x2="600" y2="135" stroke="rgba(255,255,255,0.04)" strokeDasharray="3,3" />
 
-                {/* Area Gradient Path */}
-                <path
-                  d="M0,140 Q90,115 180,85 T360,60 T510,35 L600,20 L600,160 L0,160 Z"
-                  fill="url(#areaGrad)"
-                />
-                {/* Stroke Path */}
-                <path
-                  d="M0,140 Q90,115 180,85 T360,60 T510,35 L600,20"
-                  fill="none"
-                  stroke="#9d72ff"
-                  strokeWidth="2.5"
-                />
-                {/* Terminal Active Dot */}
-                <circle cx="600" cy="20" r="5" fill="#c084fc" className="animate-pulse" />
+                <path d={chartData.areaPath} fill="url(#dynamicAreaGrad)" />
+                <path d={chartData.strokePath} fill="none" stroke="#9d72ff" strokeWidth="2.5" />
+
+                {chartData.points.map((pt, idx) => (
+                  <circle
+                    key={idx}
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={idx === chartData.points.length - 1 ? 4.5 : 3}
+                    fill={idx === chartData.points.length - 1 ? "#c084fc" : "#9d72ff"}
+                  />
+                ))}
               </svg>
             </div>
             <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-              <span>Mon</span>
-              <span>Tue</span>
-              <span>Wed</span>
-              <span>Thu</span>
-              <span>Fri</span>
-              <span>Sat</span>
-              <span className="font-semibold text-[#c084fc]">Today</span>
+              {chartData.points.length > 0 ? (
+                chartData.points.map((pt, i) => (
+                  <span key={i} className={i === chartData.points.length - 1 ? "font-semibold text-[#c084fc]" : ""}>
+                    {pt.label}
+                  </span>
+                ))
+              ) : (
+                <>
+                  <span>Day 1</span>
+                  <span>Day 2</span>
+                  <span>Day 3</span>
+                  <span>Day 4</span>
+                  <span>Day 5</span>
+                  <span>Day 6</span>
+                  <span className="font-semibold text-[#c084fc]">Today</span>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Right Column (1 Col): Subsystems & Audio Sanctuary */}
+        {/* Right Column: Dynamic Connected Subsystems */}
         <div className="flex flex-col gap-4">
-          {/* Discord Gateway Card */}
+          {/* Messaging Platforms Card */}
           <Card className="border-white/10 bg-[#11101a]">
             <CardHeader className="pb-3 border-b border-white/5">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
                   <Radio className="h-4 w-4 text-emerald-400" />
-                  <span>Discord Gateway</span>
+                  <span>Messaging Gateways</span>
                 </CardTitle>
-                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
-                  HEALTHY
-                </span>
+                <Button
+                  type="button"
+                  ghost
+                  size="sm"
+                  onClick={() => navigate("/channels")}
+                  className="h-6 px-1.5 text-[11px] text-muted-foreground hover:text-white"
+                >
+                  Manage ↗
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-3.5 space-y-2.5">
+              {platformEntries.length > 0 ? (
+                platformEntries.map(([name, plat]) => (
+                  <div key={name} className="flex items-center justify-between text-xs">
+                    <span className="capitalize text-muted-foreground">{name} Gateway</span>
+                    <span
+                      className={cn(
+                        "font-medium",
+                        plat.state === "connected" || plat.state === "online"
+                          ? "text-emerald-400"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {plat.state === "connected" ? "● Connected" : plat.state || "Configured"}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-2 text-center text-xs text-muted-foreground">
+                  No messaging platforms connected yet.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Subsystems & Toolsets Card */}
+          <Card className="border-white/10 bg-[#11101a]">
+            <CardHeader className="pb-3 border-b border-white/5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <Layers className="h-4 w-4 text-[#9d72ff]" />
+                  <span>Subsystems & Extensions</span>
+                </CardTitle>
+                <Badge tone="secondary" className="text-[10px]">
+                  {skills.length} Skills
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="pt-3.5 space-y-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Server Domain</span>
-                <span className="font-medium text-white">Stella Residence</span>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Package className="h-3.5 w-3.5 text-[#9d72ff]" />
+                  <span>Installed Skills</span>
+                </span>
+                <span className="font-mono text-white">{skills.length} Active</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Assigned Personal Maid</span>
-                <span className="font-medium text-[#c084fc]">Mei (Primary Core)</span>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Plug className="h-3.5 w-3.5 text-[#60a5fa]" />
+                  <span>Connected MCP Servers</span>
+                </span>
+                <span className="font-mono text-white">{mcpServers.length} Running</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Active Workspaces</span>
-                <span className="font-mono text-white">#workspace-stella, #2</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Audio Sanctuary / Spotify Integration Card */}
-          <Card className="border-white/10 bg-gradient-to-br from-[#11101a] to-[#16152a]">
-            <CardHeader className="pb-3 border-b border-white/5">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <Music className="h-4 w-4 text-[#1db954]" />
-                  <span>Audio Sanctuary</span>
-                </CardTitle>
-                <span className="text-[11px] font-medium text-emerald-400">Spotify Live</span>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-3.5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#1db954]/20 text-[#1db954]">
-                  🎵
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-semibold text-white">
-                    Leo/need — Peaky Peaky
-                  </div>
-                  <div className="truncate text-[11px] text-muted-foreground">
-                    Project SEKAI feat. Ichika & Miku
-                  </div>
-                </div>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Cpu className="h-3.5 w-3.5 text-[#34d399]" />
+                  <span>Configured Profiles</span>
+                </span>
+                <span className="font-mono text-white">{profile || "default"}</span>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Bottom Section: Recent Workspaces & Task Logs */}
+      {/* Bottom Section: Recent Sessions Table */}
       <Card className="border-white/10 bg-[#11101a]">
         <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-3">
           <div>
@@ -413,7 +576,7 @@ export default function OverviewPage() {
               <span>Recent Sessions & Delegations</span>
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              History of background agent executions, discord channels, and direct commands
+              Live history of background agent executions, discord channels, and direct commands
             </p>
           </div>
           <Button
@@ -446,7 +609,7 @@ export default function OverviewPage() {
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                         <Badge tone="secondary" className="h-4 px-1.5 text-[9.5px]">
-                          {s.source || "discord"}
+                          {s.source || "interactive"}
                         </Badge>
                         <span>{s.message_count || 1} messages</span>
                       </div>
@@ -462,8 +625,22 @@ export default function OverviewPage() {
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-xs text-muted-foreground">
-                No recent sessions found.
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-muted-foreground mb-2">
+                  <MessageSquare className="h-5 w-5 text-[#9d72ff]" />
+                </div>
+                <div className="text-xs font-medium text-white">No sessions recorded yet</div>
+                <p className="text-[11px] text-muted-foreground mt-0.5 mb-3">
+                  Start an interactive conversation in the terminal or messaging channels
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => navigate("/chat")}
+                  className="h-7 text-xs bg-[#9d72ff] text-white hover:bg-[#8b5cf6]"
+                >
+                  Start New Chat
+                </Button>
               </div>
             )}
           </div>
