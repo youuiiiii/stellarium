@@ -59,7 +59,69 @@ def _wings(*glyphs) -> List[List[str]]:
 _HERMES_BRANDING: Dict[str, str] = _branding(
     "Hermes", "☤", "Goodbye! ☤", prompt="❯", help_header="(^_^)? Available Commands")
 
+_STELLA_BRANDING: Dict[str, str] = {
+    "agent_name": "Stella Agent",
+    "welcome": "Welcome to Stellarium, Master Ilunaa! ✦ Type your message or /help for commands.",
+    "goodbye": "Farewell, Master! May the stars guide you. ✦",
+    "response_label": " ✦ Stella ",
+    "prompt_symbol": "✦",
+    "help_header": "(✦) Available Stellarium Commands"
+}
+
 _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
+    "stella": {
+        "name": "stella",
+        "description": "Astral Midnight — Project Stella signature deep cosmic violet & lavender",
+        "colors": {
+            "banner_border": "#8B5CF6",
+            "banner_title": "#C084FC",
+            "banner_accent": "#C084FC",
+            "banner_dim": "#9CA3AF",
+            "banner_text": "#F3E8FF",
+            "ui_accent": "#C084FC",
+            "ui_label": "#C084FC",
+            "ui_ok": "#34D399",
+            "ui_error": "#F87171",
+            "ui_warn": "#FBBF24",
+            "prompt": "#F3E8FF",
+            "input_rule": "#8B5CF6",
+            "response_border": "#A855F7",
+            "status_bar_bg": "#0D0B18",
+            "status_bar_text": "#E9D5FF",
+            "status_bar_strong": "#C084FC",
+            "status_bar_dim": "#8B86A4",
+            "status_bar_good": "#34D399",
+            "status_bar_warn": "#FBBF24",
+            "status_bar_bad": "#F87171",
+            "status_bar_critical": "#EF4444",
+            "session_label": "#C084FC",
+            "session_border": "#7C3AED",
+            "completion_menu_bg": "#0D0B18",
+            "completion_menu_current_bg": "#2E1A47",
+            "selection_bg": "#3B1D61",
+            "shell_dollar": "#A855F7",
+            "voice_status_bg": "#0D0B18"
+        },
+        "light_colors": {
+            "completion_menu_bg": "#FAF5FF",
+            "completion_menu_current_bg": "#E9D5FF",
+            "selection_bg": "#DDD6FE",
+            "status_bar_bg": "#FAF5FF",
+            "voice_status_bg": "#FAF5FF"
+        },
+        "spinner": {
+            "waiting_faces": ["(✦)", "(✧)", "(⋆)", "(✵)", "(✦)"],
+            "thinking_faces": ["(✦)", "(✧)", "(⋆)", "(✵)", "(✦)"],
+            "thinking_verbs": [
+                "aligning constellations", "tuning frequencies", "scanning stellar data",
+                "channeling energy", "weaving starlight", "consulting the stars",
+                "harmonizing models", "serving Master Ilunaa"
+            ],
+            "wings": _wings("✦", "✧", ("⟪", "⟫"), "⋆")
+        },
+        "branding": _STELLA_BRANDING,
+        "tool_prefix": "✦"
+    },
     "default": {
         "name": "default", "description": "Classic Hermes — gold and kawaii",
         # Dark-authored; values match the TUI's DARK_THEME so both render the same gold.

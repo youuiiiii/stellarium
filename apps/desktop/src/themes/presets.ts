@@ -845,7 +845,48 @@ export const slateTheme: DesktopTheme = {
   }
 }
 
+/**
+ * Stella — the signature Project Stella & Stellarium identity.
+ * Astral Midnight cosmic obsidian background with star lavender & violet accents.
+ */
+export const stellaTheme: DesktopTheme = {
+  name: 'stella',
+  label: 'Stella',
+  description: 'Astral Midnight — Project Stella signature deep cosmic violet & lavender',
+  colors: {
+    background: '#0a0a12',
+    foreground: '#f3e8ff',
+    card: '#131124',
+    cardForeground: '#f3e8ff',
+    muted: '#1b1733',
+    mutedForeground: '#a39abf',
+    popover: '#131124',
+    popoverForeground: '#f3e8ff',
+    primary: '#b794f6',
+    primaryForeground: '#0a0a12',
+    secondary: '#251f42',
+    secondaryForeground: '#e9d5ff',
+    accent: '#2f2754',
+    accentForeground: '#f5f3ff',
+    border: '#2a2247',
+    input: '#1f1936',
+    ring: '#9d72ff',
+    midground: '#9d72ff',
+    destructive: '#f43f5e',
+    destructiveForeground: '#fff1f2',
+    sidebarBackground: '#07070e',
+    sidebarBorder: '#1c1730',
+    userBubble: '#241b44',
+    userBubbleBorder: '#3b2d6b'
+  },
+  typography: {
+    fontMono: `"JetBrains Mono", ${SYSTEM_MONO}`,
+    fontUrl: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap'
+  }
+}
+
 export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
+  stella: stellaTheme,
   nous: nousTheme,
   github: githubTheme,
   catppuccin: catppuccinTheme,
@@ -862,4 +903,4 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
 export const BUILTIN_THEME_LIST = Object.values(BUILTIN_THEMES)
 
 /** Skin used when nothing is persisted or the persisted name is retired. */
-export const DEFAULT_SKIN_NAME = 'nous'
+export const DEFAULT_SKIN_NAME = 'stella'
