@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 /* `fonts.css` must come BEFORE `globals.css`: as of @nous-research/ui 0.14.x,
    `globals.css` only declares the `--font-*` CSS variables (Collapse, Rules
@@ -63,11 +64,19 @@
 
   /* Typography tokens — rewritten by ThemeProvider. Defaults match the
      system stack so themes that don't override look native. */
-  --theme-font-sans: system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --theme-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo,
-    Consolas, monospace;
+  --theme-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --theme-font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
   --theme-font-display: var(--theme-font-sans);
+  --font-sans: var(--theme-font-sans) !important;
+  --font-mono: var(--theme-font-mono) !important;
+  --font-rules-compressed: var(--theme-font-sans) !important;
+  --font-rules-expanded: var(--theme-font-sans) !important;
+  --font-mondwest: var(--theme-font-sans) !important;
+
+  /* Neutralize brutalist jagged clip-paths */
+  --component-tab-clip-path: none !important;
+  --component-sidebar-clip-path: none !important;
+  --component-header-clip-path: none !important;
   --theme-base-size: 15px;
   --theme-line-height: 1.55;
   --theme-letter-spacing: 0;
@@ -251,5 +260,25 @@ code { font-size: 0.875rem; }
    default LTR layout is untouched. */
 html[dir="rtl"] {
   direction: rtl;
+}
+
+/* =========================================================================
+   Project Stella — Modern Linear / Raycast Typography & Refinements
+   ========================================================================= */
+
+.font-expanded {
+  font-family: var(--theme-font-sans) !important;
+  letter-spacing: -0.02em !important;
+  font-weight: 700 !important;
+}
+
+.font-compressed {
+  font-family: var(--theme-font-sans) !important;
+  letter-spacing: normal !important;
+}
+
+.font-mondwest {
+  font-family: var(--theme-font-sans) !important;
+  letter-spacing: normal !important;
 }
 

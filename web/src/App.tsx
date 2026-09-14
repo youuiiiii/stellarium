@@ -59,7 +59,6 @@ import {
 import { Button } from "@nous-research/ui/ui/components/button";
 import { SelectionSwitcher } from "@nous-research/ui/ui/components/selection-switcher";
 import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Typography } from "@nous-research/ui/ui/components/typography/index";
 import { ConfirmDialog } from "@nous-research/ui/ui/components/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { SidebarFooter } from "@/components/SidebarFooter";
@@ -655,9 +654,14 @@ export default function App() {
           <Menu />
         </Button>
 
-        <Typography className="font-bold text-[0.95rem] leading-[0.95] tracking-[0.05em] text-midground">
-          {t.app.brand}
-        </Typography>
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-[#7c3aed] to-[#9d72ff] text-xs font-bold text-white shadow-[0_0_8px_rgba(157,114,255,0.4)]">
+            ✦
+          </div>
+          <span className="font-bold text-sm tracking-tight text-white">
+            STELLARIUM
+          </span>
+        </div>
       </header>
 
       {mobileOpen && (
@@ -706,23 +710,31 @@ export default function App() {
             <div
               className={cn(
                 "flex h-14 shrink-0 items-center gap-2",
-                "border-b border-current/20",
+                "border-b border-white/[0.08]",
                 collapsed ? "lg:justify-center lg:px-0" : "px-4 justify-between",
               )}
             >
               <div
                 className={cn(
-                  "flex items-center gap-2",
+                  "flex items-center gap-2.5",
                   collapsed && "lg:hidden",
                 )}
               >
                 <PluginSlot name="header-left" />
 
-                <Typography className="font-bold text-[1.125rem] leading-[0.95] tracking-[0.0525rem] text-midground uppercase">
-                  Hermes
-                  <br />
-                  Agent
-                </Typography>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#7c3aed] to-[#9d72ff] font-bold text-white shadow-[0_0_12px_rgba(157,114,255,0.4)]">
+                    ✦
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm tracking-tight text-white leading-none">
+                      STELLARIUM
+                    </div>
+                    <div className="text-[10px] font-medium tracking-wider text-[#9d72ff] mt-0.5">
+                      MISSION CONTROL
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <Button
@@ -760,15 +772,15 @@ export default function App() {
             >
               {groupNavItemsByCategory(sidebarNav.coreItems).map(
                 ({ category, items }) => (
-                  <div key={category} className="mb-2 flex flex-col">
+                  <div key={category} className="mb-2.5 flex flex-col">
                     <span
                       className={cn(
-                        "flex items-center gap-1.5 px-5 pt-2.5 pb-1",
-                        "font-sans text-[10px] font-bold tracking-[0.14em] uppercase text-text-tertiary",
+                        "flex items-center gap-1.5 px-4 pt-2 pb-1",
+                        "font-sans text-[10px] font-bold tracking-[0.08em] uppercase text-[#646279]",
                         isDesktopCollapsed && "lg:hidden",
                       )}
                     >
-                      <span className="text-[#9d72ff] opacity-80">✦</span>
+                      <span className="text-[#9d72ff] opacity-80 text-[9px]">✦</span>
                       <span>{category}</span>
                     </span>
 
@@ -995,6 +1007,7 @@ function SidebarNavLink({
     <li
       onMouseEnter={collapsed ? showTooltip : undefined}
       onMouseLeave={collapsed ? hideTooltip : undefined}
+      className="my-0.5"
     >
       <NavLink
         to={path}
@@ -1006,22 +1019,19 @@ function SidebarNavLink({
         className={({ isActive }) =>
           cn(
             "group/nav relative flex items-center gap-3",
-            "px-5 py-2.5",
-            "font-sans text-display uppercase text-sm tracking-[0.12em]",
-            "whitespace-nowrap transition-colors cursor-pointer",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-midground",
+            "mx-2.5 px-3 py-2 rounded-lg",
+            "font-sans normal-case text-[13px] font-medium tracking-normal",
+            "whitespace-nowrap transition-all cursor-pointer",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#9d72ff]",
             isActive
-              ? "text-midground"
-              : "text-text-secondary hover:text-midground",
+              ? "bg-[#9d72ff]/15 text-white font-semibold shadow-[inset_0_0_0_1px_rgba(157,114,255,0.3)]"
+              : "text-[#9d9bb3] hover:text-white hover:bg-white/[0.04]",
           )
         }
-        style={{
-          clipPath: "var(--component-tab-clip-path)",
-        }}
       >
         {({ isActive }) => (
           <>
-            <Icon className="h-3.5 w-3.5 shrink-0" />
+            <Icon className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-[#c084fc]" : "text-[#717088] group-hover/nav:text-white")} />
 
             <span
               className={cn(
@@ -1032,15 +1042,10 @@ function SidebarNavLink({
               {navLabel}
             </span>
 
-            <span
-              aria-hidden
-              className="absolute inset-y-0.5 left-1.5 right-1.5 bg-midground opacity-0 pointer-events-none transition-opacity duration-200 group-hover/nav:opacity-5"
-            />
-
             {isActive && (
               <span
                 aria-hidden
-                className="absolute left-0 top-0 bottom-0 w-px bg-midground"
+                className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#9d72ff]"
               />
             )}
           </>

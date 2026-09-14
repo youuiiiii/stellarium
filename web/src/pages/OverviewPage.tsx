@@ -28,9 +28,6 @@ import type {
 import { cn, timeAgo } from "@/lib/utils";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { useProfileScope } from "@/contexts/useProfileScope";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
-import { Badge } from "@nous-research/ui/ui/components/badge";
 import { Spinner } from "@nous-research/ui/ui/components/spinner";
 
 function getDynamicGreeting(profileName?: string) {
@@ -211,7 +208,7 @@ export default function OverviewPage() {
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <div className="flex items-center gap-3 text-sm text-zinc-400 font-sans">
           <Spinner />
           <span>Synchronizing Mission Control Telemetry…</span>
         </div>
@@ -220,23 +217,23 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8">
-      {/* Top Welcome Banner */}
-      <div className="flex flex-col justify-between gap-4 rounded-xl border border-[rgba(157,114,255,0.25)] bg-[rgba(157,114,255,0.04)] p-5 backdrop-blur-md md:flex-row md:items-center">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-8 font-sans">
+      {/* Top Welcome Banner (Linear Style) */}
+      <div className="flex flex-col justify-between gap-4 rounded-xl border border-white/[0.08] bg-[#11101a] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.3)] md:flex-row md:items-center">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c3aed] to-[#9d72ff] text-xl text-white shadow-[0_0_20px_rgba(157,114,255,0.35)]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c3aed] to-[#9d72ff] text-xl font-bold text-white shadow-[0_0_16px_rgba(157,114,255,0.4)]">
             ✦
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <h1 className="text-lg font-bold tracking-tight text-white md:text-xl">
                 {getDynamicGreeting(profile || undefined)}
               </h1>
-              <span className="hidden rounded-full border border-[#9d72ff]/40 bg-[#9d72ff]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#c084fc] md:inline-block">
+              <span className="rounded-full border border-[#9d72ff]/40 bg-[#9d72ff]/15 px-2.5 py-0.5 text-[11px] font-semibold text-[#c084fc]">
                 {status?.gateway_running ? "GATEWAY LIVE" : "STANDBY"}
               </span>
             </div>
-            <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
+            <p className="mt-0.5 text-xs text-[#9d9bb3]">
               {platformEntries.length > 0
                 ? `${activePlatformsCount} of ${platformEntries.length} messaging platforms connected · Engine v${status?.version || "0.21.2"}`
                 : `Engine v${status?.version || "0.21.2"} · All local systems operational`}
@@ -245,36 +242,33 @@ export default function OverviewPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
+          <button
             type="button"
-            outlined
-            size="sm"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="h-8 gap-1.5 text-xs border-white/10 hover:border-[#9d72ff]/40"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs font-medium text-white transition-all hover:border-[#9d72ff]/40 hover:bg-white/[0.06] cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} />
+            <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin text-[#c084fc]")} />
             <span>Refresh</span>
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            size="sm"
             onClick={() => navigate("/chat")}
-            className="h-8 gap-1.5 bg-[#9d72ff] text-xs font-semibold text-white hover:bg-[#8b5cf6] shadow-[0_2px_10px_rgba(157,114,255,0.4)]"
+            className="flex h-8 items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#7c3aed] to-[#9d72ff] px-3.5 text-xs font-semibold text-white shadow-[0_2px_10px_rgba(157,114,255,0.35)] transition-all hover:opacity-95 cursor-pointer"
           >
             <Terminal className="h-3.5 w-3.5" />
             <span>Open Terminal Chat</span>
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* 4 KPI Telemetry Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* KPI 1: Gateway Status */}
-        <Card className="relative overflow-hidden border-white/10 bg-[#11101a] transition-all hover:-translate-y-0.5 hover:border-[#9d72ff]/40 hover:shadow-lg">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.08] bg-[#11101a] p-4 transition-all hover:-translate-y-0.5 hover:border-[#34d399]/50 hover:shadow-lg">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#34d399] to-transparent" />
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#646279]">
               GATEWAY STATUS
             </span>
             <span
@@ -295,8 +289,8 @@ export default function OverviewPage() {
               />
               {status?.gateway_running ? "ONLINE" : "OFFLINE"}
             </span>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div>
             <div className="font-mono text-2xl font-bold tracking-tight text-white">
               {activePlatformsCount > 0
                 ? `${activePlatformsCount} Connected`
@@ -304,7 +298,7 @@ export default function OverviewPage() {
                 ? "Active"
                 : "Standby"}
             </div>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-[#9d9bb3]">
               <Radio className="h-3.5 w-3.5 text-emerald-400" />
               <span>
                 {platformEntries.length > 0
@@ -312,25 +306,25 @@ export default function OverviewPage() {
                   : "Local Loopback"}
               </span>
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* KPI 2: AI Core Model */}
-        <Card className="relative overflow-hidden border-white/10 bg-[#11101a] transition-all hover:-translate-y-0.5 hover:border-[#9d72ff]/40 hover:shadow-lg">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.08] bg-[#11101a] p-4 transition-all hover:-translate-y-0.5 hover:border-[#9d72ff]/50 hover:shadow-lg">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#9d72ff] to-transparent" />
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#646279]">
               REASONING CORE
             </span>
             <span className="rounded-full bg-[#9d72ff]/15 px-2 py-0.5 text-[10.5px] font-semibold text-[#c084fc]">
               ACTIVE
             </span>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div>
             <div className="truncate font-mono text-xl font-bold tracking-tight text-white">
               {activeModel.split("/").pop()}
             </div>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-[#9d9bb3]">
               <Zap className="h-3.5 w-3.5 text-[#c084fc]" />
               <span>
                 {totalTokens > 0
@@ -338,47 +332,47 @@ export default function OverviewPage() {
                   : "Smart Auto-Routing"}
               </span>
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* KPI 3: Next Scheduled Automation */}
-        <Card className="relative overflow-hidden border-white/10 bg-[#11101a] transition-all hover:-translate-y-0.5 hover:border-[#9d72ff]/40 hover:shadow-lg">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.08] bg-[#11101a] p-4 transition-all hover:-translate-y-0.5 hover:border-blue-500/50 hover:shadow-lg">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#646279]">
               AUTOMATION
             </span>
             <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10.5px] font-semibold text-blue-400">
               {activeJobs.length > 0 ? `${activeJobs.length} JOBS` : "IDLE"}
             </span>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div>
             <div className="truncate font-mono text-2xl font-bold tracking-tight text-white">
               {nextJob
                 ? nextJob.schedule_display || nextJob.next_run_at || "Active"
                 : "No Jobs"}
             </div>
-            <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+            <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-[#9d9bb3]">
               <Clock className="h-3.5 w-3.5 text-blue-400 shrink-0" />
               <span className="truncate">
                 {nextJob?.name || nextJob?.prompt?.slice(0, 24) || "None scheduled"}
               </span>
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* KPI 4: Host Telemetry */}
-        <Card className="relative overflow-hidden border-white/10 bg-[#11101a] transition-all hover:-translate-y-0.5 hover:border-[#9d72ff]/40 hover:shadow-lg">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.08] bg-[#11101a] p-4 transition-all hover:-translate-y-0.5 hover:border-amber-400/50 hover:shadow-lg">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#646279]">
               HOST VITALS
             </span>
             <span className="rounded-full bg-amber-400/10 px-2 py-0.5 text-[10.5px] font-semibold text-amber-300">
               {status?.memory?.pressure ? `MEM ${status.memory.pressure.toUpperCase()}` : "NORMAL"}
             </span>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div>
             <div className="font-mono text-2xl font-bold tracking-tight text-white">
               {(usedMb / 1024).toFixed(1)} / {(systemTotalMb / 1024).toFixed(0)} GB
             </div>
@@ -388,44 +382,42 @@ export default function OverviewPage() {
                 style={{ width: `${memPct}%` }}
               />
             </div>
-            <p className="mt-1.5 text-[11px] text-muted-foreground">
+            <p className="mt-1.5 text-[11px] text-[#9d9bb3]">
               RAM: {memPct}% · Storage: {diskFreeGb} GB free
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Middle Section: Activity Curve + Subsystems */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left Column: Dynamic Ingestion Curve */}
-        <Card className="border-white/10 bg-[#11101a] lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-white/5">
+        <div className="rounded-xl border border-white/[0.08] bg-[#11101a] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.3)] lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-white/5 pb-3">
             <div>
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
                 <BarChart3 className="h-4 w-4 text-[#9d72ff]" />
                 <span>Token Ingestion & Activity Trends (7 Days)</span>
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              </h2>
+              <p className="text-xs text-[#9d9bb3]">
                 Daily token throughput across interactive chat and automated runs
               </p>
             </div>
-            <Button
+            <button
               type="button"
-              ghost
-              size="sm"
               onClick={() => navigate("/analytics")}
-              className="h-7 text-xs text-[#c084fc] hover:bg-[#9d72ff]/10"
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#c084fc] transition-colors hover:bg-[#9d72ff]/10 cursor-pointer"
             >
               <span>Full Analytics</span>
-              <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-6">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <div className="pt-5">
             <div className="flex items-baseline gap-3">
               <span className="font-mono text-3xl font-bold tracking-tight text-white">
                 {totalTokens > 0 ? totalTokens.toLocaleString() : "0"}
               </span>
-              <span className="text-xs text-muted-foreground">total tokens in period</span>
+              <span className="text-xs text-[#9d9bb3]">total tokens in period</span>
             </div>
 
             {/* Render dynamically calculated SVG spline */}
@@ -459,7 +451,7 @@ export default function OverviewPage() {
                 ))}
               </svg>
             </div>
-            <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+            <div className="mt-2 flex justify-between text-[11px] text-[#9d9bb3]">
               {chartData.points.length > 0 ? (
                 chartData.points.map((pt, i) => (
                   <span key={i} className={i === chartData.points.length - 1 ? "font-semibold text-[#c084fc]" : ""}>
@@ -478,41 +470,37 @@ export default function OverviewPage() {
                 </>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Right Column: Dynamic Connected Subsystems */}
         <div className="flex flex-col gap-4">
           {/* Messaging Platforms Card */}
-          <Card className="border-white/10 bg-[#11101a]">
-            <CardHeader className="pb-3 border-b border-white/5">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <Radio className="h-4 w-4 text-emerald-400" />
-                  <span>Messaging Gateways</span>
-                </CardTitle>
-                <Button
-                  type="button"
-                  ghost
-                  size="sm"
-                  onClick={() => navigate("/channels")}
-                  className="h-6 px-1.5 text-[11px] text-muted-foreground hover:text-white"
-                >
-                  Manage ↗
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-3.5 space-y-2.5">
+          <div className="rounded-xl border border-white/[0.08] bg-[#11101a] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+              <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#646279]">
+                <Radio className="h-4 w-4 text-emerald-400" />
+                <span>Messaging Gateways</span>
+              </h2>
+              <button
+                type="button"
+                onClick={() => navigate("/channels")}
+                className="text-[11px] font-medium text-[#c084fc] hover:underline cursor-pointer"
+              >
+                Manage ↗
+              </button>
+            </div>
+            <div className="pt-3 space-y-2.5">
               {platformEntries.length > 0 ? (
                 platformEntries.map(([name, plat]) => (
                   <div key={name} className="flex items-center justify-between text-xs">
-                    <span className="capitalize text-muted-foreground">{name} Gateway</span>
+                    <span className="capitalize text-[#9d9bb3]">{name} Gateway</span>
                     <span
                       className={cn(
                         "font-medium",
                         plat.state === "connected" || plat.state === "online"
                           ? "text-emerald-400"
-                          : "text-muted-foreground"
+                          : "text-zinc-500"
                       )}
                     >
                       {plat.state === "connected" ? "● Connected" : plat.state || "Configured"}
@@ -520,77 +508,73 @@ export default function OverviewPage() {
                   </div>
                 ))
               ) : (
-                <div className="py-2 text-center text-xs text-muted-foreground">
+                <div className="py-2 text-center text-xs text-[#9d9bb3]">
                   No messaging platforms connected yet.
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Subsystems & Toolsets Card */}
-          <Card className="border-white/10 bg-[#11101a]">
-            <CardHeader className="pb-3 border-b border-white/5">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <Layers className="h-4 w-4 text-[#9d72ff]" />
-                  <span>Subsystems & Extensions</span>
-                </CardTitle>
-                <Badge tone="secondary" className="text-[10px]">
-                  {skills.length} Skills
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-3.5 space-y-2.5">
+          <div className="rounded-xl border border-white/[0.08] bg-[#11101a] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+              <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#646279]">
+                <Layers className="h-4 w-4 text-[#9d72ff]" />
+                <span>Subsystems & Extensions</span>
+              </h2>
+              <span className="rounded-full bg-[#9d72ff]/15 px-2 py-0.5 text-[10px] font-semibold text-[#c084fc]">
+                {skills.length} Skills
+              </span>
+            </div>
+            <div className="pt-3 space-y-2.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-[#9d9bb3]">
                   <Package className="h-3.5 w-3.5 text-[#9d72ff]" />
                   <span>Installed Skills</span>
                 </span>
-                <span className="font-mono text-white">{skills.length} Active</span>
+                <span className="font-mono font-medium text-white">{skills.length} Active</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-[#9d9bb3]">
                   <Plug className="h-3.5 w-3.5 text-[#60a5fa]" />
                   <span>Connected MCP Servers</span>
                 </span>
-                <span className="font-mono text-white">{mcpServers.length} Running</span>
+                <span className="font-mono font-medium text-white">{mcpServers.length} Running</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-[#9d9bb3]">
                   <Cpu className="h-3.5 w-3.5 text-[#34d399]" />
                   <span>Configured Profiles</span>
                 </span>
-                <span className="font-mono text-white">{profile || "default"}</span>
+                <span className="font-mono font-medium text-white">{profile || "default"}</span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Bottom Section: Recent Sessions Table */}
-      <Card className="border-white/10 bg-[#11101a]">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-3">
+      <div className="rounded-xl border border-white/[0.08] bg-[#11101a] shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+        <div className="flex flex-row items-center justify-between border-b border-white/5 p-4">
           <div>
-            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
               <Activity className="h-4 w-4 text-[#9d72ff]" />
               <span>Recent Sessions & Delegations</span>
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            </h2>
+            <p className="text-xs text-[#9d9bb3]">
               Live history of background agent executions, discord channels, and direct commands
             </p>
           </div>
-          <Button
+          <button
             type="button"
-            ghost
-            size="sm"
             onClick={() => navigate("/sessions")}
-            className="h-7 text-xs text-[#c084fc] hover:bg-[#9d72ff]/10"
+            className="flex items-center gap-1 text-xs font-medium text-[#c084fc] hover:underline cursor-pointer"
           >
             <span>View All Sessions</span>
-            <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        <div>
           <div className="divide-y divide-white/5 overflow-x-auto">
             {recentSessions.length > 0 ? (
               recentSessions.map((s) => (
@@ -600,52 +584,51 @@ export default function OverviewPage() {
                   className="flex cursor-pointer items-center justify-between px-6 py-3.5 transition-colors hover:bg-white/[0.02]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-muted-foreground">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-[#9d9bb3]">
                       <MessageSquare className="h-4 w-4 text-[#9d72ff]" />
                     </div>
                     <div>
                       <div className="text-xs font-medium text-white">
                         {s.title || `Session ${s.id.slice(0, 16)}`}
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <Badge tone="secondary" className="h-4 px-1.5 text-[9.5px]">
+                      <div className="flex items-center gap-2 text-[11px] text-[#9d9bb3]">
+                        <span className="rounded bg-white/5 px-1.5 py-0.5 text-[9.5px] font-mono text-zinc-300">
                           {s.source || "interactive"}
-                        </Badge>
+                        </span>
                         <span>{s.message_count || 1} messages</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className="font-mono text-xs text-[#9d9bb3]">
                       {s.last_active ? timeAgo(s.last_active) : "Recently"}
                     </span>
-                    <span className="text-muted-foreground/40">›</span>
+                    <span className="text-zinc-600">›</span>
                   </div>
                 </div>
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-muted-foreground mb-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-[#9d9bb3] mb-2">
                   <MessageSquare className="h-5 w-5 text-[#9d72ff]" />
                 </div>
                 <div className="text-xs font-medium text-white">No sessions recorded yet</div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 mb-3">
+                <p className="text-[11px] text-[#9d9bb3] mt-0.5 mb-3">
                   Start an interactive conversation in the terminal or messaging channels
                 </p>
-                <Button
+                <button
                   type="button"
-                  size="sm"
                   onClick={() => navigate("/chat")}
-                  className="h-7 text-xs bg-[#9d72ff] text-white hover:bg-[#8b5cf6]"
+                  className="rounded-lg bg-[#9d72ff] px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_2px_10px_rgba(157,114,255,0.35)] transition-all hover:bg-[#8b5cf6] cursor-pointer"
                 >
                   Start New Chat
-                </Button>
+                </button>
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

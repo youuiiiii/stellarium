@@ -81,7 +81,7 @@ export function PageHeaderProvider({
             >
               <h1
                 className={cn(
-                  "font-expanded min-w-0 text-sm font-bold tracking-[0.08em] text-midground",
+                  "font-sans min-w-0 text-[14px] md:text-[15px] font-bold tracking-tight text-white normal-case",
                   afterTitle && isEnvRoute
                     ? "max-w-full sm:min-w-0 sm:shrink sm:truncate"
                     : afterTitle
