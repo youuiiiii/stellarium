@@ -8,7 +8,7 @@ from typing import Callable
 def build_update_parser(subparsers, *, cmd_update: Callable) -> None:
     """Attach the ``update`` subcommand to ``subparsers``."""
     update_parser = subparsers.add_parser(
-        "update", help="Update Hermes Agent to the latest version",
+        "update", help="Update Stellarium to the latest version",
         description="Pull the latest changes from git and reinstall dependencies")
     update_parser.add_argument(
         "--gateway", action="store_true", default=False,

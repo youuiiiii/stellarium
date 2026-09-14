@@ -59,50 +59,50 @@ def _inherited_flag(parser, *args, **kwargs):
 
 _EPILOGUE = """
 Examples:
-    hermes                        Start interactive chat
-    hermes chat -q "Hello"        Single query mode
-    hermes --tui                  Launch the modern TUI (or set display.interface: tui)
-    hermes --cli                  Force the classic REPL (overrides display.interface: tui)
-    hermes -c                     Resume the most recent session
-    hermes -c "my project"        Resume a session by name (latest in lineage)
-    hermes --resume <session_id>  Resume a specific session by ID
-    hermes --resume latest        Resume the most recent session (same as -c)
-    hermes --tui --resume latest --in ./dir   Resume ./dir's latest session in the TUI
-    hermes setup                  Run setup wizard
-    hermes logout                 Clear stored authentication
-    hermes auth add <provider>    Add a pooled credential
-    hermes auth list              List pooled credentials
-    hermes auth remove <p> <t>    Remove pooled credential by index, id, or label
-    hermes auth reset <p> [t]     Clear exhaustion status for a provider, or one credential
-    hermes auth priority <p> <t> <n>  Move a pooled credential to priority n (0 = tried first)
-    hermes auth refresh <p> [t]   Refresh a pooled OAuth credential and clear its cooldown
-    hermes model                  Select default model
-    hermes fallback [list]        Show fallback provider chain
-    hermes fallback add           Add a fallback provider (same picker as `hermes model`)
-    hermes fallback remove        Remove a fallback provider from the chain
-    hermes config                 View configuration
-    hermes config edit            Edit config in $EDITOR
-    hermes config set model gpt-4 Set a config value
-    hermes gateway                Run messaging gateway
-    hermes -s hermes-agent-dev,github-auth
-    hermes -w                     Start in isolated git worktree
-    hermes gateway install        Install gateway background service
-    hermes sessions list          List past sessions
-    hermes sessions browse        Interactive session picker
-    hermes sessions rename ID T   Rename/title a session
-    hermes logs                   View agent.log (last 50 lines)
-    hermes logs -f                Follow agent.log in real time
-    hermes logs errors            View errors.log
-    hermes logs --since 1h        Lines from the last hour
-    hermes debug share             Upload debug report for support
-    hermes console                Open the safe Hermes command console
-    hermes update                 Update to latest version
-    hermes dashboard              Start web UI dashboard (port 9119)
-    hermes dashboard --stop       Stop running dashboard processes
-    hermes dashboard --status     List running dashboard processes
+    stella                        Start interactive chat
+    stella chat -q "Hello"        Single query mode
+    stella --tui                  Launch the modern TUI (or set display.interface: tui)
+    stella --cli                  Force the classic REPL (overrides display.interface: tui)
+    stella -c                     Resume the most recent session
+    stella -c "my project"        Resume a session by name (latest in lineage)
+    stella --resume <session_id>  Resume a specific session by ID
+    stella --resume latest        Resume the most recent session (same as -c)
+    stella --tui --resume latest --in ./dir   Resume ./dir's latest session in the TUI
+    stella setup                  Run setup wizard
+    stella logout                 Clear stored authentication
+    stella auth add <provider>    Add a pooled credential
+    stella auth list              List pooled credentials
+    stella auth remove <p> <t>    Remove pooled credential by index, id, or label
+    stella auth reset <p> [t]     Clear exhaustion status for a provider, or one credential
+    stella auth priority <p> <t> <n>  Move a pooled credential to priority n (0 = tried first)
+    stella auth refresh <p> [t]   Refresh a pooled OAuth credential and clear its cooldown
+    stella model                  Select default model
+    stella fallback [list]        Show fallback provider chain
+    stella fallback add           Add a fallback provider (same picker as `stella model`)
+    stella fallback remove        Remove a fallback provider from the chain
+    stella config                 View configuration
+    stella config edit            Edit config in $EDITOR
+    stella config set model gpt-4 Set a config value
+    stella gateway                Run messaging gateway
+    stella -s coding,github
+    stella -w                     Start in isolated git worktree
+    stella gateway install        Install gateway background service
+    stella sessions list          List past sessions
+    stella sessions browse        Interactive session picker
+    stella sessions rename ID T   Rename/title a session
+    stella logs                   View agent.log (last 50 lines)
+    stella logs -f                Follow agent.log in real time
+    stella logs errors            View errors.log
+    stella logs --since 1h        Lines from the last hour
+    stella debug share            Upload debug report for support
+    stella console                Open the safe Stella command console
+    stella update                 Update to latest version
+    stella dashboard              Start web UI dashboard (port 9119)
+    stella dashboard --stop       Stop running dashboard processes
+    stella dashboard --status     List running dashboard processes
 
 For more help on a command:
-    hermes <command> --help
+    stella <command> --help
 """
 
 
@@ -285,7 +285,7 @@ def build_top_level_parser():
     ``subparsers.add_parser(...)``.
     """
     parser = argparse.ArgumentParser(
-        prog="hermes", description="Hermes Agent - AI assistant with tool-calling capabilities",
+        prog="stella", description="Stellarium Engine - Project Stella Autonomous Agent with tool-calling capabilities",
         formatter_class=argparse.RawDescriptionHelpFormatter, epilog=_EPILOGUE)
     _add_top_level_flags(parser)
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
