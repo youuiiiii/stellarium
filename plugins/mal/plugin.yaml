@@ -1,0 +1,12 @@
+name: mal
+version: 1.0.0
+description: "Native MyAnimeList integration — 6 tools (anime search, user list, update status, details, seasonal, delete) using MyAnimeList REST API v2 OAuth2. Auth via ~/.hermes/mal/tokens.json."
+author: Project Stella
+kind: backend
+provides_tools:
+  - mal_anime_search
+  - mal_user_animelist
+  - mal_anime_details
+  - mal_update_animelist
+  - mal_seasonal_anime
+  - mal_delete_animelist

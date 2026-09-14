@@ -16,19 +16,19 @@ export function BrandClose({ ref }: BrandCloseProps) {
         <h1
           className="text-[10.2vmin] leading-none uppercase text-white/95"
           style={{
-            fontFamily: "'Collapse', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             fontWeight: 700,
             letterSpacing: '0.06em',
             textShadow: '0 2px 24px rgba(0,0,0,0.45)'
           }}
         >
-          Hermes Agent
+          Stellarium
         </h1>
         <p
           className="text-[2vmin] uppercase tracking-[0.42em] text-white/50"
-          style={{ fontFamily: "'Collapse', sans-serif" }}
+          style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          Your agent, everywhere
+          Project Stella Autonomous Agent
         </p>
       </div>
     </div>

@@ -165,6 +165,11 @@ TOOLSETS = {
         ["spotify_playback", "spotify_devices", "spotify_queue", "spotify_search",
          "spotify_playlists", "spotify_albums", "spotify_library"],
     ),
+    "mal": _ts(
+        "Native MyAnimeList search, user list, update status, details, and seasonal anime tools",
+        ["mal_anime_search", "mal_user_animelist", "mal_anime_details",
+         "mal_update_animelist", "mal_seasonal_anime", "mal_delete_animelist"],
+    ),
 
     # Scenario-specific toolsets
     "debugging": _ts("Debugging and troubleshooting toolkit", ["terminal", "process_manage"], includes=["web", "file"]),
