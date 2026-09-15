@@ -7,7 +7,7 @@
   "author": "Master Ilunaa",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NousResearch/hermes-agent.git"
+    "url": "git+https://github.com/youuiiiii/stellarium.git"
   },
   "type": "module",
   "main": "dist/electron-main.mjs",
@@ -188,6 +188,7 @@
     "wait-on": "9.0.10"
   },
   "build": {
+    "publish": null,
     "electronVersion": "40.10.2",
     "appId": "com.projectstella.stella",
     "productName": "Stella",
