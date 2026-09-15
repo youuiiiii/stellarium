@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useI18n } from '@/i18n'
 import { $settingsRequestProfile } from '@/store/settings-scope'
 
+import { ConnectedServicesCard } from './connected-services'
 import { CredentialKeyCard, credentialPlaceholder, credentialRowLabel } from './credential-key-ui'
 import { useEnvCredentials } from './env-credentials'
 import { asText } from './helpers'
@@ -84,6 +85,7 @@ export function KeysSettings({ view }: KeysSettingsProps) {
   return (
     <SettingsContent>
       <SettingsProfileScope className="mb-5" />
+      {view === 'tools' && <ConnectedServicesCard />}
       {entries.length > 0 ? (
         <div className="grid gap-2">
           {entries.map(([key, info]) => {
