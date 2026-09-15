@@ -1,33 +1,39 @@
 {
-  "name": "stellarium",
-  "version": "0.1.0",
-  "description": "Stellarium Sovereign Studio — Autonomous AI Desktop for Builders & Creators.",
+  "name": "hermes-agent",
+  "version": "1.0.0",
+  "description": "An AI agent with advanced tool-calling capabilities, featuring a flexible toolsets system for organizing and managing tools.",
   "private": true,
   "workspaces": [
     "apps/*",
-    "web"
+    "ui-tui",
+    "ui-tui/packages/*",
+    "web",
+    "tests-js"
   ],
   "scripts": {
-    "postinstall": "echo '✦ Stellarium dependencies installed.'",
+    "postinstall": "echo '\u2705 Node dependencies installed. Run: python run_agent.py --help'",
     "install:root": "npm install --workspaces=false",
     "install:web": "npm install --workspace web",
+    "install:tui": "npm install --workspace ui-tui",
     "install:desktop": "npm install --workspace apps/desktop",
     "audit:root": "npm audit --workspaces=false",
     "audit:web": "npm audit --workspace web",
+    "audit:tui": "npm audit --workspace ui-tui",
     "audit:fix:root": "npm audit fix --workspaces=false",
     "audit:fix:web": "npm audit fix --workspace web",
+    "audit:fix:tui": "npm audit fix --workspace ui-tui",
     "check": "npm run --ws check",
     "fix": "npm run --ws fix"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AstralStellar/Stellarium.git"
+    "url": "git+https://github.com/NousResearch/Hermes-Agent.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/AstralStellar/Stellarium/issues"
+    "url": "https://github.com/NousResearch/Hermes-Agent/issues"
   },
-  "homepage": "https://github.com/AstralStellar/Stellarium#readme",
+  "homepage": "https://github.com/NousResearch/Hermes-Agent#readme",
   "devDependencies": {
     "@eslint/js": "9.39.5",
     "typescript-eslint": "8.64.0",
