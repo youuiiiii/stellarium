@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "product": "Stella",
+  "purpose": "Cleanup guardrail: these Hermes feature surfaces must remain present until a verified replacement exists.",
+  "surfaces": [
+    {
+      "id": "core-runtime",
+      "paths": [
+        "agent",
+        "gateway",
+        "hermes_cli",
+        "tools",
+        "cli.py",
+        "run_agent.py",
+        "model_tools.py",
+        "toolsets.py",
+        "hermes_constants.py"
+      ]
+    },
+    {
+      "id": "user-surfaces",
+      "paths": [
+        "apps/desktop",
+        "web",
+        "ui-tui",
+        "tui_gateway",
+        "acp_adapter",
+        "apps/shared",
+        "apps/bootstrap-installer"
+      ]
+    },
+    {
+      "id": "extensibility",
+      "paths": [
+        "plugins",
+        "skills",
+        "optional-skills",
+        "optional-mcps",
+        "plugin-catalog",
+        "native",
+        "locales"
+      ]
+    },
+    {
+      "id": "distribution",
+      "paths": [
+        "Dockerfile",
+        "docker-compose.yml",
+        "docker-compose.windows.yml",
+        "nix",
+        "setup-hermes.sh",
+        "pyproject.toml",
+        "setup.py",
+        "package.json",
+        "package-lock.json"
+      ]
+    },
+    {
+      "id": "quality-and-maintenance",
+      "paths": [
+        "tests",
+        "tests-js",
+        "evals",
+        ".github",
+        "contributors",
+        "website",
+        "docs",
+        "AGENTS.md",
+        "CONTRIBUTING.md",
+        "SECURITY.md"
+      ]
+    }
+  ]
+}
