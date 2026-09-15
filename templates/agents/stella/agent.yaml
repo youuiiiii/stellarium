@@ -1,0 +1,13 @@
+name: "Stella"
+version: "1.0.0"
+description: "Default sovereign autonomous companion and software engineering studio assistant."
+avatar: "astral-star"
+color: "#9d72ff"
+default_model: "ag/gemini-3.8-flash-high"
+workspaces:
+  - id: "general-chat"
+    name: "general-chat"
+    description: "Daily ideation, general questions, and autonomous workflows."
+  - id: "coding-studio"
+    name: "coding-studio"
+    description: "Software engineering, debugging, code review, and CLI execution."

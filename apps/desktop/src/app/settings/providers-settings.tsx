@@ -183,8 +183,7 @@ function OAuthPicker({
         name: 'Antigravity Pro (9Router)',
         base_url: 'http://127.0.0.1:20128/v1',
         model: 'ag-gemini',
-        api_key: 'sk-antigravity',
-        is_current: true
+        api_key: '«redacted:sk-…»'
       })
       await activateCustomEndpoint('antigravity')
       notify({ kind: 'success', message: 'Connected to Antigravity Pro (9Router).' })

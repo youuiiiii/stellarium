@@ -11,7 +11,8 @@ export async function ownsAmbientCue(key: string): Promise<boolean> {
   }
 
   try {
-    return await claim(key)
+    const res = await claim(key)
+    return res?.ok ?? true
   } catch {
     return true
   }

@@ -595,7 +595,7 @@ export function AppearanceSettings() {
                   <Button
                     size="xs"
                     type="button"
-                    variant={activeMascotId === 'custom' ? 'primary' : 'outline'}
+                    variant={activeMascotId === 'custom' ? 'default' : 'outline'}
                     onClick={() => fileInputRef.current?.click()}
                   >
                     {activeMascotId === 'custom' ? '✓ Custom Avatar Active' : '+ Upload Custom Image'}
