@@ -42,6 +42,7 @@ import type { OAuthProvider } from '@/types/hermes'
 import { DocsLink, FlowPanel, Status } from './flow'
 import { DecodedLabel } from './glyph'
 import {
+  AntigravityProviderRow,
   FeaturedProviderRow,
   FireworksProviderRow,
   LocalModelsProviderRow,
@@ -51,6 +52,7 @@ import {
 } from './providers'
 
 export {
+  AntigravityProviderRow,
   FeaturedProviderRow,
   FireworksProviderRow,
   KeyProviderRow,
@@ -622,9 +624,43 @@ export function Picker({ ctx }: { ctx: OnboardingContext }) {
     window.location.hash = '#/settings?tab=providers&pview=local'
   }
 
+  const connectAntigravity = async () => {
+    try {
+      await window.hermesDesktop?.routerSupervisor?.start()
+      const isAlive = await window.hermesDesktop?.routerSupervisor?.isAlive()
+      if (!isAlive) {
+        await window.hermesDesktop?.routerSupervisor?.openLogin()
+      }
+
+      const { saveCustomEndpoint, activateCustomEndpoint } = await import('@/hermes')
+      await saveCustomEndpoint({
+        id: 'antigravity',
+        name: 'Antigravity Pro (9Router)',
+        base_url: 'http://127.0.0.1:20128/v1',
+        model: 'ag-gemini',
+        api_key: 'sk-antigravity',
+        is_current: true
+      })
+      await activateCustomEndpoint('antigravity')
+
+      if (manual) {
+        closeManualOnboarding()
+      } else {
+        dismissFirstRunOnboarding()
+      }
+    } catch {
+      if (manual) {
+        closeManualOnboarding()
+      } else {
+        dismissFirstRunOnboarding()
+      }
+    }
+  }
+
   return (
     <div className="grid gap-2">
       <div className="grid max-h-[60dvh] gap-2 overflow-y-auto p-1">
+        <AntigravityProviderRow onClick={() => void connectAntigravity()} />
         {featured ? <FeaturedProviderRow onSelect={select} provider={featured} /> : null}
         {/* The no-account path: everything runs on this machine. Shipped
             behind the --local launch flag. (Fireworks moved into the

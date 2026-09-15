@@ -50,6 +50,11 @@ contextBridge.exposeInMainWorld('hermesDesktop', {
     return () => ipcRenderer.removeListener('hermes:browser-popout:closed', listener)
   },
   claimAmbientCue: key => ipcRenderer.invoke('hermes:ambient:claim', key),
+  routerSupervisor: {
+    isAlive: () => ipcRenderer.invoke('stella:router:is-alive'),
+    start: () => ipcRenderer.invoke('stella:router:start'),
+    openLogin: () => ipcRenderer.invoke('stella:router:open-login'),
+  },
   wakeIndicator: {
     getState: () => ipcRenderer.invoke('hermes:wake-indicator:get'),
     setState: state => ipcRenderer.send('hermes:wake-indicator:set', state),

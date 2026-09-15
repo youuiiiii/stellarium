@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { RowButton } from '@/components/ui/row-button'
 import { useI18n } from '@/i18n'
 import { Check, ChevronRight, Terminal } from '@/lib/icons'
+import { cn } from '@/lib/utils'
 import type { OAuthProvider } from '@/types/hermes'
 
 const PROVIDER_DISPLAY: Record<string, { order: number; title: string }> = {
@@ -118,6 +120,55 @@ export function LocalModelsProviderRow({ onClick }: { onClick: () => void }) {
 
   return (
     <KeyProviderRow onClick={onClick} pitch={t.onboarding.localModelsPitch} title={t.onboarding.localModelsTitle} />
+  )
+}
+
+/** Native Antigravity Pro (9Router) provider row */
+export function AntigravityProviderRow({ onClick }: { onClick: () => void }) {
+  const [alive, setAlive] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    void window.hermesDesktop?.routerSupervisor?.isAlive().then(res => {
+      if (!cancelled) setAlive(Boolean(res))
+    }).catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return (
+    <button
+      className="group relative flex w-full items-center justify-between gap-4 rounded-[8px] border border-primary/30 bg-primary/[0.08] px-3.5 py-3 text-left transition-all hover:border-primary/60 hover:bg-primary/[0.14] shadow-[0_0_16px_rgba(157,114,255,0.12)] cursor-pointer"
+      onClick={onClick}
+      type="button"
+    >
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#7c3aed] to-[#9d72ff] text-[11px] font-bold text-white shadow-[0_0_8px_rgba(157,114,255,0.5)]">
+            ✦
+          </span>
+          <span className="text-[length:var(--conversation-text-font-size)] font-bold text-foreground">
+            Antigravity Pro (9Router)
+          </span>
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-semibold tracking-wider uppercase',
+              alive
+                ? 'border border-emerald-500/30 bg-emerald-500/15 text-emerald-400'
+                : 'border border-purple-500/30 bg-purple-500/15 text-purple-300'
+            )}
+          >
+            <span className={cn('size-1.5 rounded-full', alive ? 'animate-pulse bg-emerald-400' : 'bg-purple-400')} />
+            {alive ? 'Ready (port 20128)' : '1-Click Connect'}
+          </span>
+        </div>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+          Local Antigravity runner on port 20128 — Claude 3.7 Sonnet & Gemini Pro.
+        </p>
+      </div>
+      <ChevronRight className="size-4 shrink-0 text-primary transition group-hover:translate-x-0.5" />
+    </button>
   )
 }
 

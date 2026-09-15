@@ -43,12 +43,12 @@ def get_hermes_home_override() -> str | None:
 
 
 def _get_platform_default_hermes_home() -> Path:
-    """Return the platform-native default Hermes home path."""
+    """Return the platform-native default Stella/Hermes home path."""
     if sys.platform == "win32":
         local_appdata = os.environ.get("LOCALAPPDATA", "").strip()
         base = Path(local_appdata) if local_appdata else Path.home() / "AppData" / "Local"
-        return base / "hermes"
-    return Path.home() / ".hermes"
+        return base / "stella"
+    return Path.home() / ".stella"
 
 
 def sudo_invoker_default_home() -> Path | None:
@@ -99,11 +99,11 @@ def _warn_profile_fallback_once() -> None:
 
 
 def get_hermes_home() -> Path:
-    """Hermes home: context-local override → ``HERMES_HOME`` env var → platform default."""
+    """Stella/Hermes home: context-local override → ``STELLA_HOME`` / ``HERMES_HOME`` env var → platform default."""
     override = get_hermes_home_override()
     if override:
         return Path(override)
-    if not os.environ.get("HERMES_HOME", "").strip():
+    if not (os.environ.get("STELLA_HOME", "").strip() or os.environ.get("HERMES_HOME", "").strip()):
         _warn_profile_fallback_once()
     return get_process_hermes_home()
 
@@ -153,7 +153,7 @@ def get_process_hermes_home() -> Path:
     For process-level assets (theme YAML, dashboard plugin manifests) that must stay visible while a
     request is scoped to another profile (e.g. embedded ``/chat`` under ``--open-profile``).
     """
-    val = os.environ.get("HERMES_HOME", "").strip()
+    val = os.environ.get("STELLA_HOME", "").strip() or os.environ.get("HERMES_HOME", "").strip()
     return Path(val) if val else _get_platform_default_hermes_home()
 
 

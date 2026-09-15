@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { runInTerminal } from '@/app/right-sidebar/store'
 import {
+  AntigravityProviderRow,
   FEATURED_ID,
   FeaturedProviderRow,
   FireworksProviderRow,
@@ -16,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { RowButton } from '@/components/ui/row-button'
 import { SearchField } from '@/components/ui/search-field'
-import { disconnectOAuthProvider, listOAuthProviders } from '@/hermes'
+import { activateCustomEndpoint, disconnectOAuthProvider, listOAuthProviders, saveCustomEndpoint } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { Check, ChevronDown, ChevronRight, KeyRound, Loader2, Terminal, Trash2 } from '@/lib/icons'
 import { normalize } from '@/lib/text'
@@ -170,6 +171,28 @@ function OAuthPicker({
   const collapsible = others.length > 0
   const showOthers = !collapsible || showAll
 
+  const connectAntigravity = async () => {
+    try {
+      await window.hermesDesktop?.routerSupervisor?.start()
+      const isAlive = await window.hermesDesktop?.routerSupervisor?.isAlive()
+      if (!isAlive) {
+        await window.hermesDesktop?.routerSupervisor?.openLogin()
+      }
+      await saveCustomEndpoint({
+        id: 'antigravity',
+        name: 'Antigravity Pro (9Router)',
+        base_url: 'http://127.0.0.1:20128/v1',
+        model: 'ag-gemini',
+        api_key: 'sk-antigravity',
+        is_current: true
+      })
+      await activateCustomEndpoint('antigravity')
+      notify({ kind: 'success', message: 'Connected to Antigravity Pro (9Router).' })
+    } catch (err) {
+      notifyError(err, 'Failed to connect to Antigravity Pro')
+    }
+  }
+
   return (
     <section className="mb-5 grid gap-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
@@ -187,6 +210,7 @@ function OAuthPicker({
       <p className="-mt-2 mb-1 text-[length:var(--conversation-caption-font-size)] leading-(--conversation-caption-line-height) text-(--ui-text-tertiary)">
         {p.intro}
       </p>
+      <AntigravityProviderRow onClick={() => void connectAntigravity()} />
       {featured && <FeaturedProviderRow onSelect={select} provider={featured} />}
       {/* Slot #2 — the no-account path, matching onboarding. Behind the
           --local launch flag like every local-models surface. */}

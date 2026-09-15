@@ -5,6 +5,7 @@
  * - Checks if port 20128 is already alive.
  * - If not, spawns 9Router headless in the background using local Node runtime.
  * - Cleanly stops the 9Router child and its process tree upon app exit.
+ * - Provides an in-app popup window for seamless Google / Antigravity authentication.
  */
 
 import { spawn, type ChildProcess } from 'node:child_process'
@@ -12,9 +13,11 @@ import http from 'node:http'
 import path from 'node:path'
 import fs from 'node:fs'
 import os from 'node:os'
+import { BrowserWindow, ipcMain } from 'electron'
 
 let routerProcess: ChildProcess | null = null
 let supervisorStarted = false
+let loginWindow: BrowserWindow | null = null
 
 /** Check if 9Router is currently listening on port 20128 */
 export function is9RouterAlive(port = 20128): Promise<boolean> {
@@ -43,7 +46,7 @@ export function is9RouterAlive(port = 20128): Promise<boolean> {
 /** Resolve potential paths for 9router cli.js and node runtime */
 function resolve9RouterBinary(): { nodePath: string; scriptPath: string } | null {
   const home = os.homedir()
-  
+
   // Search standard locations under AppData / ProgramFiles
   const candidateNodes = [
     process.execPath, // Electron's own node or packaged node
@@ -119,6 +122,38 @@ export async function ensure9RouterRunning(port = 20128): Promise<boolean> {
   }
 }
 
+/** Open an in-app modern popup window to connect Antigravity Pro without opening external browser */
+export function open9RouterLoginWindow(parentWindow?: BrowserWindow): Promise<boolean> {
+  return new Promise(resolve => {
+    if (loginWindow && !loginWindow.isDestroyed()) {
+      loginWindow.focus()
+      resolve(true)
+      return
+    }
+
+    loginWindow = new BrowserWindow({
+      width: 760,
+      height: 840,
+      title: '✦ Antigravity Pro (9Router)',
+      parent: parentWindow || undefined,
+      modal: Boolean(parentWindow),
+      autoHideMenuBar: true,
+      backgroundColor: '#09090f',
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    })
+
+    loginWindow.loadURL('http://127.0.0.1:20128/')
+
+    loginWindow.on('closed', () => {
+      loginWindow = null
+      resolve(true)
+    })
+  })
+}
+
 /** Terminate 9Router child process tree cleanly */
 export function shutdown9Router(): void {
   if (routerProcess && routerProcess.pid) {
@@ -139,11 +174,28 @@ export function shutdown9Router(): void {
   }
 }
 
+/** Register IPC handlers for renderer process */
+export function registerRouterIpc(): void {
+  ipcMain.handle('stella:router:is-alive', async () => {
+    return is9RouterAlive()
+  })
+
+  ipcMain.handle('stella:router:start', async () => {
+    return ensure9RouterRunning()
+  })
+
+  ipcMain.handle('stella:router:open-login', async event => {
+    const parent = BrowserWindow.fromWebContents(event.sender) ?? undefined
+    await ensure9RouterRunning()
+    return open9RouterLoginWindow(parent)
+  })
+}
+
 /** Initialize automatic supervisor lifecycle hooks */
 export function setup9RouterSupervisor(): void {
   if (supervisorStarted) return
   supervisorStarted = true
 
-  // Start check in background on app ready
+  registerRouterIpc()
   void ensure9RouterRunning()
 }

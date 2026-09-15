@@ -163,13 +163,68 @@ export function Intro({ personality, seed }: IntroProps) {
 
   return (
     <div
-      className="pointer-events-none flex w-full min-w-0 flex-col items-center justify-center px-0.5 py-6 text-center text-muted-foreground sm:px-6 lg:px-8"
+      className="flex w-full min-w-0 flex-col items-center justify-center px-4 py-8 text-center text-muted-foreground sm:px-6 lg:px-8 animate-in fade-in duration-300"
       data-slot="aui_intro"
     >
-      <div className="w-full min-w-0">
-        <Wordmark className="mb-1" text={WORDMARK} />
+      <div className="w-full max-w-xl mx-auto flex flex-col items-center">
+        {/* Modern Stellar Badge */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary mb-3 shadow-[0_0_20px_rgba(157,114,255,0.25)]">
+          <span>✦</span>
+          <span>STELLARIUM SOVEREIGN STUDIO</span>
+          <span>✦</span>
+        </div>
 
-        <p className="m-0 text-center leading-normal tracking-tight">{copy.body}</p>
+        {/* Hero Title */}
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-br from-white via-purple-100 to-purple-400 bg-clip-text text-transparent mb-2">
+          Autonomous AI Studio
+        </h1>
+
+        <p className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto leading-relaxed mb-8">
+          {copy.body}
+        </p>
+
+        {/* Modern Quick Starter Cards Grid */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span className="text-base p-1.5 rounded-lg bg-primary/10 text-primary">💻</span>
+              <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Coding Studio</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-normal">
+              Inspect code, debug errors, and run autonomous terminal builds.
+            </p>
+          </div>
+
+          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span className="text-base p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">🔍</span>
+              <span className="text-xs font-semibold text-foreground group-hover:text-emerald-400 transition-colors">Deep Research</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-normal">
+              Analyze long documents, crawl papers, and synthesize citations.
+            </p>
+          </div>
+
+          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span className="text-base p-1.5 rounded-lg bg-sky-500/10 text-sky-400">🎨</span>
+              <span className="text-xs font-semibold text-foreground group-hover:text-sky-400 transition-colors">Creative Sandbox</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-normal">
+              Brainstorm new concepts, design systems, and creative copy.
+            </p>
+          </div>
+
+          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span className="text-base p-1.5 rounded-lg bg-amber-500/10 text-amber-400">⚡</span>
+              <span className="text-xs font-semibold text-foreground group-hover:text-amber-400 transition-colors">Agent Forge</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-normal">
+              Customize personas, manage memory vaults, and switch active roles.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )

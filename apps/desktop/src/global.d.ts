@@ -89,8 +89,13 @@ declare global {
       // Claim a one-shot cross-window ambient cue (turn-end sound / spoken
       // reply). Resolves true for the first window to claim a key, false for
       // peers — so N open windows don't all fire the same cue.
-      claimAmbientCue: (key: string) => Promise<boolean>
-      wakeIndicator?: {
+      claimAmbientCue: (key: string) => Promise<{ ok: boolean }>
+      routerSupervisor?: {
+        isAlive: () => Promise<boolean>
+        start: () => Promise<boolean>
+        openLogin: () => Promise<boolean>
+      }
+      wakeIndicator: {
         getState: () => Promise<WakeIndicatorState>
         setState: (state: WakeIndicatorState) => void
         onState: (callback: (state: WakeIndicatorState) => void) => () => void

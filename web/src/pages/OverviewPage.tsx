@@ -39,7 +39,7 @@ function getDynamicGreeting(profileName?: string) {
   if (profileName && profileName !== "default" && profileName !== "all") {
     return `${timeStr}, ${profileName}`;
   }
-  return `${timeStr}, Master Ilunaa`;
+  return `${timeStr}, Explorer`;
 }
 
 function generateAreaPath(daily: AnalyticsDailyEntry[] = []): {

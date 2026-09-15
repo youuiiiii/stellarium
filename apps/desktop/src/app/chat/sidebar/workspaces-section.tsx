@@ -82,10 +82,10 @@ export function WorkspacesSection({ onRoomSelect, onNewSessionInWorkspace }: Wor
                   const roomButton = (
                     <button
                       className={cn(
-                        'group flex h-7 w-full items-center gap-2 rounded-md px-2 text-left text-[0.8125rem] font-medium transition-colors',
+                        'group flex h-7.5 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[0.8125rem] font-medium transition-all duration-150',
                         isActive
-                          ? 'border border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) text-foreground shadow-xs'
-                          : 'border border-transparent text-(--ui-text-secondary) hover:bg-(--ui-control-hover-background) hover:text-foreground'
+                          ? 'border border-primary/30 bg-primary/10 text-foreground font-semibold shadow-[0_0_12px_rgba(157,114,255,0.15)]'
+                          : 'border border-transparent text-(--ui-text-secondary) hover:bg-white/[0.04] hover:text-foreground'
                       )}
                       onClick={() => {
                         selectRoom(room)
@@ -99,7 +99,7 @@ export function WorkspacesSection({ onRoomSelect, onNewSessionInWorkspace }: Wor
                       <RoomIcon name={room.icon} />
                       <span className="min-w-0 flex-1 truncate">{room.name}</span>
                       {isActive && (
-                        <span className="size-1.5 shrink-0 rounded-full bg-(--ui-accent) shadow-[0_0_6px_var(--ui-accent)]" />
+                        <span className="size-1.5 shrink-0 rounded-full bg-primary shadow-[0_0_8px_#9d72ff]" />
                       )}
                     </button>
                   )

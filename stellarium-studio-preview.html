@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stellarium Sovereign Studio — Next-Gen AI Desktop OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #06060c;
+      --bg-surface: rgba(16, 14, 28, 0.75);
+      --bg-surface-elevated: rgba(26, 22, 44, 0.85);
+      --bg-card: rgba(22, 18, 38, 0.6);
+      --bg-card-hover: rgba(35, 29, 60, 0.8);
+      --bg-input: rgba(14, 12, 24, 0.85);
+      
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-medium: rgba(157, 114, 255, 0.2);
+      --border-accent: rgba(183, 148, 246, 0.5);
+      
+      --accent-primary: #9d72ff;
+      --accent-glow: rgba(157, 114, 255, 0.25);
+      --accent-secondary: #b794f6;
+      --accent-emerald: #10b981;
+      --accent-cyan: #38bdf8;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --text-dim: #475569;
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+      
+      --blur-glass: blur(16px);
+      --shadow-glass: 0 12px 32px rgba(0, 0, 0, 0.45);
+      --shadow-glow: 0 0 24px rgba(157, 114, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(ellipse at 15% 0%, rgba(88, 28, 135, 0.22) 0%, transparent 60%),
+        radial-gradient(ellipse at 85% 100%, rgba(59, 130, 246, 0.12) 0%, transparent 55%),
+        radial-gradient(circle at 50% 50%, rgba(157, 114, 255, 0.05) 0%, transparent 80%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Global Chrome */
+    .chrome-header {
+      height: 48px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(8, 8, 15, 0.85);
+      backdrop-filter: var(--blur-glass);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 50;
+      flex-shrink: 0;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #7c3aed, #9d72ff);
+      box-shadow: 0 0 12px rgba(157, 114, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      background: rgba(157, 114, 255, 0.15);
+      color: var(--accent-secondary);
+      border: 1px solid rgba(157, 114, 255, 0.3);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .search-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-width: 280px;
+      justify-content: space-between;
+    }
+    .search-trigger:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-medium);
+      color: var(--text-secondary);
+    }
+    .kbd {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+    }
+
+    .btn-header {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-header:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--border-medium);
+      color: #fff;
+    }
+    .btn-header.active {
+      background: rgba(157, 114, 255, 0.15);
+      border-color: var(--border-medium);
+      color: var(--accent-secondary);
+    }
+
+    /* Main Application Body (The 3-Zone Architecture) */
+    .app-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 1. Sovereign Suite Rail (Far Left) */
+    .suite-rail {
+      width: 60px;
+      background: rgba(8, 8, 16, 0.95);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 0;
+      gap: 16px;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .rail-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .rail-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .rail-btn.active {
+      color: var(--accent-secondary);
+      background: rgba(157, 114, 255, 0.15);
+      border-color: rgba(157, 114, 255, 0.3);
+      box-shadow: 0 0 16px rgba(157, 114, 255, 0.2);
+    }
+    .rail-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    .rail-btn .tooltip {
+      position: absolute;
+      left: 54px;
+      background: #181528;
+      border: 1px solid var(--border-medium);
+      color: #fff;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .rail-btn:hover .tooltip {
+      opacity: 1;
+    }
+
+    .rail-divider {
+      width: 28px;
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 4px 0;
+    }
+
+    /* 2. Workspace & Session Sidebar (Zone 1) */
+    .sidebar-subzone {
+      width: 260px;
+      background: rgba(11, 10, 20, 0.7);
+      backdrop-filter: var(--blur-glass);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      z-index: 15;
+    }
+
+    .sidebar-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .sidebar-agent-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      width: 100%;
+      transition: all 0.15s;
+    }
+    .sidebar-agent-pill:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--border-medium);
+    }
+    .agent-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .agent-info {
+      flex: 1;
+      text-align: left;
+    }
+    .agent-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .agent-role {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 0 8px 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .room-list, .session-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .room-item, .session-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .room-item:hover, .session-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+    }
+    .room-item.active, .session-item.active {
+      background: rgba(157, 114, 255, 0.14);
+      color: #fff;
+      border-color: rgba(157, 114, 255, 0.35);
+      font-weight: 500;
+    }
+    .room-item svg, .session-item svg {
+      width: 15px;
+      height: 15px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .room-item.active svg, .session-item.active svg {
+      color: var(--accent-secondary);
+    }
+
+    .sidebar-footer {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(10, 8, 18, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* 3. The Canvas Workspace (Zone 2 - Center) */
+    .canvas-zone {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .canvas-header {
+      height: 52px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 8, 20, 0.4);
+      backdrop-filter: var(--blur-glass);
+      flex-shrink: 0;
+    }
+
+    .header-context {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .current-room-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .current-room-topic {
+      font-size: 12px;
+      color: var(--text-muted);
+      border-left: 1px solid var(--border-subtle);
+      padding-left: 12px;
+    }
+
+    .model-selector-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: rgba(157, 114, 255, 0.08);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      color: var(--accent-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .model-selector-pill:hover {
+      background: rgba(157, 114, 255, 0.16);
+      border-color: var(--accent-secondary);
+    }
+
+    /* Multi-Suite View Containers */
+    .suite-view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .suite-view.active {
+      display: flex;
+    }
+
+    /* A. Chat View */
+    .chat-stream {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 16px;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .avatar-stella {
+      background: linear-gradient(135deg, #7c3aed, #9d72ff);
+    }
+    .avatar-user {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    }
+
+    .message-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .message-sender {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .message-bubble {
+      background: var(--bg-card);
+      backdrop-filter: var(--blur-glass);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px var(--radius-lg) var(--radius-lg) var(--radius-lg);
+      padding: 14px 18px;
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.6;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .message-row.user-msg .message-bubble {
+      background: rgba(157, 114, 255, 0.12);
+      border-color: rgba(157, 114, 255, 0.3);
+      border-radius: var(--radius-lg) 4px var(--radius-lg) var(--radius-lg);
+    }
+
+    .code-card {
+      background: rgba(8, 7, 15, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin: 10px 0;
+      overflow: hidden;
+      font-family: var(--font-mono);
+    }
+    .code-header {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .code-content {
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-x: auto;
+      color: #e2e8f0;
+    }
+
+    /* Floating Composer Capsule */
+    .composer-wrapper {
+      padding: 16px 32px 24px 32px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .composer-capsule {
+      background: var(--bg-surface-elevated);
+      backdrop-filter: var(--blur-glass);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      padding: 12px 18px;
+      box-shadow: var(--shadow-glass), var(--shadow-glow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s;
+    }
+    .composer-capsule:focus-within {
+      border-color: var(--accent-primary);
+    }
+
+    .composer-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      width: 100%;
+      resize: none;
+      min-height: 44px;
+      max-height: 160px;
+    }
+    .composer-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .composer-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 8px;
+    }
+
+    .toolbar-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tool-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .tool-icon-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, #7c3aed, #9d72ff);
+      color: #fff;
+      border: none;
+      padding: 7px 18px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+      box-shadow: 0 0 14px rgba(157, 114, 255, 0.4);
+    }
+    .btn-send:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    /* B. Suite Canvas: Agent Forge */
+    .forge-grid {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .agent-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-medium);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glass);
+    }
+    .agent-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .agent-card-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f46e5, #9333ea);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .agent-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .agent-card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .agent-card-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .meta-chip {
+      font-size: 11px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    /* C. Suite Canvas: Kanban Board */
+    .kanban-board {
+      flex: 1;
+      display: flex;
+      gap: 16px;
+      padding: 20px 24px;
+      overflow-x: auto;
+    }
+    .kanban-col {
+      width: 300px;
+      background: rgba(14, 12, 26, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      max-height: 100%;
+    }
+    .col-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .col-count {
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+    }
+    .col-tasks {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      cursor: grab;
+      transition: all 0.15s;
+    }
+    .task-card:hover {
+      border-color: var(--border-medium);
+      background: var(--bg-card-hover);
+    }
+    .task-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .task-assignee {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* 4. Right Inspector Dock (Zone 3 - Collapsible) */
+    .inspector-dock {
+      width: 360px;
+      background: rgba(10, 9, 18, 0.85);
+      backdrop-filter: var(--blur-glass);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 15;
+    }
+    .inspector-dock.collapsed {
+      width: 0;
+      border-left-color: transparent;
+    }
+
+    .dock-nav {
+      display: flex;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(8, 7, 16, 0.6);
+    }
+    .dock-tab {
+      flex: 1;
+      padding: 12px 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .dock-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .dock-tab.active {
+      color: var(--accent-secondary);
+      border-bottom-color: var(--accent-primary);
+      background: rgba(157, 114, 255, 0.06);
+    }
+
+    .dock-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: none;
+    }
+    .dock-content.active {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Terminal Console */
+    .terminal-window {
+      background: #040408;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-mono);
+      overflow: hidden;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+    }
+    .terminal-logs {
+      flex: 1;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #94a3b8;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .terminal-prompt-bar {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 12px;
+      gap: 8px;
+    }
+    .terminal-prompt-sym {
+      color: var(--accent-primary);
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .terminal-cmd-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      flex: 1;
+    }
+
+    /* Command Palette Modal (Ctrl + K) */
+    .palette-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 120px;
+      z-index: 100;
+    }
+    .palette-backdrop.open {
+      display: flex;
+    }
+    .palette-modal {
+      width: 580px;
+      background: #100e1f;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-glass), 0 0 32px rgba(157, 114, 255, 0.25);
+      overflow: hidden;
+      animation: modalPop 0.15s ease-out;
+    }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .palette-input-wrap {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .palette-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      width: 100%;
+    }
+    .palette-results {
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .palette-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .palette-item:hover, .palette-item.selected {
+      background: rgba(157, 114, 255, 0.15);
+      color: #fff;
+    }
+
+    /* Scrollbar Polish */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Global Chrome Header -->
+  <header class="chrome-header">
+    <div class="brand-cluster">
+      <div class="brand-logo">✦</div>
+      <div class="brand-title">
+        STELLARIUM
+        <span class="brand-badge">Sovereign Studio</span>
+      </div>
+    </div>
+
+    <div class="search-trigger" onclick="togglePalette(true)">
+      <span style="display: flex; align-items: center; gap: 8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        Search agents, workspaces, skills, or commands...
+      </span>
+      <span class="kbd">Ctrl K</span>
+    </div>
+
+    <div class="header-actions">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>Gateway Online</span>
+      </div>
+      <button class="btn-header" onclick="toggleDock()" id="dockToggleBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg>
+        <span>Dock</span>
+        <span class="kbd">Ctrl B</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Application Body: 3-Zone Architecture -->
+  <div class="app-body">
+
+    <!-- SUITE RAIL: Core Suites (Far Left) -->
+    <nav class="suite-rail">
+      <button class="rail-btn active" onclick="switchSuite('studio', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="tooltip">Studio & Workspaces</span>
+      </button>
+
+      <button class="rail-btn" onclick="switchSuite('agents', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="tooltip">Agent Forge</span>
+      </button>
+
+      <button class="rail-btn" onclick="switchSuite('skills', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="tooltip">Skills & Tools Hub</span>
+      </button>
+
+      <button class="rail-btn" onclick="switchSuite('kanban', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg>
+        <span class="tooltip">Multi-Agent Kanban</span>
+      </button>
+
+      <button class="rail-btn" onclick="switchSuite('cron', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="tooltip">Scheduled Automations</span>
+      </button>
+
+      <div class="rail-divider"></div>
+
+      <button class="rail-btn" onclick="togglePalette(true)" style="margin-top: auto;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="tooltip">Settings & Engine</span>
+      </button>
+    </nav>
+
+    <!-- ZONE 1: Workspaces & Sessions Sidebar -->
+    <aside class="sidebar-subzone" id="sidebarSubzone">
+      <div class="sidebar-header">
+        <div class="sidebar-agent-pill" onclick="cycleAgent()">
+          <div class="agent-avatar" id="currentAgentAvatar">🌟</div>
+          <div class="agent-info">
+            <div class="agent-name" id="currentAgentName">Stella</div>
+            <div class="agent-role" id="currentAgentRole">Default Autonomous Agent</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- Workspaces Section -->
+        <div>
+          <div class="section-title">
+            <span>Workspaces</span>
+            <span style="font-size: 14px; cursor: pointer;">+</span>
+          </div>
+          <div class="room-list">
+            <div class="room-item active" onclick="selectRoom('general-chat', 'General daily questions, brainstorming, and assistance', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+              <span>general-chat</span>
+            </div>
+            <div class="room-item" onclick="selectRoom('coding-studio', 'Software engineering, debugging, code review, and CLI tasks', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+              <span>coding-studio</span>
+            </div>
+            <div class="room-item" onclick="selectRoom('research-notes', 'Literature analysis, document drafting, and web research', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+              <span>research-notes</span>
+            </div>
+            <div class="room-item" onclick="selectRoom('creative-sandbox', 'Brainstorming, ideation, design, and creative workflows', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+              <span>creative-sandbox</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Sessions Section -->
+        <div>
+          <div class="section-title">
+            <span>Recent Sessions</span>
+            <span style="font-size: 11px; color: var(--accent-secondary); cursor: pointer;" onclick="createNewSession()">New Chat</span>
+          </div>
+          <div class="session-list" id="sessionList">
+            <div class="session-item active" onclick="selectSession('Refactor architecture and clean distribution', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Refactor architecture and cl...</span>
+            </div>
+            <div class="session-item" onclick="selectSession('Analyze API latency & tokens', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Analyze API latency & toke...</span>
+            </div>
+            <div class="session-item" onclick="selectSession('Design 3-Zone Studio canvas', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Design 3-Zone Studio can...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div style="font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between;">
+          <span>Stellarium v0.17.2</span>
+          <span style="color: var(--accent-emerald);">● Online</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ZONE 2: The Canvas Workspace (Center) -->
+    <main class="canvas-zone">
+      <!-- Canvas Header -->
+      <div class="canvas-header">
+        <div class="header-context">
+          <div class="current-room-name" id="roomTitleDisplay">
+            <span>#</span>
+            <span id="roomNameText">general-chat</span>
+          </div>
+          <div class="current-room-topic" id="roomTopicText">
+            General daily questions, brainstorming, and assistance
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="model-selector-pill" onclick="togglePalette(true)">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent-secondary);"></span>
+            <span id="activeModelLabel">ag/gemini-3.8-flash-high</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUITE VIEW 1: Chat Canvas -->
+      <div class="suite-view active" id="view-studio">
+        <div class="chat-stream" id="chatStream">
+          <!-- Assistant Welcome Msg -->
+          <div class="message-row">
+            <div class="message-avatar avatar-stella">✦</div>
+            <div class="message-body">
+              <div class="message-sender">
+                <span>Stella</span>
+                <span>• Just now</span>
+              </div>
+              <div class="message-bubble">
+                Selamat datang di <strong>Stellarium Sovereign Studio</strong>! 🌌✨<br><br>
+                Seluruh arsitektur telah dirombak penuh ke standar multi-zona modern. Anda dapat mengetikkan perintah di bawah, memilih model AI favorit, atau membuka <strong>Inspector Dock</strong> di sebelah kanan untuk melihat terminal interaktif, artifact preview, dan telemetri hardware secara langsung.
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Demonstration -->
+          <div class="message-row">
+            <div class="message-avatar avatar-stella">✦</div>
+            <div class="message-body">
+              <div class="message-sender">
+                <span>Stella</span>
+                <span>• Code Assistant</span>
+              </div>
+              <div class="message-bubble">
+                Berikut contoh skrip verifikasi koneksi mesin yang bersih dan mandiri:
+                <div class="code-card">
+                  <div class="code-header">
+                    <span>python • check_status.py</span>
+                    <span style="cursor: pointer;" onclick="copyCode(this)">Copy Code</span>
+                  </div>
+                  <pre class="code-content">import os
+from hermes_cli.connect import print_connect_status
+
+if __name__ == "__main__":
+    print("✦ Running Stellarium Connectivity Audit...")
+    print_connect_status()</pre>
+                </div>
+                Bagaimana menurut Anda? Semua fitur siap dieksekusi langsung!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Composer Capsule -->
+        <div class="composer-wrapper">
+          <div class="composer-capsule">
+            <textarea class="composer-input" id="chatInput" placeholder="Tanyakan apa saja, jalankan tugas koding, atau seret file ke sini..." rows="1" onkeydown="handleInputKey(event)"></textarea>
+            <div class="composer-toolbar">
+              <div class="toolbar-tools">
+                <button class="tool-icon-btn" title="Attach file or drop folder">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </button>
+                <button class="tool-icon-btn" title="Toggle web search tool">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                </button>
+                <button class="tool-icon-btn" title="Voice Input">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                </button>
+              </div>
+              <button class="btn-send" onclick="sendMessage()">
+                <span>Kirim</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUITE VIEW 2: Agent Forge -->
+      <div class="suite-view" id="view-agents">
+        <div style="padding: 24px 32px 0 32px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #fff;">✦ Agent Forge</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Kelola dan buat karakter asisten otonom dengan isolasi data dan persona mandiri.</p>
+          </div>
+          <button class="btn-send" onclick="alert('Membuka dialog pembuatan agen baru...')">+ Create New Agent</button>
+        </div>
+        <div class="forge-grid">
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-card-avatar" style="background: linear-gradient(135deg, #7c3aed, #9d72ff);">🌟</div>
+              <div>
+                <div class="agent-card-title">Stella</div>
+                <div class="meta-chip" style="margin-top: 4px;">Default Persona</div>
+              </div>
+            </div>
+            <div class="agent-card-desc">Asisten cerdas bintang serbaguna untuk produktivitas harian, riset mendalam, dan bimbingan alur kerja.</div>
+            <div class="agent-card-meta">
+              <span class="meta-chip">Multi-Modal</span>
+              <span class="meta-chip">General Work</span>
+              <span class="meta-chip" style="color: var(--accent-emerald);">● Active</span>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-card-avatar" style="background: linear-gradient(135deg, #0284c7, #38bdf8);">💻</div>
+              <div>
+                <div class="agent-card-title">CodeMaster</div>
+                <div class="meta-chip" style="margin-top: 4px;">Dev Specialist</div>
+              </div>
+            </div>
+            <div class="agent-card-desc">Fokus pada rekayasa perangkat lunak ketat, unit testing, refactoring, dan eksekusi terminal otonom.</div>
+            <div class="agent-card-meta">
+              <span class="meta-chip">Terminal Access</span>
+              <span class="meta-chip">Git Power</span>
+              <span class="meta-chip">Python/TS</span>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-card-avatar" style="background: linear-gradient(135deg, #059669, #10b981);">📚</div>
+              <div>
+                <div class="agent-card-title">Scholar & Research</div>
+                <div class="meta-chip" style="margin-top: 4px;">Research Tutor</div>
+              </div>
+            </div>
+            <div class="agent-card-desc">Dikhususkan untuk sintesis literatur ilmiah, ekstraksi jurnal, sitasi akademik, dan penulisan terstruktur.</div>
+            <div class="agent-card-meta">
+              <span class="meta-chip">ArXiv / Crossref</span>
+              <span class="meta-chip">Doc Synthesis</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUITE VIEW 3: Skills & Tools Hub -->
+      <div class="suite-view" id="view-skills">
+        <div style="padding: 24px 32px; overflow-y: auto; flex: 1;">
+          <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 20px; font-weight: 700; color: #fff;">✦ Skills & Tools Ecosystem</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Kemampuan prosedural on-demand yang aktif hanya saat dibutuhkan tanpa membebani memori utama.</p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+            <div class="task-card">
+              <div style="font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px;">🌐 Web Search & Extract</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Pencarian web langsung dan ekstraksi konten artikel bebas paywall.</div>
+              <span class="brand-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">Active Toolset</span>
+            </div>
+            <div class="task-card">
+              <div style="font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px;">💻 Terminal & Shell Execution</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Menjalankan kompilasi kode, skrip bash/powershell, dan manajemen git.</div>
+              <span class="brand-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">Active Toolset</span>
+            </div>
+            <div class="task-card">
+              <div style="font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px;">⏰ Cronjob Scheduler</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Otomatisasi terjadwal berkala untuk rekapitulasi data dan briefing.</div>
+              <span class="brand-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">Active Toolset</span>
+            </div>
+            <div class="task-card">
+              <div style="font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px;">🔌 MCP Client Protocol</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Konektor server Model Context Protocol untuk integrasi database & tools eksternal.</div>
+              <span class="brand-badge" style="background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan);">Ready</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUITE VIEW 4: Multi-Agent Kanban -->
+      <div class="suite-view" id="view-kanban">
+        <div style="padding: 20px 24px 0 24px;">
+          <h2 style="font-size: 18px; font-weight: 700; color: #fff;">✦ Multi-Agent Collaboration Board</h2>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Papan tugas tersinkronisasi untuk pembagian tugas antar sub-agen secara otonom.</p>
+        </div>
+        <div class="kanban-board">
+          <div class="kanban-col">
+            <div class="col-header">
+              <span>Backlog / To Do</span>
+              <span class="col-count">2</span>
+            </div>
+            <div class="col-tasks">
+              <div class="task-card">
+                <div class="task-title">Build cross-platform release installer for Windows & Linux</div>
+                <div class="task-assignee">👤 Assignee: CodeMaster</div>
+              </div>
+              <div class="task-card">
+                <div class="task-title">Generate API documentation for MCP server connection</div>
+                <div class="task-assignee">👤 Assignee: Scholar</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="kanban-col">
+            <div class="col-header">
+              <span>In Progress</span>
+              <span class="col-count">1</span>
+            </div>
+            <div class="col-tasks">
+              <div class="task-card" style="border-color: rgba(157, 114, 255, 0.4);">
+                <div class="task-title">Overhaul Desktop 3-Zone Architecture & Visual Glassmorphism</div>
+                <div class="task-assignee">👤 Assignee: Stella</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="kanban-col">
+            <div class="col-header">
+              <span>Completed</span>
+              <span class="col-count">3</span>
+            </div>
+            <div class="col-tasks">
+              <div class="task-card" style="opacity: 0.85;">
+                <div class="task-title">Sanitize public workspaces & client IDs</div>
+                <div class="task-assignee" style="color: var(--accent-emerald);">✓ Verified 100%</div>
+              </div>
+              <div class="task-card" style="opacity: 0.85;">
+                <div class="task-title">Merge 689 upstream commits from NousResearch</div>
+                <div class="task-assignee" style="color: var(--accent-emerald);">✓ Verified 100%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUITE VIEW 5: Automations / Cron -->
+      <div class="suite-view" id="view-cron">
+        <div style="padding: 24px 32px; overflow-y: auto; flex: 1;">
+          <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 20px; font-weight: 700; color: #fff;">✦ Scheduled Autonomous Tasks</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Pekerjaan latar belakang yang dieksekusi mesin tanpa intervensi manual.</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="task-card" style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: #fff;">System Health & Background Process Watchdog</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Interval: Every 15 minutes • Auto-detect zombie processes and RAM spikes</div>
+              </div>
+              <span class="status-pill"><span class="status-dot"></span> Active</span>
+            </div>
+            <div class="task-card" style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: #fff;">Workspace Git State Synchronization</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Interval: On idle • Auto-stage clean artifacts and backup logs</div>
+              </div>
+              <span class="status-pill"><span class="status-dot"></span> Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ZONE 3: Inspector & Widget Dock (Far Right - Collapsible) -->
+    <aside class="inspector-dock" id="inspectorDock">
+      <div class="dock-nav">
+        <button class="dock-tab active" onclick="switchDockTab('terminal', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+          Terminal
+        </button>
+        <button class="dock-tab" onclick="switchDockTab('vitals', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Vitals
+        </button>
+        <button class="dock-tab" onclick="switchDockTab('artifacts', this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          Artifacts
+        </button>
+      </div>
+
+      <!-- Tab Content: Terminal Console -->
+      <div class="dock-content active" id="dock-terminal">
+        <div class="terminal-window">
+          <div class="terminal-logs" id="termLogs">✦ Stellarium Interactive Terminal Console v0.17.2
+Type 'help', 'status', 'agents', or 'clear' to execute.
+
+[stella-engine]: Gateway ready on 127.0.0.1:20128
+[stella-engine]: Active agent context: Stella (Universal)</div>
+          <div class="terminal-prompt-bar">
+            <span class="terminal-prompt-sym">❯</span>
+            <input type="text" class="terminal-cmd-input" id="termInput" placeholder="Type a command..." onkeydown="handleTermKey(event)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: System Vitals -->
+      <div class="dock-content" id="dock-vitals">
+        <div class="task-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 13px; font-weight: 600; color: #fff;">RAM Usage (Physical)</span>
+            <span style="font-size: 12px; color: var(--accent-emerald); font-family: var(--font-mono);">6.2 GB / 15.8 GB</span>
+          </div>
+          <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+            <div style="width: 39%; height: 100%; background: var(--accent-emerald);"></div>
+          </div>
+        </div>
+
+        <div class="task-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 13px; font-weight: 600; color: #fff;">Core Supervisor (9Router)</span>
+            <span style="font-size: 12px; color: var(--accent-secondary); font-family: var(--font-mono);">Port 20128</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+            Daemon background supervisor berjalan normal. Tidak ada proses zombie yang terdeteksi.
+          </div>
+        </div>
+
+        <div class="task-card">
+          <div style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 6px;">Git Upstream Status</div>
+          <div style="font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono);">
+            origin/main: In-sync<br>
+            upstream/main: 689 merged
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Artifacts Preview -->
+      <div class="dock-content" id="dock-artifacts">
+        <div class="task-card">
+          <div style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px;">Live Preview: Card Component</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Rendered DOM result from assistant code generation</div>
+          <div style="background: rgba(157, 114, 255, 0.1); border: 1px solid var(--border-medium); border-radius: 12px; padding: 16px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 8px;">🌌</div>
+            <div style="font-weight: 600; font-size: 14px; color: #fff;">Stellarium Dynamic UI</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Components render in real-time right beside chat.</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Command Palette Modal (Ctrl + K) -->
+  <div class="palette-backdrop" id="paletteModal" onclick="if(event.target === this) togglePalette(false)">
+    <div class="palette-modal">
+      <div class="palette-input-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        <input type="text" class="palette-input" id="paletteInput" placeholder="Type a command or search..." onkeydown="if(event.key==='Escape') togglePalette(false)">
+        <span class="kbd">ESC</span>
+      </div>
+      <div class="palette-results">
+        <div class="palette-item selected" onclick="switchSuite('studio'); togglePalette(false);">
+          <span>✦ Switch to Studio Canvas</span>
+          <span class="kbd">Enter</span>
+        </div>
+        <div class="palette-item" onclick="switchSuite('agents'); togglePalette(false);">
+          <span>🤖 Open Agent Forge (Manage Personas)</span>
+          <span class="kbd">Enter</span>
+        </div>
+        <div class="palette-item" onclick="switchSuite('kanban'); togglePalette(false);">
+          <span>📋 Open Multi-Agent Kanban Board</span>
+          <span class="kbd">Enter</span>
+        </div>
+        <div class="palette-item" onclick="switchSuite('skills'); togglePalette(false);">
+          <span>⚡ Browse Skills & Capabilities</span>
+          <span class="kbd">Enter</span>
+        </div>
+        <div class="palette-item" onclick="toggleDock(); togglePalette(false);">
+          <span>🎛️ Toggle Inspector Dock</span>
+          <span class="kbd">Ctrl B</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Suite Switching Logic
+    function switchSuite(suiteId, btnElement) {
+      document.querySelectorAll('.suite-view').forEach(v => v.classList.remove('active'));
+      const target = document.getElementById('view-' + suiteId);
+      if (target) target.classList.add('active');
+
+      if (btnElement) {
+        document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
+
+      // Hide or show sidebar subzone depending on suite
+      const sidebar = document.getElementById('sidebarSubzone');
+      if (suiteId === 'kanban' || suiteId === 'cron' || suiteId === 'agents') {
+        sidebar.style.width = '0px';
+      } else {
+        sidebar.style.width = '260px';
+      }
+    }
+
+    // Room Selection
+    function selectRoom(name, topic, el) {
+      document.querySelectorAll('.room-item').forEach(r => r.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('roomNameText').innerText = name;
+      document.getElementById('roomTopicText').innerText = topic;
+    }
+
+    // Session Selection
+    function selectSession(title, el) {
+      document.querySelectorAll('.session-item').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function createNewSession() {
+      const list = document.getElementById('sessionList');
+      const item = document.createElement('div');
+      item.className = 'session-item active';
+      item.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">New Session...</span>
+      `;
+      document.querySelectorAll('.session-item').forEach(s => s.classList.remove('active'));
+      list.prepend(item);
+    }
+
+    // Agent Rotation Cycle
+    const agents = [
+      { name: "Stella", role: "Default Autonomous Agent", avatar: "🌟" },
+      { name: "CodeMaster", role: "Software & Shell Specialist", avatar: "💻" },
+      { name: "Scholar", role: "Research & Literature", avatar: "📚" }
+    ];
+    let agentIdx = 0;
+    function cycleAgent() {
+      agentIdx = (agentIdx + 1) % agents.length;
+      document.getElementById('currentAgentName').innerText = agents[agentIdx].name;
+      document.getElementById('currentAgentRole').innerText = agents[agentIdx].role;
+      document.getElementById('currentAgentAvatar').innerText = agents[agentIdx].avatar;
+    }
+
+    // Dock Toggling & Tabs
+    function toggleDock() {
+      const dock = document.getElementById('inspectorDock');
+      const btn = document.getElementById('dockToggleBtn');
+      dock.classList.toggle('collapsed');
+      btn.classList.toggle('active', !dock.classList.contains('collapsed'));
+    }
+
+    function switchDockTab(tabId, btn) {
+      document.querySelectorAll('.dock-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.dock-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      const target = document.getElementById('dock-' + tabId);
+      if (target) target.classList.add('active');
+    }
+
+    // Command Palette
+    function togglePalette(open) {
+      const modal = document.getElementById('paletteModal');
+      modal.classList.toggle('open', open);
+      if (open) {
+        setTimeout(() => document.getElementById('paletteInput').focus(), 50);
+      }
+    }
+
+    // Global Keybinds (Ctrl+K, Ctrl+B)
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        togglePalette(true);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleDock();
+      }
+    });
+
+    // Chat Execution
+    function handleInputKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const stream = document.getElementById('chatStream');
+      
+      // User Message
+      const userRow = document.createElement('div');
+      userRow.className = 'message-row user-msg';
+      userRow.innerHTML = `
+        <div class="message-body">
+          <div class="message-sender" style="justify-content: flex-end;">
+            <span>You</span>
+            <span>• Just now</span>
+          </div>
+          <div class="message-bubble">${escapeHtml(text)}</div>
+        </div>
+        <div class="message-avatar avatar-user">U</div>
+      `;
+      stream.appendChild(userRow);
+      input.value = '';
+
+      // Auto Assistant Response
+      setTimeout(() => {
+        const stellaRow = document.createElement('div');
+        stellaRow.className = 'message-row';
+        stellaRow.innerHTML = `
+          <div class="message-avatar avatar-stella">✦</div>
+          <div class="message-body">
+            <div class="message-sender">
+              <span>Stella</span>
+              <span>• Just now</span>
+            </div>
+            <div class="message-bubble">
+              Dipahami! Tugas <em>"${escapeHtml(text)}"</em> sedang dianalisis oleh modul kognitif Stellarium Studio. Anda dapat membuka <strong>Terminal</strong> di dock kanan untuk melihat eksekusi subagen secara real-time.
+            </div>
+          </div>
+        `;
+        stream.appendChild(stellaRow);
+        stream.scrollTop = stream.scrollHeight;
+      }, 500);
+
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function copyCode(btn) {
+      btn.innerText = 'Copied!';
+      setTimeout(() => btn.innerText = 'Copy Code', 1500);
+    }
+
+    // Terminal Emulator
+    function handleTermKey(e) {
+      if (e.key === 'Enter') {
+        const input = document.getElementById('termInput');
+        const cmd = input.value.trim();
+        const logs = document.getElementById('termLogs');
+        if (!cmd) return;
+
+        logs.innerText += `\n❯ ${cmd}`;
+        input.value = '';
+
+        if (cmd === 'clear') {
+          logs.innerText = '✦ Stellarium Terminal (Cleared)\n';
+        } else if (cmd === 'help') {
+          logs.innerText += `\nAvailable commands: status, agents, skills, clear, version, whoami`;
+        } else if (cmd === 'status') {
+          logs.innerText += `\n[OK] Gateway: 127.0.0.1:20128\n[OK] Active Model: ag/gemini-3.8-flash-high\n[OK] Engine: Stellarium Core v0.17.2`;
+        } else if (cmd === 'agents') {
+          logs.innerText += `\nActive Agents: Stella (Default), CodeMaster (Specialist), Scholar (Research)`;
+        } else {
+          logs.innerText += `\nExecuted '${cmd}' successfully (exit 0)`;
+        }
+        logs.scrollTop = logs.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
