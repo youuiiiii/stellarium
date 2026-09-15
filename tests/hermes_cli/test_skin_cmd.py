@@ -113,7 +113,12 @@ def test_set_preserves_a_symlinked_skin_file():
         'name: oasis\ncolors:\n  background: "#08201f"\n', encoding="utf-8"
     )
     link = _skins() / "oasis.yaml"
-    link.symlink_to(real)
+    try:
+        link.symlink_to(real)
+    except OSError as exc:
+        if os.name == "nt" and getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink privilege is unavailable")
+        raise
     _activate("oasis")
 
     assert skin_cmd._skin_set("ui_tool", "#00FFFF", None) == 0

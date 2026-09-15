@@ -61,8 +61,8 @@ _HERMES_BRANDING: Dict[str, str] = _branding(
 
 _STELLA_BRANDING: Dict[str, str] = {
     "agent_name": "Stella Agent",
-    "welcome": "Welcome to Stellarium, Master Ilunaa! ✦ Type your message or /help for commands.",
-    "goodbye": "Farewell, Master! May the stars guide you. ✦",
+    "welcome": "Welcome to Stellarium! ✦ Type your message or /help for commands.",
+    "goodbye": "Farewell! May the stars guide you. ✦",
     "response_label": " ✦ Stella ",
     "prompt_symbol": "✦",
     "help_header": "(✦) Available Stellarium Commands"
@@ -115,7 +115,7 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
             "thinking_verbs": [
                 "aligning constellations", "tuning frequencies", "scanning stellar data",
                 "channeling energy", "weaving starlight", "consulting the stars",
-                "harmonizing models", "serving Master Ilunaa"
+                "harmonizing models", "supporting your workflow"
             ],
             "wings": _wings("✦", "✧", ("⟪", "⟫"), "⋆")
         },

@@ -65,7 +65,7 @@ async function stampExeIdentity(exe, desktopRoot = resolve(import.meta.dirname, 
       ProductName: 'Stella',
       FileDescription: 'Stella Desktop',
       CompanyName: 'Project Stella',
-      LegalCopyright: 'Copyright (c) 2026 Master Ilunaa & Project Stella'
+      LegalCopyright: 'Copyright (c) 2026 Project Stella Contributors'
     }
   })
 
