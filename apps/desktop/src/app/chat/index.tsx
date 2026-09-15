@@ -161,14 +161,23 @@ function ChatHeader({
   }
 
   return (
-    <header className={cn(titlebarHeaderBaseClass, isRoutedSessionView && titlebarHeaderShadowClass)}>
+    <header className={cn(titlebarHeaderBaseClass, isRoutedSessionView && titlebarHeaderShadowClass, 'border-b border-white/[0.06] bg-[#08080f]/80 backdrop-blur-xl')}>
       <div
-        className={cn(titlebarHeaderTitleClass, showProfileTag && 'flex items-center')}
+        className={cn(titlebarHeaderTitleClass, 'flex items-center')}
         style={{
           maxWidth:
             'calc(100vw - var(--titlebar-content-inset,0px) - var(--titlebar-tools-right) - var(--titlebar-tools-width) - 1.5rem)'
         }}
       >
+        <div className="flex items-center gap-2 mr-2 shrink-0 pointer-events-auto">
+          <div className="flex items-center justify-center size-5 rounded-md bg-gradient-to-br from-purple-600 to-primary text-[10px] text-white font-bold shadow-[0_0_8px_rgba(157,114,255,0.4)]">
+            ✦
+          </div>
+          <span className="text-[11px] font-bold tracking-wider text-foreground">
+            STELLARIUM <span className="text-primary font-normal text-[9px] px-1 py-0.5 rounded bg-primary/10 border border-primary/20">STUDIO</span>
+          </span>
+          <span className="text-white/20 mx-1">/</span>
+        </div>
         {showProfileTag && <ProfileTag className="pointer-events-auto mr-1.5" profile={activeStoredSession?.profile} />}
         <SessionActionsMenu
           align="start"

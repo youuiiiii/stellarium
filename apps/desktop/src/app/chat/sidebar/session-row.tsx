@@ -357,7 +357,7 @@ function SidebarSessionRowImpl({
           // metadata / preview lines below need the extra rows (#68119).
           !card && density !== 'compact' && 'min-h-[2.75rem]',
           !card && density === 'detailed' && 'min-h-[3.875rem]',
-          isSelected && 'bg-(--ui-row-active-background)',
+          isSelected && 'bg-primary/10 border border-primary/25 text-foreground font-medium shadow-[0_0_12px_rgba(157,114,255,0.12)]',
           // Open in another pane: the SAME band, just weaker. Its own mixed
           // token rather than row opacity — dimming the whole row would take
           // the title and the status dot down with it.
