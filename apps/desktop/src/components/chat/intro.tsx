@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useStore } from '@nanostores/react'
 
 import { capitalize, normalize } from '@/lib/text'
+import { $activeMascotId, $customMascotData, resolveMascotSrc } from '@/store/mascot'
 
 import introCopyJsonl from './intro-copy.jsonl?raw'
 import { Wordmark } from './wordmark'
@@ -160,6 +162,9 @@ function resolveCopy(personality?: string, seed?: number): IntroCopy {
 export function Intro({ personality, seed }: IntroProps) {
   const [mountSeed] = useState(() => Math.floor(Math.random() * 100000))
   const copy = resolveCopy(personality, mountSeed + (seed ?? 0))
+  const activeMascot = useStore($activeMascotId)
+  const customMascot = useStore($customMascotData)
+  const mascotSrc = resolveMascotSrc(activeMascot, customMascot)
 
   return (
     <div
@@ -167,6 +172,22 @@ export function Intro({ personality, seed }: IntroProps) {
       data-slot="aui_intro"
     >
       <div className="w-full max-w-xl mx-auto flex flex-col items-center">
+        {/* Interactive Mascot Avatar */}
+        <div
+          className="relative mb-3 group cursor-pointer"
+          onClick={() => {
+            window.location.hash = '#/settings?tab=appearance'
+          }}
+          title="Click to customize avatar in Appearance settings"
+        >
+          <div className="size-20 rounded-2xl p-1 bg-gradient-to-br from-[#9d72ff]/40 via-purple-500/20 to-transparent border border-primary/30 shadow-[0_0_24px_rgba(157,114,255,0.3)] group-hover:scale-105 transition-all duration-300">
+            <img alt="Stella Mascot Avatar" className="size-full rounded-xl object-cover" src={mascotSrc} />
+          </div>
+          <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-[#9d72ff] text-[10px] text-white font-bold shadow-[0_0_8px_rgba(157,114,255,0.8)]">
+            ✦
+          </span>
+        </div>
+
         {/* Modern Stellar Badge */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary mb-3 shadow-[0_0_20px_rgba(157,114,255,0.25)]">
           <span>✦</span>

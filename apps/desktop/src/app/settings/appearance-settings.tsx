@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useDebounced } from '@/app/hooks/use-debounced'
 import { LanguageSwitcher } from '@/components/language-switcher'
@@ -14,6 +14,14 @@ import { Check, Download, Loader2, Palette, Trash2 } from '@/lib/icons'
 import { selectableCardClass } from '@/lib/selectable-card'
 import { normalize } from '@/lib/text'
 import { cn } from '@/lib/utils'
+import {
+  $activeMascotId,
+  $customMascotData,
+  MASCOT_PRESETS,
+  resolveMascotSrc,
+  setCustomMascotData,
+  setMascotId
+} from '@/store/mascot'
 import { $backdrop, setBackdrop } from '@/store/backdrop'
 import { $composerPopoutGesturesEnabled, setComposerPopoutGesturesEnabled } from '@/store/composer-popout'
 import { $embedAllowed, $embedMode, clearEmbedAllowed, type EmbedMode, setEmbedMode } from '@/store/embed-consent'
@@ -424,6 +432,10 @@ export function AppearanceSettings() {
   const activeProfileKey = normalizeProfileKey(useStore($activeGatewayProfile))
   const a = t.settings.appearance
 
+  const activeMascotId = useStore($activeMascotId)
+  const customMascotData = useStore($customMascotData)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // A pointer held on the intensity slider when this overlay closes (Escape
   // mid-drag) never delivers its pointerup here, which would strand the peek
   // counter above zero and ghost the NEXT settings overlay. Unmount drops
@@ -523,6 +535,84 @@ export function AppearanceSettings() {
             description={isSavingLocale ? t.language.saving : t.language.description}
             id={appearanceSettingElementId(APPEARANCE_SETTING_IDS.language)}
             title={t.language.label}
+          />
+
+          <ListRow
+            title="Mascot & Avatar Identity"
+            description="Choose the visual emblem or character avatar displayed in the chat hero and studio greeting."
+            below={
+              <div className="mt-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {MASCOT_PRESETS.map(m => {
+                    const active = activeMascotId === m.id
+                    const src = resolveMascotSrc(m.id)
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic('selection')
+                          setMascotId(m.id)
+                        }}
+                        className={cn(
+                          'group flex flex-col items-center gap-2 p-2.5 rounded-xl border text-center transition-all cursor-pointer',
+                          active
+                            ? 'border-primary bg-primary/15 shadow-[0_0_16px_rgba(157,114,255,0.25)]'
+                            : 'border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.05]'
+                        )}
+                      >
+                        <div className="size-14 rounded-lg overflow-hidden border border-white/10 p-0.5 bg-black/40">
+                          <img alt={m.name} src={src} className="size-full rounded-md object-cover" />
+                        </div>
+                        <div className="min-w-0 w-full">
+                          <div className={cn("text-xs font-semibold truncate", active ? "text-primary" : "text-foreground")}>
+                            {m.name}
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="mt-3 flex items-center gap-2.5">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={e => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                          if (typeof reader.result === 'string') {
+                            setCustomMascotData(reader.result)
+                          }
+                        }
+                        reader.readAsDataURL(file)
+                      }
+                    }}
+                  />
+                  <Button
+                    size="xs"
+                    type="button"
+                    variant={activeMascotId === 'custom' ? 'primary' : 'outline'}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {activeMascotId === 'custom' ? '✓ Custom Avatar Active' : '+ Upload Custom Image'}
+                  </Button>
+                  {activeMascotId === 'custom' && (
+                    <Button
+                      size="xs"
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setMascotId('stella-star')}
+                    >
+                      Reset to Default
+                    </Button>
+                  )}
+                </div>
+              </div>
+            }
           />
 
           <ListRow
