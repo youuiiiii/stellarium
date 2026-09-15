@@ -45,7 +45,14 @@ export function normalizeProfileKey(name: string | null | undefined): string {
 // renamed default profile), else the canonical name. Never used for
 // comparison or routing — canonical `name` remains the identity everywhere.
 export function profileLabel(profile: Pick<ProfileInfo, 'display_name' | 'name'>): string {
-  return (profile.display_name ?? '').trim() || profile.name
+  const display = (profile.display_name ?? '').trim()
+  if (display) {
+    return display
+  }
+  if (profile.name === 'default') {
+    return 'Stella'
+  }
+  return profile.name
 }
 
 // The profile the running local backend is actually scoped to (mirrors
