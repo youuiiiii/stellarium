@@ -78,4 +78,15 @@ def build_auth_parser(subparsers, *, cmd_auth: Callable) -> None:
         help="Do not attempt to open the browser automatically")
     auth_spotify.add_argument(
         "--timeout", type=float, help="Callback/token exchange timeout in seconds")
+
+    auth_mal = auth_subparsers.add_parser(
+        "mal", help="Authenticate Stella with MyAnimeList via PKCE")
+    auth_mal.add_argument(
+        "mal_action", nargs="?", choices=["login", "status", "logout"], default="login")
+    auth_mal.add_argument(
+        "--client-id", help="Custom MAL client_id (optional; default bundled)")
+    auth_mal.add_argument(
+        "--no-browser", action="store_true",
+        help="Do not attempt to open the browser automatically")
+
     auth_parser.set_defaults(func=cmd_auth)

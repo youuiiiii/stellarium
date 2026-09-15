@@ -764,3 +764,14 @@ async def prune_checkpoints():
         ["checkpoints", "prune"], "checkpoints-prune",
         log_msg="Failed to spawn checkpoints prune", prefix="Failed to prune checkpoints",
     )
+
+
+@router.get("/api/stella/connect/status")
+async def get_stella_connect_status():
+    """Real-time connection status for Spotify and MyAnimeList."""
+    from hermes_cli.connect import get_mal_status, get_spotify_status
+    return {
+        "spotify": get_spotify_status(),
+        "mal": get_mal_status(),
+    }
+

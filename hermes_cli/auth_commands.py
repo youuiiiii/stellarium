@@ -802,11 +802,27 @@ def auth_upgrade_command(args) -> None:
         raise SystemExit(code)
 
 
+def auth_mal_command(args) -> None:
+    from hermes_cli.connect import connect_mal, print_connect_status, get_mal_tokens_path
+    action = str(getattr(args, "mal_action", "") or "login").strip().lower()
+    if action in {"", "login"}:
+        connect_mal(client_id=getattr(args, "client_id", None), no_browser=getattr(args, "no_browser", False))
+    elif action == "status":
+        print_connect_status()
+    elif action == "logout":
+        p = get_mal_tokens_path()
+        if p.exists():
+            p.unlink()
+            print("Logged out of MyAnimeList.")
+        else:
+            print("Not logged in to MyAnimeList.")
+
+
 _AUTH_ACTIONS = {
     "add": auth_add_command, "list": auth_list_command, "remove": auth_remove_command,
     "reset": auth_reset_command, "priority": auth_priority_command, "refresh": auth_refresh_command, "status": auth_status_command,
     "logout": auth_logout_command, "upgrade": auth_upgrade_command,
-    "spotify": auth_spotify_command}
+    "spotify": auth_spotify_command, "mal": auth_mal_command}
 
 
 def auth_command(args) -> None:

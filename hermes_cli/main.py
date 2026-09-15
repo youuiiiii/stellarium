@@ -328,6 +328,7 @@ from hermes_cli.subcommands.slack import build_slack_parser
 from hermes_cli.subcommands.login import build_login_parser
 from hermes_cli.subcommands.logout import build_logout_parser
 from hermes_cli.subcommands.auth import build_auth_parser
+from hermes_cli.subcommands.connect import build_connect_parser
 from hermes_cli.subcommands.status import build_status_parser
 from hermes_cli.subcommands.pause import build_pause_parser
 from hermes_cli.subcommands.webhook import build_webhook_parser
@@ -1808,6 +1809,7 @@ cmd_setup = _forward_command("cmd_setup", "hermes_cli.setup", "run_setup_wizard"
 cmd_login = _forward_command("cmd_login", "hermes_cli.auth", "login_command", doc='Authenticate Hermes CLI with a provider.')
 cmd_logout = _forward_command("cmd_logout", "hermes_cli.auth", "logout_command", doc='Clear provider authentication.')
 cmd_auth = _forward_command("cmd_auth", "hermes_cli.auth_commands", "auth_command", doc='Manage pooled credentials.')
+cmd_connect = _forward_command("cmd_connect", "hermes_cli.connect", "connect_command", doc='Connect external services (Spotify, MyAnimeList).')
 cmd_status = _forward_command("cmd_status", "hermes_cli.status", "show_status", doc='Show status of all components.')
 cmd_cron = _forward_command("cmd_cron", "hermes_cli.cron", "cron_command", forward_return=True, doc='Cron job management.')
 cmd_webhook = _forward_command("cmd_webhook", "hermes_cli.webhook", "webhook_command", doc='Webhook subscription management.')
@@ -3260,6 +3262,7 @@ def _build_cli_parser():
     _build_project_parser(subparsers).set_defaults(func=cmd_project)
 
     build_hooks_parser(subparsers, cmd_hooks=cmd_hooks)
+    build_connect_parser(subparsers, cmd_connect=cmd_connect)
     build_doctor_parser(subparsers, cmd_doctor=cmd_doctor)
     build_verify_parser(subparsers, cmd_verify=cmd_verify)
     build_security_parser(subparsers, cmd_security=cmd_security)
