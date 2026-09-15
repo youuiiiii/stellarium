@@ -30,6 +30,7 @@ import {
 } from 'electron'
 
 import { classifyActiveRuntime } from './active-runtime-state'
+import { setup9RouterSupervisor, shutdown9Router } from './router-supervisor'
 import {
   destroyKeepaliveAgents,
   downloadAgentFor,
@@ -17153,6 +17154,11 @@ app.on('before-quit', () => {
 // hold the event loop open or leak FDs past app teardown.
 app.on('will-quit', () => {
   destroyKeepaliveAgents()
+  try {
+    shutdown9Router()
+  } catch {
+    // Non-blocking
+  }
 })
 
 // Answered synchronously so preload can publish the verdict before the
@@ -18117,6 +18123,13 @@ app.whenReady().then(() => {
   installEmbedReferer()
   installRemoteHeaderRules()
   registerDeepLinkProtocol()
+
+  // Project Stella: Auto-supervise 9Router for seamless Antigravity Pro integration
+  try {
+    setup9RouterSupervisor()
+  } catch {
+    // 9Router supervisor is non-blocking
+  }
 
   ensureWslWindowsFonts()
   configureSpellChecker()
