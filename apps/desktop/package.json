@@ -4,7 +4,7 @@
   "private": true,
   "version": "0.17.2",
   "description": "Native desktop shell for Project Stella & Stellarium Engine.",
-  "author": "Master Ilunaa",
+  "author": "Project Stella Contributors",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/youuiiiii/stellarium.git"
@@ -291,7 +291,7 @@
     },
     "linux": {
       "category": "Development",
-      "maintainer": "Master Ilunaa <richietungadi86@gmail.com>",
+      "maintainer": "Project Stella Team <support@projectstella.org>",
       "synopsis": "Native desktop shell for Project Stella & Stellarium Engine.",
       "target": [
         "AppImage",

@@ -1,105 +1,34 @@
 {
   "version": 1,
-  "title": "Project Stella Architecture",
+  "title": "Stellarium Default Workspaces",
   "categories": [
     {
-      "id": "atelier",
-      "name": "─── ✦ ATELIER ✦ ───",
+      "id": "workspace",
+      "name": "─── ✦ WORKSPACE ✦ ───",
       "rooms": [
         {
-          "id": "workspace-stella",
-          "name": "workspace-stella",
+          "id": "general",
+          "name": "general-chat",
+          "icon": "comment-discussion",
+          "topic": "General assistance, brainstorming, and daily questions"
+        },
+        {
+          "id": "coding",
+          "name": "coding-studio",
           "icon": "terminal",
-          "topic": "Project Stella & Stellarium engineering lab",
-          "cwd": "D:/10_Projects/Project_Stella/stellarium"
+          "topic": "Software engineering, debugging, code review, and CLI tasks"
         },
         {
-          "id": "workspace-1",
-          "name": "workspace-1",
-          "icon": "folder",
-          "topic": "Master Ilunaa's primary private workspace & coding studio",
-          "cwd": "D:/10_Projects/Project_Stella/Stella_Workspace"
+          "id": "research",
+          "name": "research-notes",
+          "icon": "book",
+          "topic": "Literature analysis, document drafting, and web research"
         },
         {
-          "id": "workspace-2",
-          "name": "workspace-2",
-          "icon": "split-horizontal",
-          "topic": "Secondary workspace for parallel coding & research",
-          "cwd": "D:/10_Projects/Project_Stella"
-        },
-        {
-          "id": "workspace-nabawi",
-          "name": "workspace-nabawi",
-          "icon": "file-code",
-          "topic": "Nabawi scraper, annotation & OCR pipeline",
-          "cwd": "D:/10_Projects/Internship/Nabawi"
-        },
-        {
-          "id": "bulletin",
-          "name": "bulletin",
-          "icon": "bell",
-          "topic": "Task dispatches, background jobs & system milestones"
-        },
-        {
-          "id": "home-gym",
-          "name": "home-gym",
-          "icon": "pulse",
-          "topic": "Daily workout directives, exercise logs & fitness conditioning"
-        }
-      ]
-    },
-    {
-      "id": "sanctuary",
-      "name": "─── ✦ SANCTUARY ✦ ───",
-      "rooms": [
-        {
-          "id": "meis-room",
-          "name": "meis-room",
+          "id": "creative",
+          "name": "creative-sandbox",
           "icon": "sparkle",
-          "topic": "Private sanctuary for Master Ilunaa and Mei: romance, care, and pampering"
-        },
-        {
-          "id": "living-room",
-          "name": "living-room",
-          "icon": "coffee",
-          "topic": "Common lounge area for Master, Mei, and Vivy"
-        },
-        {
-          "id": "music-lounge",
-          "name": "music-lounge",
-          "icon": "music",
-          "topic": "Master Ilunaa's private audio sanctuary & Spotify lounge"
-        },
-        {
-          "id": "anime-lounge",
-          "name": "anime-lounge",
-          "icon": "device-tv",
-          "topic": "Master Ilunaa's private anime theater & MAL sanctuary"
-        }
-      ]
-    },
-    {
-      "id": "treasury",
-      "name": "─── ✦ TREASURY ✦ ───",
-      "rooms": [
-        {
-          "id": "trading-lounge",
-          "name": "trading-lounge",
-          "icon": "chart-candle",
-          "topic": "Master Ilunaa's private investment sanctuary & strategy discussions"
-        },
-        {
-          "id": "market-radar",
-          "name": "market-radar",
-          "icon": "chart-line",
-          "topic": "Automated IHSG swing scanner feed & trade plan broadcasts",
-          "cwd": "D:/10_Projects/Project_Stella/stella-market-radar"
-        },
-        {
-          "id": "portfolio-tracker",
-          "name": "portfolio-tracker",
-          "icon": "wallet",
-          "topic": "Paper trading trial logs, equity growth & mutual fund milestones"
+          "topic": "Brainstorming, ideation, design, and creative workflows"
         }
       ]
     }

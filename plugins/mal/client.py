@@ -74,7 +74,10 @@ class MALClient:
                     return str(cid)
             except Exception:
                 pass
-        return "76153138ea74cb88617608bf0bb2d7f3"
+        env_cid = os.environ.get("MAL_CLIENT_ID")
+        if env_cid:
+            return env_cid
+        raise MALAuthRequiredError("MyAnimeList Client ID not found. Run 'stella connect mal' first.")
 
     def refresh_access_token(self) -> Dict[str, Any]:
         refresh_token = self._tokens.get("refresh_token")

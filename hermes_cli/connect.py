@@ -27,9 +27,8 @@ import httpx
 
 from hermes_constants import get_hermes_home
 
-# Default Bundled Client IDs
-DEFAULT_MAL_CLIENT_ID = "76153138ea74cb88617608bf0bb2d7f3"
-DEFAULT_SPOTIFY_FALLBACK_CLIENT_ID = "c907f902caf44924a022b4f24e4a189d"
+# Environment or User-Configured Client IDs
+DEFAULT_MAL_CLIENT_ID = os.environ.get("MAL_CLIENT_ID", "")
 
 MAL_AUTH_URL = "https://myanimelist.net/v1/oauth2/authorize"
 MAL_TOKEN_URL = "https://myanimelist.net/v1/oauth2/token"
@@ -131,6 +130,34 @@ def refresh_mal_token(tokens: Dict[str, Any], client_id: Optional[str] = None) -
 def connect_mal(client_id: Optional[str] = None, no_browser: bool = False, port: int = 8080) -> bool:
     """Launch intuitive PKCE authorization for MyAnimeList."""
     cid = client_id or DEFAULT_MAL_CLIENT_ID
+    if not cid:
+        state_file = _stella_home() / "mal" / "auth_state.json"
+        if state_file.exists():
+            try:
+                with open(state_file, "r", encoding="utf-8") as f:
+                    cid = json.load(f).get("client_id")
+            except Exception:
+                pass
+
+    if not cid:
+        print("\n" + "=" * 60)
+        print("✦ MyAnimeList Setup — Client ID Required")
+        print("=" * 60)
+        print("To connect MyAnimeList, please provide your App Client ID.")
+        print("1. Visit: https://myanimelist.net/apiconfig/create")
+        print("2. Set App Name, App Type ('other'), and Redirect URI:")
+        print(f"   http://127.0.0.1:{port}/callback")
+        print("3. Submit and copy the generated Client ID.\n")
+        from hermes_cli.cli_output import line_input
+        try:
+            cid = line_input("Enter MAL Client ID: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nSetup cancelled.")
+            return False
+        if not cid:
+            print("No Client ID entered. Aborted.")
+            return False
+
     redirect_uri = f"http://127.0.0.1:{port}/callback"
 
     # Generate 128-char URL-safe PKCE code verifier
@@ -346,7 +373,7 @@ def connect_spotify(client_id: Optional[str] = None, no_browser: bool = False) -
         try:
             cid = _spotify_client_id()
         except Exception:
-            cid = DEFAULT_SPOTIFY_FALLBACK_CLIENT_ID
+            cid = None
 
     args = SimpleNamespace(
         client_id=cid,
