@@ -215,6 +215,6 @@ scripts/run_tests.sh
 
 ## Licencia
 
-MIT — ver [LICENSE](LICENSE).
+MIT — ver [LICENSE](../../LICENSE).
 
 Creado por [Nous Research](https://nousresearch.com).

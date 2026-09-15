@@ -203,6 +203,6 @@ python -m pytest tests/ -q
 
 ## 许可证
 
-MIT — 详见 [LICENSE](LICENSE)。
+MIT — 详见 [LICENSE](../../LICENSE)。
 
 由 [Nous Research](https://nousresearch.com) 构建。

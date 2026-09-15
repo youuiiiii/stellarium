@@ -254,7 +254,7 @@ scripts/run_tests.sh
 
 ## لائسنس (License)
 
-MIT — تفصیلات کے لیے [LICENSE](LICENSE) دیکھیں۔
+MIT — تفصیلات کے لیے [LICENSE](../../LICENSE) دیکھیں۔
 
 [نوس ریسرچ (Nous Research)](https://nousresearch.com) کی جانب سے تیار کردہ۔
 
