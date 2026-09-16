@@ -422,7 +422,7 @@ export const stellaTheme: DesktopTheme = {
     userBubbleBorder: 'rgba(157, 114, 255, 0.3)'
   },
   typography: {
-    fontSans: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`,
+    fontSans: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif, ${EMOJI_FALLBACK}`,
     fontMono: `"JetBrains Mono", ${SYSTEM_MONO}`,
     fontUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap'
   }

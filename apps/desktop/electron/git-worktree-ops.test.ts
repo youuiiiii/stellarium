@@ -20,6 +20,7 @@ function removeTempDir(dir: string) {
   if (process.platform === 'win32') {
     try {
       fs.rmdirSync(dir)
+
       return
     } catch (error: any) {
       if (error?.code === 'ENOENT') {
@@ -340,8 +341,8 @@ test('addWorktree: base origin/main does not set up upstream tracking', async ()
 
     assert.equal(hasUpstream, false)
   } finally {
-    fs.rmSync(remoteDir, { recursive: true, force: true })
-    fs.rmSync(cloneDir, { recursive: true, force: true })
+    removeTempDir(remoteDir)
+    removeTempDir(cloneDir)
   }
 })
 
@@ -399,8 +400,8 @@ test('listBranches: offers remote branches that have no local counterpart', asyn
       false
     )
   } finally {
-    fs.rmSync(remoteDir, { recursive: true, force: true })
-    fs.rmSync(cloneDir, { recursive: true, force: true })
+    removeTempDir(remoteDir)
+    removeTempDir(cloneDir)
   }
 })
 
@@ -426,8 +427,8 @@ test('addWorktree: a remote branch becomes a local branch tracking it', async ()
     // setup.
     assert.equal(inTree('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'), 'origin/teammate-work')
   } finally {
-    fs.rmSync(remoteDir, { recursive: true, force: true })
-    fs.rmSync(cloneDir, { recursive: true, force: true })
+    removeTempDir(remoteDir)
+    removeTempDir(cloneDir)
   }
 })
 
@@ -454,8 +455,8 @@ test('addWorktree: a remote default branch gets its own worktree, not a home swi
     assert.notEqual(fs.realpathSync(result.path), fs.realpathSync(cloneDir))
     assert.equal(git('branch', '--show-current'), 'rawr')
   } finally {
-    fs.rmSync(remoteDir, { recursive: true, force: true })
-    fs.rmSync(cloneDir, { recursive: true, force: true })
+    removeTempDir(remoteDir)
+    removeTempDir(cloneDir)
   }
 })
 

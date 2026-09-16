@@ -19,7 +19,7 @@ export function displayName(bot: Partial<RosterRow>, meta?: BotMeta | null): str
 
   // Only THIN rows from another source trade the friendly name for their
   // connection label — the active gateway's own default must keep reading
-  // "Hermes". Annotated active rows carry sourceScoped too, and keying this
+  // "Stella". Annotated active rows carry sourceScoped too, and keying this
   // off sourceScoped renamed the user's main agent to an IP-derived label
   // (community report, Aug 17 2026).
   if (
@@ -44,7 +44,7 @@ export function displayName(bot: Partial<RosterRow>, meta?: BotMeta | null): str
   }
 
   // An untitled backend row claimed by an alias reads as the alias name —
-  // never generic "Hermes" or a hostname-derived label.
+  // never generic "Stella" or a hostname-derived label.
   if (alias) {
     const raw = alias.name.replace(/[-_]+/g, ' ').trim()
 

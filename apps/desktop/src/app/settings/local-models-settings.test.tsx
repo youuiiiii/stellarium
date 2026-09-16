@@ -313,6 +313,7 @@ describe('LocalModelsSettings', () => {
         error: null
       }
     ])
+    mocked.getLocalModelsJobs.mockResolvedValue({ jobs: [...$localRuntimeJobs.get()] })
 
     await renderFullPane()
     await screen.findByText('Qwen3.6 27B')
@@ -345,6 +346,7 @@ describe('LocalModelsSettings', () => {
         error: 'Downloaded file failed its integrity check and was removed — try again'
       }
     ])
+    mocked.getLocalModelsJobs.mockResolvedValue({ jobs: [...$localRuntimeJobs.get()] })
 
     await renderFullPane()
     await screen.findByText('Qwen3.6 27B')
@@ -392,6 +394,7 @@ describe('quickstart', () => {
         error: null
       }
     ])
+    mocked.getLocalModelsJobs.mockResolvedValue({ jobs: [...$localRuntimeJobs.get()] })
     renderPane()
 
     expect(await screen.findByText('Qwen3.6 27B — 17.6 GB')).toBeTruthy()

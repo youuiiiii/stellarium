@@ -124,7 +124,7 @@ describe('ProfilesView', () => {
 
     await renderProfilesView()
 
-    realClick(await screen.findByRole('button', { name: 'New profile' }))
+    realClick(await screen.findByRole('button', { name: 'New agent' }))
 
     const soul = await screen.findByLabelText(/SOUL\.md/i)
 

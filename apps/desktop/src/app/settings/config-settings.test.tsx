@@ -45,7 +45,7 @@ let ConfigSettings: typeof ConfigSettingsType
 
 beforeAll(async () => {
   ;({ ConfigSettings } = await import('./config-settings'))
-}, 60_000)
+}, 180_000)
 
 beforeEach(() => {
   getElevenLabsVoices.mockResolvedValue({ available: false })

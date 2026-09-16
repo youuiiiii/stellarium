@@ -1219,11 +1219,9 @@ export const GROUP_CHAT_MAX_MEMBERS = 6
  *  a Bot Mode title or a core profile display_name (e.g. default renamed to
  *  "Lucy") labels the speaker everywhere this helper feeds — the "X is
  *  thinking…" working line, the activity feed, and transcript lines — so a
- *  renamed bot never shows up as its raw profile id or a stale "Hermes"
- *  (community report, Aug 21 2026: renamed default still read "Hermes is
- *  thinking…" in group rooms). The untitled primary profile is literally
- *  named "default" — render it as Hermes (matching displayName and the
- *  @hermes handle) so the main agent never loses its name in rooms. */
+ *  renamed bot never shows up as its raw profile id. The untitled primary
+ *  profile is literally named "default" — render it as Stella, the default
+ *  public identity, so the main agent never loses its name in rooms. */
 export function groupSpeakerLabel(name?: null | string) {
   const trimmed = (name || '').trim()
 

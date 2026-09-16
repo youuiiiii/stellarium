@@ -925,16 +925,19 @@ test('open() rejects a control-dir that is a symlink', async () => {
   const real = path.join(tmp, 'real')
   const link = path.join(tmp, 'link')
   fs.mkdirSync(real, { mode: 0o700 })
+
   try {
     fs.symlinkSync(real, link)
   } catch (error: any) {
     if (process.platform === 'win32' && (error?.winerror === 1314 || error?.code === 'EPERM')) {
       fs.rmSync(tmp, { recursive: true, force: true })
+
       return
     }
 
     throw error
   }
+
   const spawnFn = scriptedSpawn(args => (args.includes('check') ? { code: 255 } : { code: 0 }))
   const conn = new SshConnection({ host: 'box', user: 'me' }, { spawnFn, controlDir: link, mux: true })
   await assert.rejects(conn.open(), /symlink|unsafe/i)

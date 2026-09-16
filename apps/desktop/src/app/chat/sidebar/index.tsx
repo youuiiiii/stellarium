@@ -1490,17 +1490,19 @@ export function ChatSidebar({
 
                 const button = (
                   <SidebarMenuButton
+                    aria-current={active ? 'page' : undefined}
                     aria-disabled={!isInteractive}
                     className={cn(
                       'flex h-8 w-full justify-start gap-2.5 rounded-lg border border-transparent px-2.5 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-all duration-150 [-webkit-app-region:no-drag] hover:bg-white/[0.04] hover:text-foreground',
                       active &&
-                        'border-primary/30 bg-primary/10 text-foreground font-semibold shadow-[0_0_12px_rgba(157,114,255,0.15)] hover:border-primary/40!',
+                        'border-primary/30 bg-primary/10! text-foreground! font-semibold! shadow-[0_0_12px_rgba(157,114,255,0.15)] hover:border-primary/40!',
                       !isInteractive &&
                         'cursor-default hover:border-transparent hover:bg-transparent hover:text-inherit'
                     )}
                     // A tip anchored to the label points at the end of the
                     // word; the row is what it's actually about.
                     data-tip-region=""
+                    isActive={active}
                     onClick={() => {
                       // A plain new session lands in whatever profile the live
                       // gateway is on (= the active switcher context). null →
