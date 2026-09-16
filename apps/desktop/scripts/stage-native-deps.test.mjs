@@ -15,6 +15,12 @@ import {
 
 const { join } = path
 
+function assertModeOnPosix(filePath, expected) {
+  if (process.platform !== 'win32') {
+    assert.equal(fs.statSync(filePath).mode & 0o777, expected)
+  }
+}
+
 // ─── fixtures ──────────────────────────────────────────────────────
 //
 // Create minimal fake .node files with correct magic bytes so the
@@ -328,11 +334,8 @@ test.skipIf(process.platform === 'win32')(
         stagedUnixTerminal.resolveHelper(nodeModulesUnpackedHelper),
         nodeModulesUnpackedHelper
       )
-      assert.equal(
-        fs.statSync(join(destRoot, 'prebuilds', `${process.platform}-${process.arch}`, 'spawn-helper')).mode & 0o777,
-        0o755
-      )
-      assert.equal(fs.statSync(join(destRoot, 'build', 'Release', 'spawn-helper')).mode & 0o777, 0o755)
+      assertModeOnPosix(join(destRoot, 'prebuilds', `${process.platform}-${process.arch}`, 'spawn-helper'), 0o755)
+      assertModeOnPosix(join(destRoot, 'build', 'Release', 'spawn-helper'), 0o755)
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true })
     }
@@ -594,7 +597,7 @@ test('darwin staging ships the Swift helper executable and the rewritten windows
 
     stageGetWindowsInto(srcRoot, destRoot, { platform: 'darwin' })
 
-    assert.equal(fs.statSync(join(destRoot, 'main')).mode & 0o777, 0o755)
+    assertModeOnPosix(join(destRoot, 'main'), 0o755)
     const staged = fs.readFileSync(join(destRoot, 'lib', 'windows.js'), 'utf8')
     assert.match(staged, /Rewritten by stage-native-deps\.mjs/)
     assert.ok(!staged.includes('node-pre-gyp'), 'pre-gyp loader must not survive staging')

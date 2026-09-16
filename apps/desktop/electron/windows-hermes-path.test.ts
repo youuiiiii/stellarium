@@ -196,6 +196,7 @@ test('getVenvSitePackagesEntries: returns empty on Windows when site-packages do
 test('getVenvSitePackagesEntries: reads pyvenv.cfg version on POSIX and resolves lib/pythonX.Y/site-packages', () => {
   const result = getVenvSitePackagesEntries('/venv', {
     isWindows: false,
+    pathApi: path.posix,
     directoryExists: p => p === '/venv/lib/python3.12/site-packages',
     readFile: () => 'version_info = 3.12.1\n'
   })
@@ -206,6 +207,7 @@ test('getVenvSitePackagesEntries: reads pyvenv.cfg version on POSIX and resolves
 test('getVenvSitePackagesEntries: returns empty on POSIX when pyvenv.cfg is missing', () => {
   const result = getVenvSitePackagesEntries('/venv', {
     isWindows: false,
+    pathApi: path.posix,
     directoryExists: () => true,
     readFile: () => undefined
   })
@@ -216,6 +218,7 @@ test('getVenvSitePackagesEntries: returns empty on POSIX when pyvenv.cfg is miss
 test('getVenvSitePackagesEntries: returns empty on POSIX when pyvenv.cfg has no version_info', () => {
   const result = getVenvSitePackagesEntries('/venv', {
     isWindows: false,
+    pathApi: path.posix,
     directoryExists: () => true,
     readFile: () => 'home = /usr/bin\n'
   })
@@ -226,6 +229,7 @@ test('getVenvSitePackagesEntries: returns empty on POSIX when pyvenv.cfg has no 
 test('getVenvSitePackagesEntries: returns empty on POSIX when version is present but site-packages dir is absent', () => {
   const result = getVenvSitePackagesEntries('/venv', {
     isWindows: false,
+    pathApi: path.posix,
     directoryExists: () => false,
     readFile: () => 'version_info = 3.11\n'
   })

@@ -116,7 +116,11 @@ export async function scanGitRepos(roots: string[], options: RepoScanOptions = {
 
   const maxDepthValue = Number(options.maxDepth)
   const maxDepth = Number.isFinite(maxDepthValue) && maxDepthValue >= 0 ? maxDepthValue : DEFAULT_MAX_DEPTH
-  const pathOptions: RepoScanPathOptions = options.platform ? { platform: options.platform } : {}
+  // `platform` is a policy override for tests (currently macOS TCC filtering),
+  // not a request to reinterpret real host filesystem paths as POSIX or Win32.
+  // Keep normalization native so a Windows test can exercise the darwin policy
+  // against its actual temporary directory.
+  const pathOptions: RepoScanPathOptions = {}
   const requestedRoots = Array.isArray(roots) && roots.length > 0 ? roots : [os.homedir()]
 
   const searchRoots = [
@@ -172,7 +176,7 @@ export async function scanGitRepos(roots: string[], options: RepoScanOptions = {
       return
     }
 
-    const skipTccProtectedPaths = (pathOptions.platform ?? process.platform) === 'darwin'
+    const skipTccProtectedPaths = (options.platform ?? process.platform) === 'darwin'
 
     const subdirs = entries
       .filter(entry => entry.isDirectory() && !entry.name.startsWith('.') && !JUNK_DIRS.has(entry.name))

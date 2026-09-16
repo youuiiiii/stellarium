@@ -80,9 +80,12 @@ function collectSshConfigHosts(rootPath = '', deps: any = {}) {
       }
     })
 
+  // The default is the host filesystem API. Tests may inject path.posix or
+  // path.win32 when simulating a remote config format on another host.
+  const pathApi = deps.pathApi || path
   const homeDir = deps.homeDir || os.homedir()
-  const root = rootPath || path.join(homeDir, '.ssh', 'config')
-  const sshDir = path.join(homeDir, '.ssh')
+  const root = rootPath || pathApi.join(homeDir, '.ssh', 'config')
+  const sshDir = pathApi.join(homeDir, '.ssh')
 
   const out: string[] = []
   const seen = new Set()
@@ -90,14 +93,14 @@ function collectSshConfigHosts(rootPath = '', deps: any = {}) {
 
   const resolveIncludePath = token => {
     if (token.startsWith('~/')) {
-      return path.join(homeDir, token.slice(2))
+      return pathApi.join(homeDir, token.slice(2))
     }
 
-    if (path.isAbsolute(token)) {
+    if (pathApi.isAbsolute(token)) {
       return token
     }
 
-    return path.join(sshDir, token)
+    return pathApi.join(sshDir, token)
   }
 
   const walk = (filePath, depth) => {
