@@ -30,7 +30,6 @@ import {
 } from 'electron'
 
 import { classifyActiveRuntime } from './active-runtime-state'
-import { setup9RouterSupervisor, shutdown9Router } from './router-supervisor'
 import {
   destroyKeepaliveAgents,
   downloadAgentFor,
@@ -359,6 +358,7 @@ import { missingRendererAssets } from './renderer-bundle'
 import { loadRendererLoadErrorPage } from './renderer-load-error-page'
 import { attachRendererConsoleCapture, formatRendererBoundaryReport } from './renderer-log'
 import { fetchRosterSourceData } from './roster-source-fetch'
+import { setup9RouterSupervisor, shutdown9Router } from './router-supervisor'
 import {
   classifyStoredSecret,
   readSecretStoragePolicy,
@@ -810,6 +810,7 @@ function resolveHermesHome() {
 
   if (IS_WINDOWS && process.env.LOCALAPPDATA) {
     const localappdata = path.join(process.env.LOCALAPPDATA, 'stella')
+
     return localappdata
   }
 
@@ -10099,9 +10100,11 @@ async function buildRemoteConnection(
 }
 
 const sshConnections = new Map<string, any>()
+
 const sshIsolatedKeepalives = createSshIsolatedKeepaliveRegistry({
   log: chunk => sshRememberLog(chunk)
 })
+
 const desktopInstallationId = loadOrCreateInstallationId(DESKTOP_INSTALLATION_PATH)
 
 // Managed SSH update lifecycle (#93042): while an update owns a registered
@@ -17166,6 +17169,7 @@ app.on('before-quit', () => {
 app.on('will-quit', () => {
   sshIsolatedKeepalives.stopAll()
   destroyKeepaliveAgents()
+
   try {
     shutdown9Router()
   } catch {

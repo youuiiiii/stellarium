@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import { useStore } from '@nanostores/react'
+import { useState } from 'react'
 
 import { capitalize, normalize } from '@/lib/text'
 import { $activeMascotId, $customMascotData, resolveMascotSrc } from '@/store/mascot'
 
 import introCopyJsonl from './intro-copy.jsonl?raw'
-import { Wordmark } from './wordmark'
 
 type IntroCopy = {
   headline: string

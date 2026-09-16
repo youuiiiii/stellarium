@@ -38,12 +38,14 @@ const STORAGE_KEY = 'stella-mascot-id'
 const CUSTOM_IMAGE_KEY = 'stella-custom-mascot-data'
 
 function loadMascotId(): string {
-  if (typeof window === 'undefined') return 'stella-star'
+  if (typeof window === 'undefined') {return 'stella-star'}
+
   return localStorage.getItem(STORAGE_KEY) || 'stella-star'
 }
 
 function loadCustomImage(): string | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined') {return null}
+
   return localStorage.getItem(CUSTOM_IMAGE_KEY)
 }
 
@@ -52,6 +54,7 @@ export const $customMascotData = atom<string | null>(loadCustomImage())
 
 export function setMascotId(id: string): void {
   $activeMascotId.set(id)
+
   if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, id)
   }
@@ -60,6 +63,7 @@ export function setMascotId(id: string): void {
 export function setCustomMascotData(dataUrl: string): void {
   $customMascotData.set(dataUrl)
   $activeMascotId.set('custom')
+
   if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, 'custom')
     localStorage.setItem(CUSTOM_IMAGE_KEY, dataUrl)
@@ -70,8 +74,10 @@ export function resolveMascotSrc(mascotId: string, customData?: string | null): 
   if (mascotId === 'custom' && customData) {
     return customData
   }
+
   const preset = MASCOT_PRESETS.find(p => p.id === mascotId)
   const relPath = preset ? preset.image : 'mascots/stella-star.png'
   const base = typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL ? import.meta.env.BASE_URL : '/'
+
   return `${base}${relPath.replace(/^\/+/, '')}`
 }

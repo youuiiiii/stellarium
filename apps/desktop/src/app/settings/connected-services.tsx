@@ -4,7 +4,7 @@ import { runInTerminal } from '@/app/right-sidebar/store'
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { hermesApi } from '@/hermes'
-import { CheckCircle2, ExternalLink, RefreshCw } from '@/lib/icons'
+import { CheckCircle2, RefreshCw } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
 interface ServiceStatus {
@@ -32,10 +32,12 @@ export function ConnectedServicesCard() {
   const fetchStatus = async () => {
     try {
       setLoading(true)
+
       const res = await hermesApi<ServiceStatus>({
         path: '/api/stella/connect/status',
         method: 'GET'
       })
+
       setData(res)
     } catch {
       // Ignored if offline

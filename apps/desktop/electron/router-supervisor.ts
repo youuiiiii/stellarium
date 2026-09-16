@@ -8,11 +8,12 @@
  * - Provides an in-app popup window for seamless Google / Antigravity authentication.
  */
 
-import { spawn, type ChildProcess } from 'node:child_process'
-import http from 'node:http'
-import path from 'node:path'
+import { type ChildProcess, spawn } from 'node:child_process'
 import fs from 'node:fs'
+import http from 'node:http'
 import os from 'node:os'
+import path from 'node:path'
+
 import { BrowserWindow, ipcMain } from 'electron'
 
 let routerProcess: ChildProcess | null = null
@@ -34,6 +35,7 @@ export function is9RouterAlive(port = 20128): Promise<boolean> {
         resolve(res.statusCode !== undefined && res.statusCode < 500)
       }
     )
+
     req.on('error', () => resolve(false))
     req.on('timeout', () => {
       req.destroy()
@@ -62,17 +64,21 @@ function resolve9RouterBinary(): { nodePath: string; scriptPath: string } | null
   ]
 
   let resolvedNode = 'node'
+
   for (const n of candidateNodes) {
     if (n === 'node' || (fs.existsSync(n) && !n.toLowerCase().endsWith('stella.exe') && !n.toLowerCase().endsWith('hermes.exe'))) {
       resolvedNode = n
+
       break
     }
   }
 
   let resolvedScript: string | null = null
+
   for (const s of candidateScripts) {
     if (fs.existsSync(s)) {
       resolvedScript = s
+
       break
     }
   }
@@ -91,6 +97,7 @@ export async function ensure9RouterRunning(port = 20128): Promise<boolean> {
   }
 
   const binary = resolve9RouterBinary()
+
   if (!binary) {
     return false
   }
@@ -112,10 +119,12 @@ export async function ensure9RouterRunning(port = 20128): Promise<boolean> {
     // Wait up to 5 seconds for port to become alive
     for (let i = 0; i < 10; i++) {
       await new Promise(r => setTimeout(r, 500))
+
       if (await is9RouterAlive(port)) {
         return true
       }
     }
+
     return false
   } catch {
     return false
@@ -128,6 +137,7 @@ export function open9RouterLoginWindow(parentWindow?: BrowserWindow): Promise<bo
     if (loginWindow && !loginWindow.isDestroyed()) {
       loginWindow.focus()
       resolve(true)
+
       return
     }
 
@@ -159,6 +169,7 @@ export function shutdown9Router(): void {
   if (routerProcess && routerProcess.pid) {
     const pid = routerProcess.pid
     routerProcess = null
+
     try {
       if (process.platform === 'win32') {
         spawn('taskkill', ['/F', '/T', '/PID', String(pid)], {
@@ -187,13 +198,14 @@ export function registerRouterIpc(): void {
   ipcMain.handle('stella:router:open-login', async event => {
     const parent = BrowserWindow.fromWebContents(event.sender) ?? undefined
     await ensure9RouterRunning()
+
     return open9RouterLoginWindow(parent)
   })
 }
 
 /** Initialize automatic supervisor lifecycle hooks */
 export function setup9RouterSupervisor(): void {
-  if (supervisorStarted) return
+  if (supervisorStarted) {return}
   supervisorStarted = true
 
   registerRouterIpc()

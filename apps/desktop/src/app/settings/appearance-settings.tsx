@@ -14,6 +14,10 @@ import { Check, Download, Loader2, Palette, Trash2 } from '@/lib/icons'
 import { selectableCardClass } from '@/lib/selectable-card'
 import { normalize } from '@/lib/text'
 import { cn } from '@/lib/utils'
+import { $backdrop, setBackdrop } from '@/store/backdrop'
+import { $composerPopoutGesturesEnabled, setComposerPopoutGesturesEnabled } from '@/store/composer-popout'
+import { $embedAllowed, $embedMode, clearEmbedAllowed, type EmbedMode, setEmbedMode } from '@/store/embed-consent'
+import { $introSplash, setIntroSplash } from '@/store/intro-splash'
 import {
   $activeMascotId,
   $customMascotData,
@@ -22,10 +26,6 @@ import {
   setCustomMascotData,
   setMascotId
 } from '@/store/mascot'
-import { $backdrop, setBackdrop } from '@/store/backdrop'
-import { $composerPopoutGesturesEnabled, setComposerPopoutGesturesEnabled } from '@/store/composer-popout'
-import { $embedAllowed, $embedMode, clearEmbedAllowed, type EmbedMode, setEmbedMode } from '@/store/embed-consent'
-import { $introSplash, setIntroSplash } from '@/store/intro-splash'
 import { notifyError } from '@/store/notifications'
 import { $activeGatewayProfile, $profiles, normalizeProfileKey } from '@/store/profile'
 import { $reactionsEnabled, setReactionsEnabled } from '@/store/reactions-enabled'
@@ -538,31 +538,30 @@ export function AppearanceSettings() {
           />
 
           <ListRow
-            title="Mascot & Avatar Identity"
-            description="Choose the visual emblem or character avatar displayed in the chat hero and studio greeting."
             below={
               <div className="mt-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {MASCOT_PRESETS.map(m => {
                     const active = activeMascotId === m.id
                     const src = resolveMascotSrc(m.id)
+
                     return (
                       <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => {
-                          triggerHaptic('selection')
-                          setMascotId(m.id)
-                        }}
                         className={cn(
                           'group flex flex-col items-center gap-2 p-2.5 rounded-xl border text-center transition-all cursor-pointer',
                           active
                             ? 'border-primary bg-primary/15 shadow-[0_0_16px_rgba(157,114,255,0.25)]'
                             : 'border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.05]'
                         )}
+                        key={m.id}
+                        onClick={() => {
+                          triggerHaptic('selection')
+                          setMascotId(m.id)
+                        }}
+                        type="button"
                       >
                         <div className="size-14 rounded-lg overflow-hidden border border-white/10 p-0.5 bg-black/40">
-                          <img alt={m.name} src={src} className="size-full rounded-md object-cover" />
+                          <img alt={m.name} className="size-full rounded-md object-cover" src={src} />
                         </div>
                         <div className="min-w-0 w-full">
                           <div className={cn("text-xs font-semibold truncate", active ? "text-primary" : "text-foreground")}>
@@ -575,37 +574,40 @@ export function AppearanceSettings() {
                 </div>
                 <div className="mt-3 flex items-center gap-2.5">
                   <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
                     accept="image/*"
+                    className="hidden"
                     onChange={e => {
                       const file = e.target.files?.[0]
+
                       if (file) {
                         const reader = new FileReader()
+
                         reader.onload = () => {
                           if (typeof reader.result === 'string') {
                             setCustomMascotData(reader.result)
                           }
                         }
+
                         reader.readAsDataURL(file)
                       }
                     }}
+                    ref={fileInputRef}
+                    type="file"
                   />
                   <Button
+                    onClick={() => fileInputRef.current?.click()}
                     size="xs"
                     type="button"
                     variant={activeMascotId === 'custom' ? 'default' : 'outline'}
-                    onClick={() => fileInputRef.current?.click()}
                   >
                     {activeMascotId === 'custom' ? '✓ Custom Avatar Active' : '+ Upload Custom Image'}
                   </Button>
                   {activeMascotId === 'custom' && (
                     <Button
+                      onClick={() => setMascotId('stella-star')}
                       size="xs"
                       type="button"
                       variant="ghost"
-                      onClick={() => setMascotId('stella-star')}
                     >
                       Reset to Default
                     </Button>
@@ -613,6 +615,8 @@ export function AppearanceSettings() {
                 </div>
               </div>
             }
+            description="Choose the visual emblem or character avatar displayed in the chat hero and studio greeting."
+            title="Mascot & Avatar Identity"
           />
 
           <ListRow
