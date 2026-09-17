@@ -665,3 +665,53 @@ def test_stella_api_maps_migration_conflict_to_409(tmp_path: Path, monkeypatch):
         ))
     assert caught.value.status_code == 409
 
+
+# ---------------------------------------------------------------------------
+# Stella Filesystem & Runtime Safety Tests
+# ---------------------------------------------------------------------------
+
+def test_stella_filesystem_link_detection(tmp_path: Path):
+    from stella.filesystem import is_link_or_reparse, assert_no_link_or_reparse
+
+    normal_file = tmp_path / "normal.txt"
+    normal_file.write_text("ok", encoding="utf-8")
+    assert not is_link_or_reparse(normal_file)
+    assert_no_link_or_reparse(normal_file, "normal_file")
+
+
+def test_stella_runtime_resolution_and_scope(tmp_path: Path, monkeypatch):
+    from stella.runtime import (
+        activate_profile,
+        get_active_profile,
+        resolve_active_profile_home,
+        resolve_profile_home,
+        runtime_scope,
+    )
+
+    stella_root = tmp_path / "stella_runtime_root"
+    monkeypatch.setenv("STELLA_HOME", str(stella_root))
+
+    # Initially defaults to primary 'stella' profile
+    active = get_active_profile(root=stella_root)
+    assert active is not None
+    assert active.id == "stella"
+    assert resolve_active_profile_home(root=stella_root) == active.path
+    assert resolve_profile_home("stella", root=stella_root) == active.path
+
+    # Create & activate a new profile
+    from stella.profiles import StellaProfileManager
+    mgr = StellaProfileManager(root=stella_root)
+    mgr.create_profile("Studio Pro", profile_id="studio-pro")
+
+    activated = activate_profile("studio-pro", root=stella_root)
+    assert activated.id == "studio-pro"
+    assert get_active_profile(root=stella_root).id == "studio-pro"
+
+    # Context manager runtime_scope
+    with runtime_scope("studio-pro", root=stella_root) as prof:
+        assert prof.id == "studio-pro"
+        from hermes_constants import get_hermes_home
+        # Inside the scope, Hermes HOME resolver resolves to the profile dir
+        assert Path(get_hermes_home()).resolve() == prof.path.resolve()
+
+

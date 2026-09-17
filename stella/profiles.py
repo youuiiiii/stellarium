@@ -257,11 +257,38 @@ class StellaProfileManager:
 
     def get_primary_profile(self) -> Optional[StellaProfileInfo]:
         """Return the profile marked as primary, or the first profile if none explicitly marked."""
+        self.ensure_root_layout(auto_create_default=True)
         profiles = self.list_profiles()
         for p in profiles:
             if p.is_primary:
                 return p
         return profiles[0] if profiles else None
+
+    def get_active_profile_id(self) -> Optional[str]:
+        """Return sticky active profile ID, falling back to primary profile."""
+        self.ensure_root_layout(auto_create_default=True)
+        active_file = self.root / "active_profile"
+        if active_file.is_file():
+            try:
+                candidate = active_file.read_text(encoding="utf-8").strip()
+                if candidate and self.get_profile(candidate) is not None:
+                    return candidate
+            except Exception:
+                pass
+        primary = self.get_primary_profile()
+        return primary.id if primary else None
+
+    def set_active_profile(self, profile_id: str) -> StellaProfileInfo:
+        """Set sticky active profile ID."""
+        profile = self.get_profile(profile_id)
+        if profile is None:
+            raise FileNotFoundError(f"Profile not found: '{profile_id}'")
+        self.root.mkdir(parents=True, exist_ok=True)
+        active_file = self.root / "active_profile"
+        tmp_file = self.root / "active_profile.tmp"
+        tmp_file.write_text(profile.id + "\n", encoding="utf-8")
+        tmp_file.replace(active_file)
+        return profile
 
     def create_profile(
         self,

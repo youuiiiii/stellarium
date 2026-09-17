@@ -28,6 +28,17 @@ from stella.profiles import (
     sanitize_profile_id,
     validate_profile_id,
 )
+from stella.filesystem import (
+    assert_no_link_or_reparse,
+    is_link_or_reparse,
+)
+from stella.runtime import (
+    activate_profile,
+    get_active_profile,
+    resolve_active_profile_home,
+    resolve_profile_home,
+    runtime_scope,
+)
 
 __all__ = [
     "StellaProfileManager",
@@ -46,4 +57,11 @@ __all__ = [
     "MIGRATION_MANIFEST_FILE",
     "STANDARD_PROFILE_SUBDIRS",
     "SUPPORTED_MIGRATION_COMPONENTS",
+    "assert_no_link_or_reparse",
+    "is_link_or_reparse",
+    "activate_profile",
+    "get_active_profile",
+    "resolve_active_profile_home",
+    "resolve_profile_home",
+    "runtime_scope",
 ]
