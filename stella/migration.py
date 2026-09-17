@@ -17,12 +17,15 @@ import hashlib
 import json
 import logging
 import os
+import re
 import shutil
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple
+
+import yaml
 
 from stella.constants import (
     DEFAULT_PRIMARY_PROFILE_ID,
@@ -30,9 +33,40 @@ from stella.constants import (
     SUPPORTED_MIGRATION_COMPONENTS,
     get_default_stella_home,
 )
-from stella.profiles import StellaProfileManager, sanitize_profile_id
+from stella.profiles import (
+    StellaProfileManager,
+    sanitize_profile_id,
+    validate_profile_id,
+)
 
 logger = logging.getLogger(__name__)
+
+
+DEFAULT_MIGRATION_COMPONENTS = frozenset(
+    {"config", "soul", "memories", "skills", "cron"}
+)
+
+# These names identify values that must not cross the Hermes -> Stella
+# migration boundary.  Environment-variable references (foo_env / key_env)
+# are safe metadata; their values are not credentials themselves.
+_SENSITIVE_KEY_RE = re.compile(
+    r"(?:api[_-]?keys?|access[_-]?tokens?|refresh[_-]?tokens?|"
+    r"auth(?:orization)?|passwords?|passwd|secrets?|credentials?|"
+    r"private[_-]?keys?|client[_-]?secrets?|cookies?|webhooks?|"
+    r"headers?|env(?:ironment)?|connection[_-]?strings?|dsn)$",
+    re.IGNORECASE,
+)
+_ENV_REFERENCE_SUFFIXES = ("_env", "_environment")
+_CONNECTION_SECRET_RE = re.compile(r"://[^\s/@:]+:[^\s/@]+@")
+
+
+@dataclass(frozen=True)
+class _FilePlan:
+    source: Path
+    relative_path: str
+    destination: Path
+    component: str
+    transform: Optional[str] = None
 
 
 def _compute_sha256(path: Path) -> str:
@@ -74,6 +108,16 @@ class ComponentPreview:
     file_count: int = 0
     total_bytes: int = 0
     sample_files: List[str] = field(default_factory=list)
+    excluded_files: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+
+
+@dataclass
+class _SanitizedConfig:
+    """Safe config payload plus an audit trail of removed key paths."""
+
+    payload: Any
+    redacted_paths: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -85,6 +129,9 @@ class MigrationPreview:
     components: Dict[str, ComponentPreview]
     conflicts: List[str] = field(default_factory=list)
     named_profiles: List[str] = field(default_factory=list)
+    selected_components: List[str] = field(default_factory=list)
+    excluded_files: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
     can_proceed: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
@@ -100,6 +147,23 @@ class CopiedFileRecord:
     size: int
     sha256: str
     copied_at: str
+    destination_existed: bool = False
+    backup_relative_path: Optional[str] = None
+    redacted_paths: List[str] = field(default_factory=list)
+
+
+@dataclass
+class _RollbackConflict:
+    relative_path: str
+    reason: str
+
+
+@dataclass
+class _MigrationTransaction:
+    stage_dir: Path
+    backup_dir: Path
+    committed: List[CopiedFileRecord] = field(default_factory=list)
+    backups_created: List[Path] = field(default_factory=list)
 
 
 @dataclass
@@ -113,16 +177,27 @@ class MigrationManifest:
     selected_components: List[str]
     copied_files: List[CopiedFileRecord] = field(default_factory=list)
     skipped_files: List[Dict[str, str]] = field(default_factory=list)
-    status: str = "completed"  # 'completed', 'rolled_back', 'failed'
+    excluded_files: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+    child_migrations: List[Dict[str, str]] = field(default_factory=list)
+    status: str = "completed"  # 'completed', 'rolled_back', 'failed', 'rollback_conflict'
+    rollback_conflicts: List[Dict[str, str]] = field(default_factory=list)
+    staging_relative_path: Optional[str] = None
+    backup_relative_path: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "MigrationManifest":
-        copied = [
-            CopiedFileRecord(**c) for c in data.get("copied_files", [])
-        ]
+        copied = []
+        for raw_record in data.get("copied_files", []):
+            record = dict(raw_record)
+            # Keep manifests written by the first implementation readable.
+            record.setdefault("destination_existed", False)
+            record.setdefault("backup_relative_path", None)
+            record.setdefault("redacted_paths", [])
+            copied.append(CopiedFileRecord(**record))
         return cls(
             migration_id=data["migration_id"],
             source_path=data["source_path"],
@@ -131,7 +206,13 @@ class MigrationManifest:
             selected_components=data.get("selected_components", []),
             copied_files=copied,
             skipped_files=data.get("skipped_files", []),
+            excluded_files=data.get("excluded_files", []),
+            warnings=data.get("warnings", []),
+            child_migrations=data.get("child_migrations", []),
             status=data.get("status", "completed"),
+            rollback_conflicts=data.get("rollback_conflicts", []),
+            staging_relative_path=data.get("staging_relative_path"),
+            backup_relative_path=data.get("backup_relative_path"),
         )
 
 
@@ -147,6 +228,285 @@ class HermesMigrationEngine:
             profile_manager or StellaProfileManager(stella_home)
         )
         self.stella_home = self.profile_mgr.root
+
+    @staticmethod
+    def _normalise_components(
+        components: Optional[Iterable[str]],
+    ) -> set[str]:
+        """Resolve component selection without treating an empty list as all."""
+        if components is None:
+            return set(DEFAULT_MIGRATION_COMPONENTS)
+        if isinstance(components, (str, bytes)):
+            raise ValueError("components must be a list of component names")
+
+        selected = {str(item).strip().lower() for item in components}
+        if not selected:
+            raise ValueError("at least one migration component must be selected")
+        unknown = selected - set(SUPPORTED_MIGRATION_COMPONENTS)
+        if unknown:
+            names = ", ".join(sorted(unknown))
+            raise ValueError(f"Unknown migration component(s): {names}")
+        return selected
+
+    @staticmethod
+    def _normalise_relative_path(value: str) -> str:
+        """Return a portable relative path or fail closed."""
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("manifest path must be a non-empty string")
+        raw = value.replace("\\", "/")
+        posix_path = PurePosixPath(raw)
+        windows_path = PureWindowsPath(raw)
+        if (
+            raw.startswith("/")
+            or posix_path.is_absolute()
+            or windows_path.is_absolute()
+        ):
+            raise ValueError(f"absolute migration path is not allowed: {value!r}")
+        parts = tuple(part for part in raw.split("/") if part)
+        if not parts or any(part in {".", ".."} for part in parts):
+            raise ValueError(f"unsafe migration path: {value!r}")
+        return "/".join(parts)
+
+    @staticmethod
+    def _is_within(path: Path, root: Path) -> bool:
+        try:
+            path.resolve(strict=False).relative_to(root.resolve(strict=False))
+        except ValueError:
+            return False
+        return True
+
+    @classmethod
+    def _assert_no_path_overlap(cls, left: Path, right: Path) -> None:
+        left_resolved = left.resolve(strict=False)
+        right_resolved = right.resolve(strict=False)
+        if cls._is_within(left_resolved, right_resolved) or cls._is_within(
+            right_resolved, left_resolved
+        ):
+            raise ValueError(
+                "Hermes source must be outside Stella home; "
+                "source and destination must be disjoint"
+            )
+
+    def _validate_source_root(self, source_path: Path | str) -> Path:
+        source_input = Path(source_path).expanduser()
+        if source_input.is_symlink():
+            raise ValueError("Hermes source directory may not be a symlink or junction")
+        source = source_input.resolve(strict=False)
+        if not source.is_dir():
+            raise ValueError(f"Hermes source directory does not exist: {source}")
+        self._assert_no_path_overlap(source, self.stella_home)
+        return source
+
+    def _validate_profile_dir(
+        self,
+        profile_dir: Path | str,
+        expected_profile_id: Optional[str] = None,
+    ) -> Path:
+        """Validate a target profile and reject links/junctions outside it."""
+        profile_path = Path(profile_dir).expanduser()
+        if profile_path.is_symlink():
+            raise ValueError("Stella profile directory may not be a symlink or junction")
+        profiles_root = Path(self.profile_mgr.profiles_dir).resolve(strict=False)
+        resolved = profile_path.resolve(strict=False)
+        try:
+            relative = resolved.relative_to(profiles_root)
+        except ValueError as exc:
+            raise ValueError("Stella target is outside the profiles directory") from exc
+        if len(relative.parts) != 1 or not relative.parts[0]:
+            raise ValueError("Stella target must be one direct profile directory")
+        if expected_profile_id and relative.parts[0].casefold() != expected_profile_id.casefold():
+            raise ValueError("manifest target profile does not match rollback target")
+        return profile_path
+
+    def _safe_child(self, root: Path, relative_path: str, label: str) -> Path:
+        """Join a relative path while rejecting traversal and every link."""
+        normalised = self._normalise_relative_path(relative_path)
+        candidate = root.joinpath(*normalised.split("/"))
+        if not self._is_within(candidate, root):
+            raise ValueError(f"{label} escapes its root: {relative_path!r}")
+
+        cursor = root
+        for part in normalised.split("/"):
+            cursor = cursor / part
+            if cursor.is_symlink():
+                raise ValueError(f"{label} contains a symlink or junction: {relative_path!r}")
+            if cursor.exists() and not self._is_within(cursor, root):
+                raise ValueError(f"{label} escapes its root: {relative_path!r}")
+        return candidate
+
+    def _assert_source_entry(self, path: Path, source_root: Path) -> None:
+        if path.is_symlink():
+            raise ValueError(f"Hermes source contains a symlink or junction: {path}")
+        if not self._is_within(path, source_root):
+            raise ValueError(f"Hermes source entry escapes source root: {path}")
+
+    def _assert_source_file(self, path: Path, source_root: Path) -> None:
+        self._assert_source_entry(path, source_root)
+        if not path.is_file():
+            raise ValueError(f"migration source is not a regular file: {path}")
+
+    def _iter_source_files(self, root: Path, source_root: Path) -> Iterable[Path]:
+        """Walk without following symlinks, junctions, or special files."""
+        if not root.exists():
+            return
+        if root.is_symlink():
+            raise ValueError(f"Hermes source contains a symlink or junction: {root}")
+        if not root.is_dir():
+            raise ValueError(f"migration component is not a directory: {root}")
+
+        for current, dirnames, filenames in os.walk(
+            root, topdown=True, followlinks=False
+        ):
+            current_path = Path(current)
+            dirnames.sort()
+            filenames.sort()
+            for dirname in list(dirnames):
+                self._assert_source_entry(current_path / dirname, source_root)
+            for filename in filenames:
+                path = current_path / filename
+                self._assert_source_file(path, source_root)
+                yield path
+
+    @classmethod
+    def _sanitise_config_value(
+        cls,
+        value: Any,
+        path: str,
+        redacted_paths: List[str],
+    ) -> Any:
+        if isinstance(value, Mapping):
+            safe: Dict[Any, Any] = {}
+            for key, child in value.items():
+                key_text = str(key)
+                normalised_key = re.sub(r"[^a-z0-9]+", "_", key_text.lower()).strip("_")
+                child_path = f"{path}.{key_text}" if path else key_text
+                if not normalised_key.endswith(_ENV_REFERENCE_SUFFIXES) and _SENSITIVE_KEY_RE.search(
+                    normalised_key
+                ):
+                    redacted_paths.append(child_path)
+                    continue
+                safe[key] = cls._sanitise_config_value(
+                    child, child_path, redacted_paths
+                )
+            return safe
+        if isinstance(value, list):
+            return [
+                cls._sanitise_config_value(
+                    child, f"{path}[{index}]", redacted_paths
+                )
+                for index, child in enumerate(value)
+            ]
+        if isinstance(value, str) and _CONNECTION_SECRET_RE.search(value):
+            redacted_paths.append(path or "<value>")
+            return "[REDACTED]"
+        return value
+
+    @classmethod
+    def _load_sanitised_config(
+        cls, source_path: Path
+    ) -> Tuple[str, List[str]]:
+        try:
+            parsed = yaml.safe_load(source_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, yaml.YAMLError) as exc:
+            raise ValueError(
+                "refusing to copy config.yaml because it cannot be parsed safely"
+            ) from exc
+        redacted_paths: List[str] = []
+        safe_value = cls._sanitise_config_value(parsed, "", redacted_paths)
+        try:
+            content = yaml.safe_dump(
+                safe_value,
+                sort_keys=False,
+                allow_unicode=True,
+                default_flow_style=False,
+            )
+        except yaml.YAMLError as exc:
+            raise ValueError("refusing to serialize sanitized config.yaml") from exc
+        return content, redacted_paths
+
+    def _build_file_plans(
+        self,
+        source: Path,
+        target_dir: Path,
+        selected: Set[str],
+    ) -> Tuple[List[_FilePlan], List[str]]:
+        """Build and validate a copy plan before touching the destination."""
+        plans: List[_FilePlan] = []
+        excluded_files: List[str] = []
+        seen_destinations: Set[str] = set()
+
+        def add_file(
+            source_file: Path,
+            relative_path: str,
+            component: str,
+            transform: Optional[str] = None,
+        ) -> None:
+            self._assert_source_file(source_file, source)
+            normalised = self._normalise_relative_path(relative_path)
+            if normalised in seen_destinations:
+                raise ValueError(f"duplicate migration destination: {normalised}")
+            destination = self._safe_child(target_dir, normalised, "migration destination")
+            seen_destinations.add(normalised)
+            plans.append(
+                _FilePlan(
+                    source=source_file,
+                    relative_path=normalised,
+                    destination=destination,
+                    component=component,
+                    transform=transform,
+                )
+            )
+
+        def add_tree(component: str, source_dir: Path) -> None:
+            if not source_dir.exists():
+                return
+            for source_file in self._iter_source_files(source_dir, source):
+                relative = source_file.relative_to(source).as_posix()
+                # Hidden files are deliberately not migratable, but are still
+                # inspected by _iter_source_files so links cannot hide in them.
+                if any(part.startswith(".") for part in source_file.relative_to(source_dir).parts):
+                    continue
+                add_file(source_file, relative, component)
+
+        if "config" in selected:
+            config_file = source / "config.yaml"
+            if config_file.exists() and not config_file.is_dir():
+                add_file(config_file, "config.yaml", "config", "sanitise_config")
+            dotenv = source / ".env"
+            if dotenv.exists() or dotenv.is_symlink():
+                # Never inspect or copy its contents.  Recording the exclusion
+                # makes the opt-in choice visible in preview/manifest output.
+                excluded_files.append(".env")
+
+        if "soul" in selected:
+            for name in ("SOUL.md", "system_prompt.md", "AGENTS.md"):
+                source_file = source / name
+                if source_file.is_file() or source_file.is_symlink():
+                    add_file(source_file, name, "soul")
+
+        if "memories" in selected:
+            for name in ("MEMORY.md", "USER.md"):
+                source_file = source / name
+                if source_file.is_file() or source_file.is_symlink():
+                    add_file(source_file, f"memories/{name}", "memories")
+            add_tree("memories", source / "memories")
+
+        if "skills" in selected:
+            add_tree("skills", source / "skills")
+
+        if "cron" in selected:
+            cron_dir = source / "cron"
+            if cron_dir.exists():
+                for source_file in self._iter_source_files(cron_dir, source):
+                    if source_file.name.endswith((".db-wal", ".db-shm")):
+                        continue
+                    relative = source_file.relative_to(source).as_posix()
+                    add_file(source_file, relative, "cron")
+
+        if "sessions" in selected:
+            add_tree("sessions", source / "sessions")
+
+        return plans, excluded_files
 
     # ----------------------------------------------------------------------
     # 1. DISCOVERY
@@ -270,134 +630,81 @@ class HermesMigrationEngine:
         self,
         source_path: Path | str,
         target_profile_id: str = DEFAULT_PRIMARY_PROFILE_ID,
+        components: Optional[Iterable[str]] = None,
     ) -> MigrationPreview:
-        """Examine source directory and predict what files will be copied."""
-        src = Path(source_path).expanduser().resolve()
-        if not src.is_dir():
-            raise FileNotFoundError(f"Source Hermes directory not found: {src}")
-
-        target_dir = self.profile_mgr.get_profile_dir(target_profile_id)
-        components: Dict[str, ComponentPreview] = {}
-        conflicts: List[str] = []
-
-        # 1. Config
-        cfg_files = []
-        for name in ["config.yaml", ".env"]:
-            f = src / name
-            if f.is_file():
-                cfg_files.append(f)
-        components["config"] = ComponentPreview(
-            name="config",
-            available=bool(cfg_files),
-            file_count=len(cfg_files),
-            total_bytes=sum(f.stat().st_size for f in cfg_files),
-            sample_files=[f.name for f in cfg_files],
+        """Examine source data without reading secrets or changing either tree."""
+        src = self._validate_source_root(source_path)
+        validate_profile_id(target_profile_id)
+        target_id = target_profile_id
+        selected = self._normalise_components(components)
+        target_dir = self._validate_profile_dir(
+            self.profile_mgr.get_profile_dir(target_id), target_id
         )
 
-        # 2. Soul / Persona
-        soul_files = []
-        for name in ["SOUL.md", "system_prompt.md", "AGENTS.md"]:
-            f = src / name
-            if f.is_file():
-                soul_files.append(f)
-        components["soul"] = ComponentPreview(
-            name="soul",
-            available=bool(soul_files),
-            file_count=len(soul_files),
-            total_bytes=sum(f.stat().st_size for f in soul_files),
-            sample_files=[f.name for f in soul_files],
+        # Build all summaries so the UI can show unselected components, while
+        # conflicts are reported only for the user's explicit selection.
+        all_plans, excluded = self._build_file_plans(
+            src, target_dir, set(SUPPORTED_MIGRATION_COMPONENTS)
         )
-
-        # 3. Memories
-        mem_files = []
-        mem_dir = src / "memories"
-        if mem_dir.is_dir():
-            mem_files.extend(
-                [f for f in mem_dir.glob("**/*") if f.is_file() and not f.name.startswith(".")]
+        selected_plans = [plan for plan in all_plans if plan.component in selected]
+        components_by_name: Dict[str, ComponentPreview] = {}
+        for name in sorted(SUPPORTED_MIGRATION_COMPONENTS):
+            plans = [plan for plan in all_plans if plan.component == name]
+            excluded_for_component = [item for item in excluded if name == "config"]
+            warnings: List[str] = []
+            if name == "config":
+                config_plan = next(
+                    (plan for plan in plans if plan.transform == "sanitise_config"),
+                    None,
+                )
+                if config_plan:
+                    _, redacted = self._load_sanitised_config(config_plan.source)
+                    if redacted:
+                        warnings.append(
+                            f"redacted {len(redacted)} sensitive config value(s)"
+                        )
+            components_by_name[name] = ComponentPreview(
+                name=name,
+                available=bool(plans) or bool(excluded_for_component),
+                file_count=len(plans),
+                total_bytes=sum(plan.source.stat().st_size for plan in plans),
+                sample_files=[plan.relative_path for plan in plans[:5]],
+                excluded_files=excluded_for_component,
+                warnings=warnings,
             )
-        for name in ["MEMORY.md", "USER.md"]:
-            f = src / name
-            if f.is_file():
-                mem_files.append(f)
-        components["memories"] = ComponentPreview(
-            name="memories",
-            available=bool(mem_files),
-            file_count=len(mem_files),
-            total_bytes=sum(f.stat().st_size for f in mem_files),
-            sample_files=[str(f.relative_to(src)) for f in mem_files[:5]],
-        )
 
-        # 4. Skills
-        skill_files = []
-        skills_dir = src / "skills"
-        if skills_dir.is_dir():
-            skill_files.extend(
-                [f for f in skills_dir.glob("**/*") if f.is_file() and not f.name.startswith(".")]
-            )
-        components["skills"] = ComponentPreview(
-            name="skills",
-            available=bool(skill_files),
-            file_count=len(skill_files),
-            total_bytes=sum(f.stat().st_size for f in skill_files),
-            sample_files=[str(f.relative_to(src)) for f in skill_files[:5]],
-        )
+        conflicts = [
+            plan.relative_path
+            for plan in selected_plans
+            if plan.destination.exists()
+        ]
 
-        # 5. Cron
-        cron_files = []
-        c_dir = src / "cron"
-        if c_dir.is_dir():
-            cron_files.extend(
-                [f for f in c_dir.glob("**/*") if f.is_file() and not f.name.endswith(".db-wal")]
-            )
-        components["cron"] = ComponentPreview(
-            name="cron",
-            available=bool(cron_files),
-            file_count=len(cron_files),
-            total_bytes=sum(f.stat().st_size for f in cron_files),
-            sample_files=[str(f.relative_to(src)) for f in cron_files[:5]],
-        )
-
-        # 6. Sessions
-        session_files = []
-        sess_dir = src / "sessions"
-        if sess_dir.is_dir():
-            session_files.extend(
-                [f for f in sess_dir.glob("**/*") if f.is_file() and not f.name.startswith(".")]
-            )
-        components["sessions"] = ComponentPreview(
-            name="sessions",
-            available=bool(session_files),
-            file_count=len(session_files),
-            total_bytes=sum(f.stat().st_size for f in session_files),
-            sample_files=[str(f.relative_to(src)) for f in session_files[:5]],
-        )
-
-        # Conflict check if target profile directory exists
-        if target_dir.is_dir():
-            all_source_files = (
-                cfg_files + soul_files + mem_files + skill_files + cron_files + session_files
-            )
-            for sf in all_source_files:
-                rel = sf.relative_to(src)
-                dest = target_dir / rel
-                if dest.exists():
-                    conflicts.append(str(rel))
-
-        # Discover named profiles
         named: List[str] = []
-        p_dir = src / "profiles"
-        if p_dir.is_dir():
-            named = [
-                d.name for d in p_dir.iterdir()
-                if d.is_dir() and not d.name.startswith((".", "_")) and d.name != "default"
-            ]
+        profiles_dir = src / "profiles"
+        if profiles_dir.exists():
+            self._assert_source_entry(profiles_dir, src)
+            if not profiles_dir.is_dir():
+                raise ValueError("Hermes profiles entry is not a directory")
+            for entry in sorted(profiles_dir.iterdir(), key=lambda item: item.name.casefold()):
+                if entry.name.startswith((".", "_")) or entry.name == "default":
+                    continue
+                self._assert_source_entry(entry, src)
+                if entry.is_dir():
+                    named.append(entry.name)
+
+        warnings = []
+        if excluded:
+            warnings.append(".env and other credential files are never migrated")
 
         return MigrationPreview(
             source_path=str(src),
-            target_profile_id=target_profile_id,
-            components=components,
+            target_profile_id=target_id,
+            components=components_by_name,
             conflicts=conflicts,
             named_profiles=named,
+            selected_components=sorted(selected),
+            excluded_files=excluded,
+            warnings=warnings,
             can_proceed=True,
         )
 
@@ -405,27 +712,120 @@ class HermesMigrationEngine:
     # 3. EXECUTION
     # ----------------------------------------------------------------------
 
+    def _ensure_safe_directory(self, root: Path, relative_dir: str) -> Path:
+        """Create a directory below root without traversing links."""
+        if not relative_dir or relative_dir in {".", ""}:
+            return root
+        normalised = self._normalise_relative_path(relative_dir)
+        current = root
+        for part in normalised.split("/"):
+            current = current / part
+            if current.is_symlink():
+                raise ValueError("migration directory contains a symlink or junction")
+            if current.exists():
+                if not current.is_dir() or not self._is_within(current, root):
+                    raise ValueError("migration directory escapes its root")
+            else:
+                current.mkdir()
+        return current
+
+    def _remove_generated_directory(self, directory: Path, root: Path) -> None:
+        """Remove only a generated staging/backup directory under root."""
+        if not directory.exists() and not directory.is_symlink():
+            return
+        if directory.is_symlink() or not self._is_within(directory, root):
+            raise ValueError("generated migration directory is unsafe")
+        if not directory.is_dir():
+            raise ValueError("generated migration path is not a directory")
+        shutil.rmtree(directory)
+
+    def _read_manifest(self, profile_dir: Path) -> Optional[MigrationManifest]:
+        manifest_file = self._safe_child(
+            profile_dir, MIGRATION_MANIFEST_FILE, "migration manifest"
+        )
+        if not manifest_file.is_file() or manifest_file.is_symlink():
+            return None
+        try:
+            raw = json.loads(manifest_file.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("manifest root must be an object")
+            return MigrationManifest.from_dict(raw)
+        except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            logger.error("Failed to read migration manifest: %s", exc)
+            return None
+
+    def _stage_file(
+        self,
+        plan: _FilePlan,
+        stage_dir: Path,
+    ) -> Tuple[Path, List[str]]:
+        stage_file = self._safe_child(stage_dir, plan.relative_path, "migration staging")
+        parent_relative = "/".join(plan.relative_path.split("/")[:-1])
+        self._ensure_safe_directory(stage_dir, parent_relative)
+        if plan.transform == "sanitise_config":
+            content, redacted_paths = self._load_sanitised_config(plan.source)
+            stage_file.write_text(content, encoding="utf-8")
+        else:
+            shutil.copy2(plan.source, stage_file)
+            redacted_paths = []
+        if stage_file.is_symlink() or not stage_file.is_file():
+            raise ValueError("migration staging did not produce a regular file")
+        return stage_file, redacted_paths
+
+    def _restore_committed_records(
+        self,
+        profile_dir: Path,
+        records: List[CopiedFileRecord],
+    ) -> None:
+        """Compensate a failed commit; never overwrite an unexpected file."""
+        for record in reversed(records):
+            destination = self._safe_child(
+                profile_dir, record.relative_path, "migration rollback"
+            )
+            if record.destination_existed:
+                if not record.backup_relative_path:
+                    raise ValueError(
+                        f"missing overwrite backup for {record.relative_path}"
+                    )
+                backup = self._safe_child(
+                    profile_dir,
+                    record.backup_relative_path,
+                    "migration backup",
+                )
+                if backup.is_symlink() or not backup.is_file():
+                    raise ValueError(f"missing migration backup for {record.relative_path}")
+                if destination.is_symlink():
+                    raise ValueError(f"destination became a symlink: {record.relative_path}")
+                if destination.exists():
+                    if not destination.is_file() or _compute_sha256(destination) != record.sha256:
+                        raise ValueError(
+                            f"destination changed during failed migration: {record.relative_path}"
+                        )
+                    destination.unlink()
+                os.replace(str(backup), str(destination))
+            elif destination.exists():
+                if destination.is_symlink() or not destination.is_file():
+                    raise ValueError(f"unsafe destination during rollback: {record.relative_path}")
+                if _compute_sha256(destination) != record.sha256:
+                    raise ValueError(
+                        f"destination changed during failed migration: {record.relative_path}"
+                    )
+                destination.unlink()
+
     def execute_migration(
         self,
         source_path: Path | str,
         target_profile_id: str = DEFAULT_PRIMARY_PROFILE_ID,
-        components: Optional[List[str] | Set[str]] = None,
+        components: Optional[Iterable[str]] = None,
         overwrite: bool = False,
         import_named_profiles: bool = False,
     ) -> MigrationManifest:
-        """Execute selective migration from Hermes source into target Stella profile.
+        """Execute a staged, selective and reversible Hermes migration."""
+        src = self._validate_source_root(source_path)
+        validate_profile_id(target_profile_id)
+        target_id = target_profile_id
+        selected = self._normalise_components(components)
 
-        Strictly read-only on the source.
-        Atomic & rollback-safe on destination.
-        """
-        src = Path(source_path).expanduser().resolve()
-        if not src.is_dir():
-            raise FileNotFoundError(f"Source Hermes directory not found: {src}")
-
-        target_id = sanitize_profile_id(target_profile_id)
-        selected = set(components or ["config", "soul", "memories", "skills", "cron"])
-
-        # Ensure target profile exists in Stella
         target_info = self.profile_mgr.get_profile(target_id)
         if not target_info:
             target_info = self.profile_mgr.create_profile(
@@ -434,125 +834,204 @@ class HermesMigrationEngine:
                 description=f"Imported from Hermes ({src})",
                 is_primary=(target_id == DEFAULT_PRIMARY_PROFILE_ID),
             )
-        target_dir = target_info.path
+        target_dir = self._validate_profile_dir(target_info.path, target_id)
+
+        existing_manifest = self._read_manifest(target_dir)
+        if existing_manifest and existing_manifest.status in {
+            "completed",
+            "staged",
+            "rollback_conflict",
+        } and existing_manifest.copied_files:
+            raise ValueError(
+                "target profile has an active migration; roll it back before importing again"
+            )
 
         migration_id = f"mig_{int(time.time())}_{os.urandom(4).hex()}"
+        stage_name = f".stella-migration-staging-{migration_id}"
+        backup_name = f".stella-migration-backups-{migration_id}"
+        stage_dir = target_dir / stage_name
+        backup_dir = target_dir / backup_name
+        if stage_dir.exists() or stage_dir.is_symlink() or backup_dir.exists() or backup_dir.is_symlink():
+            raise FileExistsError("migration staging namespace already exists")
+
         manifest = MigrationManifest(
             migration_id=migration_id,
             source_path=str(src),
             target_profile_id=target_id,
             created_at=datetime.now(timezone.utc).isoformat(),
             selected_components=sorted(selected),
+            staging_relative_path=stage_name,
+            backup_relative_path=backup_name,
         )
-
-        files_to_copy: List[tuple[Path, Path, str]] = []  # (src_file, dst_file, rel_str)
+        transaction = _MigrationTransaction(stage_dir=stage_dir, backup_dir=backup_dir)
+        child_manifests: List[MigrationManifest] = []
 
         try:
-            # 1. Config
-            if "config" in selected:
-                for name in ["config.yaml", ".env"]:
-                    sf = src / name
-                    if sf.is_file():
-                        files_to_copy.append((sf, target_dir / name, name))
+            plans, excluded_files = self._build_file_plans(src, target_dir, selected)
+            manifest.excluded_files.extend(excluded_files)
 
-            # 2. Soul
-            if "soul" in selected:
-                for name in ["SOUL.md", "system_prompt.md", "AGENTS.md"]:
-                    sf = src / name
-                    if sf.is_file():
-                        files_to_copy.append((sf, target_dir / name, name))
-
-            # 3. Memories
-            if "memories" in selected:
-                mem_dir = src / "memories"
-                if mem_dir.is_dir():
-                    for sf in mem_dir.glob("**/*"):
-                        if sf.is_file() and not sf.name.startswith("."):
-                            rel = sf.relative_to(src)
-                            files_to_copy.append((sf, target_dir / rel, str(rel)))
-                for name in ["MEMORY.md", "USER.md"]:
-                    sf = src / name
-                    if sf.is_file():
-                        # Map root MEMORY.md / USER.md cleanly into memories/ in Stella
-                        target_mem = target_dir / "memories" / name
-                        files_to_copy.append((sf, target_mem, f"memories/{name}"))
-
-            # 4. Skills
-            if "skills" in selected:
-                skills_dir = src / "skills"
-                if skills_dir.is_dir():
-                    for sf in skills_dir.glob("**/*"):
-                        if sf.is_file() and not sf.name.startswith("."):
-                            rel = sf.relative_to(src)
-                            files_to_copy.append((sf, target_dir / rel, str(rel)))
-
-            # 5. Cron
-            if "cron" in selected:
-                c_dir = src / "cron"
-                if c_dir.is_dir():
-                    for sf in c_dir.glob("**/*"):
-                        if sf.is_file() and not sf.name.endswith((".db-wal", ".db-shm")):
-                            rel = sf.relative_to(src)
-                            files_to_copy.append((sf, target_dir / rel, str(rel)))
-
-            # 6. Sessions
-            if "sessions" in selected:
-                sess_dir = src / "sessions"
-                if sess_dir.is_dir():
-                    for sf in sess_dir.glob("**/*"):
-                        if sf.is_file() and not sf.name.startswith("."):
-                            rel = sf.relative_to(src)
-                            files_to_copy.append((sf, target_dir / rel, str(rel)))
-
-            # Execute copy with audit logging
-            for sf, df, rel_name in files_to_copy:
-                if df.exists() and not overwrite:
-                    manifest.skipped_files.append(
-                        {"rel_path": rel_name, "reason": "already_exists"}
-                    )
-                    continue
-
-                df.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(sf, df)
-                copied_sha = _compute_sha256(df)
-                manifest.copied_files.append(
-                    CopiedFileRecord(
-                        relative_path=rel_name,
-                        size=df.stat().st_size,
-                        sha256=copied_sha,
-                        copied_at=datetime.now(timezone.utc).isoformat(),
-                    )
+            # Validate every destination and decide conflicts before any write.
+            to_stage: List[_FilePlan] = []
+            for plan in plans:
+                destination = self._safe_child(
+                    target_dir, plan.relative_path, "migration destination"
                 )
+                if destination.is_symlink():
+                    raise ValueError(
+                        f"migration destination contains a symlink: {plan.relative_path}"
+                    )
+                if destination.exists() and not destination.is_file():
+                    raise ValueError(
+                        f"migration destination is not a regular file: {plan.relative_path}"
+                    )
+                if destination.exists() and not overwrite:
+                    manifest.skipped_files.append(
+                        {"rel_path": plan.relative_path, "reason": "already_exists"}
+                    )
+                else:
+                    to_stage.append(plan)
 
-            # Persist migration manifest in target profile
+            stage_dir.mkdir()
+            # Stage all content first.  A copy/parse failure leaves no imported
+            # files in the profile because commit has not started yet.
+            staged: Dict[str, Tuple[Path, List[str]]] = {}
+            for plan in to_stage:
+                staged[plan.relative_path] = self._stage_file(plan, stage_dir)
+                redacted = staged[plan.relative_path][1]
+                if redacted:
+                    manifest.warnings.append(
+                        "redacted config keys: " + ", ".join(sorted(redacted))
+                    )
+
+            manifest.status = "staged"
             self._save_manifest(target_dir, manifest)
 
-            # Handle named profiles if requested
+            # Commit each already-staged file.  Existing files are copied to a
+            # private backup before os.replace, so overwrite rollback restores
+            # the original bytes rather than merely deleting the new file.
+            for plan in to_stage:
+                destination = self._safe_child(
+                    target_dir, plan.relative_path, "migration destination"
+                )
+                destination_existed = destination.exists()
+                if destination.is_symlink() or (
+                    destination_existed and not destination.is_file()
+                ):
+                    raise ValueError(
+                        f"migration destination changed unsafely: {plan.relative_path}"
+                    )
+                if destination_existed and not overwrite:
+                    raise ValueError(
+                        f"migration destination appeared during import: {plan.relative_path}"
+                    )
+
+                backup_relative_path: Optional[str] = None
+                if destination_existed:
+                    backup_relative_path = (
+                        f"{backup_name}/{plan.relative_path}"
+                    )
+                    backup = self._safe_child(
+                        target_dir, backup_relative_path, "migration backup"
+                    )
+                    self._ensure_safe_directory(
+                        target_dir,
+                        "/".join(backup_relative_path.split("/")[:-1]),
+                    )
+                    shutil.copy2(destination, backup)
+                    transaction.backups_created.append(backup)
+
+                stage_file, redacted_paths = staged[plan.relative_path]
+                self._ensure_safe_directory(
+                    target_dir,
+                    "/".join(plan.relative_path.split("/")[:-1]),
+                )
+                record = CopiedFileRecord(
+                    relative_path=plan.relative_path,
+                    size=stage_file.stat().st_size,
+                    sha256=_compute_sha256(stage_file),
+                    copied_at=datetime.now(timezone.utc).isoformat(),
+                    destination_existed=destination_existed,
+                    backup_relative_path=backup_relative_path,
+                    redacted_paths=redacted_paths,
+                )
+                os.replace(str(stage_file), str(destination))
+                transaction.committed.append(record)
+                manifest.copied_files.append(record)
+
+            self._remove_generated_directory(stage_dir, target_dir)
+            manifest.staging_relative_path = None
+            manifest.status = "completed"
+            self._save_manifest(target_dir, manifest)
+
             if import_named_profiles:
-                p_dir = src / "profiles"
-                if p_dir.is_dir():
-                    for sub in p_dir.iterdir():
-                        if (
-                            sub.is_dir()
-                            and not sub.name.startswith((".", "_"))
-                            and sub.name != "default"
-                        ):
-                            sub_id = sanitize_profile_id(sub.name)
-                            self.execute_migration(
-                                source_path=sub,
-                                target_profile_id=sub_id,
-                                components=components,
-                                overwrite=overwrite,
-                                import_named_profiles=False,
+                named_root = src / "profiles"
+                if named_root.exists():
+                    self._assert_source_entry(named_root, src)
+                    if not named_root.is_dir():
+                        raise ValueError("Hermes named profiles path is not a directory")
+                    seen_ids: Set[str] = set()
+                    for sub in sorted(named_root.iterdir(), key=lambda p: p.name.casefold()):
+                        if sub.name.startswith((".", "_")) or sub.name == "default":
+                            continue
+                        self._assert_source_entry(sub, src)
+                        if not sub.is_dir():
+                            raise ValueError("Hermes named profile is not a directory")
+                        sub_id = sanitize_profile_id(sub.name)
+                        validate_profile_id(sub_id)
+                        if sub_id in seen_ids:
+                            raise ValueError(
+                                f"named profiles collide after ID normalization: {sub.name}"
                             )
+                        seen_ids.add(sub_id)
+                        child = self.execute_migration(
+                            source_path=sub,
+                            target_profile_id=sub_id,
+                            components=components,
+                            overwrite=overwrite,
+                            import_named_profiles=False,
+                        )
+                        child_manifests.append(child)
+                        manifest.child_migrations.append(
+                            {
+                                "profile_id": child.target_profile_id,
+                                "migration_id": child.migration_id,
+                            }
+                        )
+                    self._save_manifest(target_dir, manifest)
 
             return manifest
 
-        except Exception as exc:
-            logger.error("Migration failed unexpectedly: %s. Rolling back.", exc)
-            manifest.status = "failed"
-            self._save_manifest(target_dir, manifest)
-            self.rollback_migration(target_dir, manifest=manifest)
+        except Exception:
+            logger.exception("Migration failed; compensating destination changes")
+            for child in reversed(child_manifests):
+                try:
+                    child_dir = self.profile_mgr.get_profile_dir(child.target_profile_id)
+                    self.rollback_migration(child_dir, manifest=child)
+                except Exception:
+                    logger.exception("Failed to roll back child migration %s", child.migration_id)
+
+            restore_ok = True
+            try:
+                self._restore_committed_records(target_dir, transaction.committed)
+            except Exception:
+                restore_ok = False
+                logger.exception("Failed to compensate committed migration files")
+
+            try:
+                self._remove_generated_directory(stage_dir, target_dir)
+                if restore_ok:
+                    self._remove_generated_directory(backup_dir, target_dir)
+            except Exception:
+                logger.exception("Failed to clean migration temporary data")
+
+            manifest.status = "failed" if restore_ok else "rollback_conflict"
+            manifest.staging_relative_path = None
+            if restore_ok:
+                manifest.backup_relative_path = None
+            try:
+                self._save_manifest(target_dir, manifest)
+            except Exception:
+                logger.exception("Failed to persist failed migration manifest")
             raise
 
     # ----------------------------------------------------------------------
@@ -564,38 +1043,145 @@ class HermesMigrationEngine:
         target_profile_path: Path | str,
         manifest: Optional[MigrationManifest] = None,
     ) -> bool:
-        """Cleanly revert an import using migration_manifest.json."""
-        pdir = Path(target_profile_path).expanduser().resolve()
+        """Rollback only files still matching the imported hash.
+
+        Existing files are restored from backups.  A file edited or deleted by
+        the user is reported as a conflict and is never overwritten or removed.
+        """
+        raw_pdir = Path(target_profile_path).expanduser()
+        if not raw_pdir.exists() and not raw_pdir.is_symlink():
+            return False
+        if manifest is None:
+            # A malformed or missing manifest fails closed without touching data.
+            try:
+                pdir = self._validate_profile_dir(raw_pdir)
+            except ValueError:
+                return False
+            manifest = self._read_manifest(pdir)
+            if manifest is None:
+                return False
+        else:
+            validate_profile_id(manifest.target_profile_id)
+            pdir = self._validate_profile_dir(raw_pdir, manifest.target_profile_id)
+
         if not pdir.is_dir():
             return False
+        if manifest.status == "rolled_back":
+            return True
 
-        if manifest is None:
-            m_file = pdir / MIGRATION_MANIFEST_FILE
-            if not m_file.is_file():
-                return False
-            try:
-                data = json.loads(m_file.read_text(encoding="utf-8"))
-                manifest = MigrationManifest.from_dict(data)
-            except Exception as exc:
-                logger.error("Failed to read migration manifest: %s", exc)
-                return False
+        prepared: List[Tuple[CopiedFileRecord, Path, Optional[Path]]] = []
+        conflicts: List[Dict[str, str]] = []
+        for record in manifest.copied_files:
+            if not re.fullmatch(r"[0-9a-fA-F]{64}", record.sha256):
+                raise ValueError("migration manifest contains an invalid SHA256")
+            destination = self._safe_child(
+                pdir, record.relative_path, "migration rollback"
+            )
+            if destination.is_symlink():
+                raise ValueError(
+                    f"rollback destination contains a symlink: {record.relative_path}"
+                )
+            destination_exists = destination.exists()
+            if destination_exists and not destination.is_file():
+                raise ValueError(
+                    f"rollback destination is not a regular file: {record.relative_path}"
+                )
 
-        # Remove copied files in reverse order
-        for record in reversed(manifest.copied_files):
-            target_file = pdir / record.relative_path
-            if target_file.is_file():
-                try:
-                    target_file.unlink()
-                except Exception as exc:
-                    logger.warning("Failed to delete %s during rollback: %s", target_file, exc)
+            backup: Optional[Path] = None
+            if record.backup_relative_path:
+                backup = self._safe_child(
+                    pdir, record.backup_relative_path, "migration backup"
+                )
+                if backup.is_symlink() or not backup.is_file():
+                    raise ValueError(
+                        f"rollback backup is missing or unsafe: {record.relative_path}"
+                    )
 
-        manifest.status = "rolled_back"
+            if record.destination_existed:
+                if backup is None:
+                    conflicts.append(
+                        {
+                            "relative_path": record.relative_path,
+                            "reason": "overwrite backup is unavailable",
+                        }
+                    )
+                elif not destination_exists:
+                    conflicts.append(
+                        {
+                            "relative_path": record.relative_path,
+                            "reason": "imported file was deleted after migration",
+                        }
+                    )
+                elif _compute_sha256(destination) != record.sha256:
+                    conflicts.append(
+                        {
+                            "relative_path": record.relative_path,
+                            "reason": "file changed after migration",
+                        }
+                    )
+            elif destination_exists and _compute_sha256(destination) != record.sha256:
+                conflicts.append(
+                    {
+                        "relative_path": record.relative_path,
+                        "reason": "file changed after migration",
+                    }
+                )
+            prepared.append((record, destination, backup))
+
+        if conflicts:
+            manifest.rollback_conflicts = conflicts
+            manifest.status = "rollback_conflict"
+            self._save_manifest(pdir, manifest)
+            return False
+
+        try:
+            for record, destination, backup in reversed(prepared):
+                if record.destination_existed:
+                    assert backup is not None
+                    if destination.exists():
+                        destination.unlink()
+                    os.replace(str(backup), str(destination))
+                elif destination.exists():
+                    destination.unlink()
+
+            if manifest.staging_relative_path:
+                staging = self._safe_child(
+                    pdir, manifest.staging_relative_path, "migration staging"
+                )
+                self._remove_generated_directory(staging, pdir)
+            if manifest.backup_relative_path:
+                backup_root = self._safe_child(
+                    pdir, manifest.backup_relative_path, "migration backup"
+                )
+                self._remove_generated_directory(backup_root, pdir)
+        except Exception:
+            manifest.status = "rollback_failed"
+            self._save_manifest(pdir, manifest)
+            raise
+
+        child_ok = True
+        for child in manifest.child_migrations:
+            child_id = child.get("profile_id", "")
+            validate_profile_id(child_id)
+            child_dir = self.profile_mgr.get_profile_dir(child_id)
+            child_ok = self.rollback_migration(child_dir) and child_ok
+
+        manifest.rollback_conflicts = []
+        manifest.status = "rolled_back" if child_ok else "rollback_conflict"
         self._save_manifest(pdir, manifest)
-        return True
+        return child_ok
 
     def _save_manifest(self, profile_dir: Path, manifest: MigrationManifest) -> None:
-        """Write manifest to profile_dir atomically."""
-        manifest_file = profile_dir / MIGRATION_MANIFEST_FILE
-        tmp_file = profile_dir / f".{MIGRATION_MANIFEST_FILE}.tmp"
-        tmp_file.write_text(json.dumps(manifest.to_dict(), indent=2), encoding="utf-8")
+        """Write manifest atomically after validating its profile boundary."""
+        pdir = self._validate_profile_dir(profile_dir, manifest.target_profile_id)
+        manifest_file = self._safe_child(
+            pdir, MIGRATION_MANIFEST_FILE, "migration manifest"
+        )
+        tmp_file = self._safe_child(
+            pdir, f".{MIGRATION_MANIFEST_FILE}.tmp", "migration manifest"
+        )
+        tmp_file.write_text(
+            json.dumps(manifest.to_dict(), indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
         os.replace(str(tmp_file), str(manifest_file))

@@ -118,12 +118,41 @@ class StellaProfileInfo:
 class StellaProfileManager:
     """Manager for Stella's nested profile directory layout."""
 
+    @staticmethod
+    def _is_link_or_reparse(path: Path) -> bool:
+        """Detect symlinks and Windows junction/reparse points."""
+        if path.is_symlink():
+            return True
+        if not path.exists():
+            return False
+        absolute = os.path.normcase(os.path.abspath(os.fspath(path)))
+        resolved = os.path.normcase(os.path.realpath(os.fspath(path)))
+        return absolute != resolved
+
+    @staticmethod
+    def _is_within(path: Path, root: Path) -> bool:
+        try:
+            path.resolve(strict=False).relative_to(root.resolve(strict=False))
+            return True
+        except ValueError:
+            return False
+
+    def _assert_safe_directory(
+        self, directory: Path, parent: Optional[Path] = None
+    ) -> None:
+        """Reject a directory that follows a link or leaves its parent."""
+        if self._is_link_or_reparse(directory):
+            raise ValueError(f"Stella directory may not be a symlink or junction: {directory}")
+        if directory.exists() and not directory.is_dir():
+            raise ValueError(f"Stella path is not a directory: {directory}")
+        if parent is not None and not self._is_within(directory, parent):
+            raise ValueError(f"Stella directory escapes its root: {directory}")
+
     def __init__(self, root: Optional[Path | str] = None) -> None:
-        self.root = (
-            Path(root).expanduser().resolve()
-            if root
-            else get_default_stella_home()
-        )
+        raw_root = Path(root).expanduser() if root else get_default_stella_home()
+        if self._is_link_or_reparse(raw_root):
+            raise ValueError(f"Stella home may not be a symlink or junction: {raw_root}")
+        self.root = raw_root.resolve()
         self.profiles_dir = self.root / STELLA_PROFILES_DIR_NAME
         self.shared_dir = self.root / STELLA_SHARED_DIR_NAME
         self.cache_dir = self.root / STELLA_CACHE_DIR_NAME
@@ -132,10 +161,13 @@ class StellaProfileManager:
         self, auto_create_default: bool = True
     ) -> StellaProfileInfo | None:
         """Create root directories (profiles/, shared/, cache/) and default profile if empty."""
+        if self._is_link_or_reparse(self.root):
+            raise ValueError(f"Stella home may not be a symlink or junction: {self.root}")
         self.root.mkdir(parents=True, exist_ok=True)
-        self.profiles_dir.mkdir(parents=True, exist_ok=True)
-        self.shared_dir.mkdir(parents=True, exist_ok=True)
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        for directory in (self.profiles_dir, self.shared_dir, self.cache_dir):
+            self._assert_safe_directory(directory, parent=self.root)
+            directory.mkdir(parents=True, exist_ok=True)
+            self._assert_safe_directory(directory, parent=self.root)
 
         if auto_create_default:
             profiles = self.list_profiles()
@@ -155,14 +187,24 @@ class StellaProfileManager:
 
     def list_profiles(self) -> List[StellaProfileInfo]:
         """Scan profiles/ directory and load metadata for all active profiles."""
+        self._assert_safe_directory(self.profiles_dir, parent=self.root)
         if not self.profiles_dir.is_dir():
             return []
 
         results: List[StellaProfileInfo] = []
         for entry in sorted(self.profiles_dir.iterdir()):
-            if not entry.is_dir() or entry.name.startswith((".", "_")):
+            if (
+                not entry.is_dir()
+                or entry.name.startswith((".", "_"))
+                or self._is_link_or_reparse(entry)
+            ):
+                if self._is_link_or_reparse(entry):
+                    logger.warning("Ignoring linked profile entry: %s", entry)
                 continue
             meta_file = entry / PROFILE_METADATA_FILE
+            if self._is_link_or_reparse(meta_file):
+                logger.warning("Ignoring linked profile metadata: %s", meta_file)
+                continue
             if meta_file.is_file():
                 try:
                     meta_data = json.loads(meta_file.read_text(encoding="utf-8"))
@@ -190,11 +232,15 @@ class StellaProfileManager:
     def get_profile(self, profile_id: str) -> Optional[StellaProfileInfo]:
         """Retrieve profile by its unique ID."""
         validate_profile_id(profile_id)
+        self._assert_safe_directory(self.profiles_dir, parent=self.root)
         pdir = self.get_profile_dir(profile_id)
+        self._assert_safe_directory(pdir, parent=self.profiles_dir)
         if not pdir.is_dir():
             return None
 
         meta_file = pdir / PROFILE_METADATA_FILE
+        if self._is_link_or_reparse(meta_file):
+            raise ValueError(f"Profile metadata may not be a symlink or junction: {meta_file}")
         if meta_file.is_file():
             try:
                 meta_data = json.loads(meta_file.read_text(encoding="utf-8"))
@@ -231,30 +277,36 @@ class StellaProfileManager:
         """Create a new nested profile with standard subdirectories and profile.json."""
         self.ensure_root_layout(auto_create_default=False)
 
-        final_id = sanitize_profile_id(profile_id or display_name)
+        if profile_id is None:
+            final_id = sanitize_profile_id(display_name)
+        else:
+            validate_profile_id(profile_id)
+            final_id = profile_id
         validate_profile_id(final_id)
         pdir = self.get_profile_dir(final_id)
 
-        if pdir.exists():
+        if pdir.exists() or pdir.is_symlink():
             raise FileExistsError(
                 f"Profile directory already exists: {pdir} (ID: '{final_id}')"
             )
 
-        # Create standard layout
-        pdir.mkdir(parents=True, exist_ok=True)
-        for sub in STANDARD_PROFILE_SUBDIRS:
-            (pdir / sub).mkdir(parents=True, exist_ok=True)
+        # Snapshot before creating the directory.  Otherwise list_profiles()
+        # sees the directory we just created and the first profile is not
+        # promoted to primary.
+        existing = self.list_profiles()
+        if not existing:
+            is_primary = True
 
-        now_iso = datetime.now(timezone.utc).isoformat()
-
-        # If this is marked primary, demote any previous primary profile
+        # If this is marked primary, demote any previous primary profile.
         if is_primary:
             self._demote_current_primary()
 
-        # If this is the very first profile created, default is_primary to True
-        existing = self.list_profiles()
-        if not existing and not is_primary:
-            is_primary = True
+        # Create standard layout
+        pdir.mkdir(parents=True, exist_ok=False)
+        for sub in STANDARD_PROFILE_SUBDIRS:
+            (pdir / sub).mkdir(parents=True, exist_ok=False)
+
+        now_iso = datetime.now(timezone.utc).isoformat()
 
         info = StellaProfileInfo(
             id=final_id,
@@ -347,11 +399,16 @@ class StellaProfileManager:
             )
 
         pdir = info.path
+        self._assert_safe_directory(pdir, parent=self.profiles_dir)
         if archive:
             deleted_dir = self.profiles_dir / ".deleted"
+            self._assert_safe_directory(deleted_dir, parent=self.profiles_dir)
             deleted_dir.mkdir(parents=True, exist_ok=True)
+            self._assert_safe_directory(deleted_dir, parent=self.profiles_dir)
             timestamp = int(time.time())
             archive_target = deleted_dir / f"{profile_id}_{timestamp}"
+            if archive_target.exists() or archive_target.is_symlink():
+                raise FileExistsError(f"Archive target already exists: {archive_target}")
             shutil.move(str(pdir), str(archive_target))
         else:
             shutil.rmtree(pdir)
@@ -374,9 +431,14 @@ class StellaProfileManager:
 
     def _save_profile_metadata(self, info: StellaProfileInfo) -> None:
         """Write profile metadata to profile.json atomically."""
+        self._assert_safe_directory(info.path, parent=self.profiles_dir)
         meta_file = info.path / PROFILE_METADATA_FILE
         tmp_file = info.path / f".{PROFILE_METADATA_FILE}.tmp"
+        if self._is_link_or_reparse(meta_file) or self._is_link_or_reparse(tmp_file):
+            raise ValueError("Profile metadata may not be a symlink or junction")
         payload = info.to_dict()
         del payload["path"]  # path is dynamic / relative to root
-        tmp_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        tmp_file.write_text(
+            json.dumps(payload, indent=2), encoding="utf-8"
+        )
         os.replace(str(tmp_file), str(meta_file))

@@ -11,8 +11,10 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from stella.constants import MIGRATION_MANIFEST_FILE
 from stella.migration import HermesMigrationEngine
-from stella.profiles import StellaProfileManager, sanitize_profile_id
+from stella.profiles import StellaProfileManager
+
 
 router = APIRouter(prefix="/api/stella", tags=["stella"])
 
@@ -45,12 +47,13 @@ class StellaProfileUpdateRequest(BaseModel):
 
 class MigrationPreviewRequest(BaseModel):
     source_path: str
-    target_profile_id: Optional[str] = "stella"
+    target_profile_id: str = "stella"
+    components: Optional[List[str]] = None
 
 
 class MigrationExecuteRequest(BaseModel):
     source_path: str
-    target_profile_id: Optional[str] = "stella"
+    target_profile_id: str = "stella"
     components: Optional[List[str]] = None
     overwrite: bool = False
     import_named_profiles: bool = False
@@ -99,7 +102,10 @@ async def create_stella_profile(body: StellaProfileCreateRequest):
 async def get_stella_profile(profile_id: str):
     """Get metadata for a specific Stella profile."""
     mgr = StellaProfileManager()
-    profile = mgr.get_profile(profile_id)
+    try:
+        profile = mgr.get_profile(profile_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not profile:
         raise HTTPException(status_code=404, detail=f"Profile '{profile_id}' not found")
     return {"profile": profile.to_dict()}
@@ -160,13 +166,16 @@ async def preview_hermes_migration(body: MigrationPreviewRequest):
     try:
         preview = engine.preview_migration(
             source_path=body.source_path,
-            target_profile_id=body.target_profile_id or "stella",
+            target_profile_id=body.target_profile_id,
+            components=body.components,
         )
         return {"success": True, "preview": preview.to_dict()}
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail="Migration preview failed") from exc
 
 
 @router.post("/migration/execute")
@@ -176,25 +185,38 @@ async def execute_hermes_migration(body: MigrationExecuteRequest):
     try:
         manifest = engine.execute_migration(
             source_path=body.source_path,
-            target_profile_id=body.target_profile_id or "stella",
+            target_profile_id=body.target_profile_id,
             components=body.components,
             overwrite=body.overwrite,
             import_named_profiles=body.import_named_profiles,
         )
         return {"success": True, "manifest": manifest.to_dict()}
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail="Migration execution failed") from exc
 
 
 @router.post("/migration/rollback")
 async def rollback_hermes_migration(body: MigrationRollbackRequest):
     """Roll back a prior migration using the audit manifest."""
     engine = HermesMigrationEngine()
-    pdir = engine.profile_mgr.get_profile_dir(body.target_profile_id)
-    rolled_back = engine.rollback_migration(pdir)
+    try:
+        pdir = engine.profile_mgr.get_profile_dir(body.target_profile_id)
+        rolled_back = engine.rollback_migration(pdir)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not rolled_back:
+        if (pdir / MIGRATION_MANIFEST_FILE).is_file():
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Rollback refused because the migration target changed or "
+                    "its manifest is invalid"
+                ),
+            )
         raise HTTPException(
             status_code=404,
             detail=f"No active migration manifest found to rollback in profile '{body.target_profile_id}'",

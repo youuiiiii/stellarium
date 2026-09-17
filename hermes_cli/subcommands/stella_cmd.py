@@ -10,7 +10,10 @@ import json
 import sys
 from pathlib import Path
 
-from stella.constants import DEFAULT_PRIMARY_PROFILE_ID
+from stella.constants import (
+    DEFAULT_PRIMARY_PROFILE_ID,
+    SUPPORTED_MIGRATION_COMPONENTS,
+)
 from stella.migration import HermesMigrationEngine
 from stella.profiles import StellaProfileManager
 
@@ -60,11 +63,25 @@ def build_stella_parser(subparsers):
     prev_p = mig_subs.add_parser("preview", help="Preview migratable components (dry run)")
     prev_p.add_argument("source", nargs="?", default=None, help="Hermes root path (optional auto-detect)")
     prev_p.add_argument("--target", default=DEFAULT_PRIMARY_PROFILE_ID, help="Target profile ID")
+    prev_p.add_argument(
+        "--component",
+        dest="components",
+        action="append",
+        choices=sorted(SUPPORTED_MIGRATION_COMPONENTS),
+        help="Component to preview (repeat to select more; omit for safe defaults)",
+    )
 
     # stella migrate run [source]
     run_p = mig_subs.add_parser("run", help="Execute safe selective migration from Hermes")
     run_p.add_argument("source", nargs="?", default=None, help="Hermes root path (optional auto-detect)")
     run_p.add_argument("--target", default=DEFAULT_PRIMARY_PROFILE_ID, help="Target profile ID")
+    run_p.add_argument(
+        "--component",
+        dest="components",
+        action="append",
+        choices=sorted(SUPPORTED_MIGRATION_COMPONENTS),
+        help="Component to migrate (repeat to select more; omit for safe defaults)",
+    )
     run_p.add_argument("--overwrite", action="store_true", help="Overwrite conflicting target files")
     run_p.add_argument("--include-profiles", action="store_true", help="Also import named sub-profiles")
 
@@ -171,7 +188,11 @@ def _handle_migrate_cmd(args):
 
     if action == "preview":
         try:
-            prev = engine.preview_migration(source_path=source, target_profile_id=args.target)
+            prev = engine.preview_migration(
+                source_path=source,
+                target_profile_id=args.target,
+                components=args.components,
+            )
             print(f"\nMigration Preview from: {prev.source_path}")
             print(f"Target Stella Profile ID: {prev.target_profile_id}")
             print("\nComponents:")
@@ -196,6 +217,7 @@ def _handle_migrate_cmd(args):
             manifest = engine.execute_migration(
                 source_path=source,
                 target_profile_id=args.target,
+                components=args.components,
                 overwrite=args.overwrite,
                 import_named_profiles=args.include_profiles,
             )
