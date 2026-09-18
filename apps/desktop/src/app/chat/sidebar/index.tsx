@@ -1578,27 +1578,6 @@ export function ChatSidebar({
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
         <SidebarGroup className="shrink-0 p-0 pb-2 pt-[calc(var(--titlebar-height)+0.375rem)]">
-          {/* Stellarium Sovereign Studio Brand Header */}
-          <div className="mb-3 px-1 flex items-center justify-between pointer-events-auto select-none">
-            <div className="flex items-center gap-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#9d72ff] via-[#8b5cf6] to-[#6d28d9] text-white shadow-[0_0_12px_rgba(157,114,255,0.35)] border border-white/[0.15]">
-                <span className="text-xs font-bold">✦</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] font-bold tracking-wider text-foreground leading-tight font-sans">
-                  STELLARIUM
-                </span>
-                <span className="text-[8.5px] font-semibold uppercase tracking-widest text-[#9d72ff] leading-tight font-mono">
-                  SOVEREIGN STUDIO
-                </span>
-              </div>
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-medium text-emerald-400">
-              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              ONLINE
-            </span>
-          </div>
-
           {/* Active Agent Card */}
           <div
             className="mb-2.5 flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] p-2 transition-all duration-200 hover:border-[#9d72ff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_16px_rgba(157,114,255,0.12)] cursor-pointer group pointer-events-auto"

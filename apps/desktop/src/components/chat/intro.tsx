@@ -188,19 +188,19 @@ export function Intro({ personality, seed }: IntroProps) {
         </div>
 
         {/* Modern Stellar Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary mb-3 shadow-[0_0_20px_rgba(157,114,255,0.25)]">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#9d72ff]/10 border border-[#9d72ff]/30 text-xs font-semibold text-[#b794f6] mb-3 shadow-[0_0_20px_rgba(157,114,255,0.25)]">
           <span>✦</span>
-          <span>STELLARIUM SOVEREIGN STUDIO</span>
+          <span>STELLARIUM STUDIO · READY</span>
           <span>✦</span>
         </div>
 
         {/* Hero Title */}
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-br from-white via-purple-100 to-purple-400 bg-clip-text text-transparent mb-2">
-          Autonomous AI Studio
+          Welcome back, Master Ilunaa
         </h1>
 
         <p className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto leading-relaxed mb-8">
-          {copy.body}
+          What shall we explore, build, or analyze together today? Drop a thought, code, or command to begin.
         </p>
 
         {/* Modern Quick Starter Cards Grid */}
