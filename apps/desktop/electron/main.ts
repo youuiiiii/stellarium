@@ -792,16 +792,12 @@ function resolveHermesHome() {
     return normalizeHermesHomeRoot(process.env.STELLA_HOME)
   }
 
-  if (process.env.HERMES_HOME) {
-    return normalizeHermesHomeRoot(process.env.HERMES_HOME)
-  }
-
   if (USER_DATA_OVERRIDE) {
     return path.join(path.resolve(USER_DATA_OVERRIDE), 'stella-home')
   }
 
   if (IS_WINDOWS) {
-    const fromRegistry = readWindowsUserEnvVar('STELLA_HOME') || readWindowsUserEnvVar('HERMES_HOME')
+    const fromRegistry = readWindowsUserEnvVar('STELLA_HOME')
 
     if (fromRegistry) {
       return normalizeHermesHomeRoot(fromRegistry)
