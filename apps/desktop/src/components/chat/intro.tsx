@@ -1,5 +1,6 @@
 import { useStore } from '@nanostores/react'
 import { useState } from 'react'
+import { useAui } from '@assistant-ui/react'
 
 import { capitalize, normalize } from '@/lib/text'
 import { $activeMascotId, $customMascotData, resolveMascotSrc } from '@/store/mascot'
@@ -164,6 +165,15 @@ export function Intro({ personality, seed }: IntroProps) {
   const activeMascot = useStore($activeMascotId)
   const customMascot = useStore($customMascotData)
   const mascotSrc = resolveMascotSrc(activeMascot, customMascot)
+  const aui = useAui()
+
+  const handleStarterPrompt = (prompt: string) => {
+    try {
+      aui.composer().setText(prompt)
+    } catch {
+      // safe fallback
+    }
+  }
 
   return (
     <div
@@ -205,7 +215,10 @@ export function Intro({ personality, seed }: IntroProps) {
 
         {/* Modern Quick Starter Cards Grid */}
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+          <div
+            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
+            onClick={() => handleStarterPrompt('Inspect current repository architecture and run test builds.')}
+          >
             <div className="flex items-center gap-2.5 mb-1.5">
               <span className="text-base p-1.5 rounded-lg bg-primary/10 text-primary">💻</span>
               <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Coding Studio</span>
@@ -215,7 +228,10 @@ export function Intro({ personality, seed }: IntroProps) {
             </p>
           </div>
 
-          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+          <div
+            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
+            onClick={() => handleStarterPrompt('Analyze documentation and summarize core architectural guidelines.')}
+          >
             <div className="flex items-center gap-2.5 mb-1.5">
               <span className="text-base p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">🔍</span>
               <span className="text-xs font-semibold text-foreground group-hover:text-emerald-400 transition-colors">Deep Research</span>
@@ -225,7 +241,10 @@ export function Intro({ personality, seed }: IntroProps) {
             </p>
           </div>
 
-          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+          <div
+            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
+            onClick={() => handleStarterPrompt('Brainstorm ideas and design concepts for Project Stella.')}
+          >
             <div className="flex items-center gap-2.5 mb-1.5">
               <span className="text-base p-1.5 rounded-lg bg-sky-500/10 text-sky-400">🎨</span>
               <span className="text-xs font-semibold text-foreground group-hover:text-sky-400 transition-colors">Creative Sandbox</span>
@@ -235,7 +254,12 @@ export function Intro({ personality, seed }: IntroProps) {
             </p>
           </div>
 
-          <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]">
+          <div
+            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
+            onClick={() => {
+              window.location.hash = '#/profiles'
+            }}
+          >
             <div className="flex items-center gap-2.5 mb-1.5">
               <span className="text-base p-1.5 rounded-lg bg-amber-500/10 text-amber-400">⚡</span>
               <span className="text-xs font-semibold text-foreground group-hover:text-amber-400 transition-colors">Agent Forge</span>
