@@ -1,6 +1,6 @@
 {
-  "name": "stella",
-  "productName": "Stella",
+  "name": "stellarium",
+  "productName": "Stellarium",
   "private": true,
   "version": "0.17.2",
   "description": "Native desktop shell for Project Stella & Stellarium Engine.",
@@ -191,9 +191,9 @@
   "build": {
     "publish": null,
     "electronVersion": "40.10.2",
-    "appId": "com.projectstella.stella",
-    "productName": "Stella",
-    "executableName": "Stella",
+    "appId": "com.projectstella.stellarium",
+    "productName": "Stellarium",
+    "executableName": "Stellarium",
     "protocols": [
       {
         "name": "Stella Protocol",

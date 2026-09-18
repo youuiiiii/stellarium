@@ -913,7 +913,7 @@ const BOOT_FAKE_STEP_MS = (() => {
   return Math.max(120, raw)
 })()
 
-const APP_NAME = process.env.STELLA_DESKTOP_APP_NAME || process.env.HERMES_DESKTOP_APP_NAME || 'Stella'
+const APP_NAME = process.env.STELLA_DESKTOP_APP_NAME || process.env.HERMES_DESKTOP_APP_NAME || 'Stellarium'
 const HUD_WINDOW_TITLE = `${APP_NAME} HUD`
 const TITLEBAR_HEIGHT = 34
 const MACOS_TRAFFIC_LIGHTS_HEIGHT = 14
@@ -1326,7 +1326,7 @@ app.setName(APP_NAME)
 // need this, so gate it on Windows. (Fixes: desktop approval/turn notifications
 // never firing on Windows.)
 if (IS_WINDOWS) {
-  app.setAppUserModelId('com.projectstella.stella')
+  app.setAppUserModelId('com.projectstella.stellarium')
 }
 
 // Seed the native About panel with the live Hermes version. This is refreshed
