@@ -140,6 +140,7 @@ import {
   CRON_ROUTE,
   MESSAGING_ROUTE,
   PROFILES_ROUTE,
+  SETTINGS_ROUTE,
   SIDEBAR_NAV_AREA,
   type SidebarNavContribution,
   SKILLS_ROUTE
@@ -1477,13 +1478,105 @@ export function ChatSidebar({
         // paints itself fully.
         'relative h-full min-w-0 overflow-hidden border-t-0 border-b-0 text-foreground transition-none',
         panesFlipped ? 'border-l border-r-0' : 'border-r border-l-0',
-        'border-(--sidebar-edge-border) bg-(--ui-sidebar-surface-background) opacity-100'
+        'border-(--sidebar-edge-border) bg-(--ui-sidebar-surface-background) opacity-100 flex flex-row'
       )}
       collapsible="none"
       data-tip-region=""
       data-tour="sessions-sidebar"
     >
-      <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
+      {/* Suite Rail: Sovereign Studio Suites (Far Left) */}
+      <nav
+        aria-label="Stellarium Suites"
+        className="flex w-12 shrink-0 flex-col items-center justify-between border-r border-white/[0.08] bg-[#07060f]/90 py-3 backdrop-blur-xl z-20 [-webkit-app-region:no-drag]"
+      >
+        <div className="flex flex-col items-center gap-2">
+          {/* Studio Suite Button */}
+          <Tip label="Studio & Workspaces">
+            <button
+              className={cn(
+                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
+                pathname === '/' || pathname.startsWith('/s/')
+                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
+                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
+              )}
+              onClick={() => navigate('/')}
+              type="button"
+            >
+              <Codicon name="comment-discussion" size="1.05rem" />
+            </button>
+          </Tip>
+
+          {/* Agent Forge Suite Button */}
+          <Tip label="Agent Forge (Profiles)">
+            <button
+              className={cn(
+                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
+                pathname === PROFILES_ROUTE
+                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
+                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
+              )}
+              onClick={() => navigate(PROFILES_ROUTE)}
+              type="button"
+            >
+              <Codicon name="organization" size="1.05rem" />
+            </button>
+          </Tip>
+
+          {/* Skills & Tools Suite Button */}
+          <Tip label="Skills & Tools Ecosystem">
+            <button
+              className={cn(
+                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
+                pathname === SKILLS_ROUTE
+                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
+                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
+              )}
+              onClick={() => navigate(SKILLS_ROUTE)}
+              type="button"
+            >
+              <Codicon name="tools" size="1.05rem" />
+            </button>
+          </Tip>
+
+          {/* Automations Suite Button */}
+          <Tip label="Scheduled Automations (Cron)">
+            <button
+              className={cn(
+                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
+                pathname === CRON_ROUTE
+                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
+                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
+              )}
+              onClick={() => navigate(CRON_ROUTE)}
+              type="button"
+            >
+              <Codicon name="history" size="1.05rem" />
+            </button>
+          </Tip>
+        </div>
+
+        {/* Bottom Settings Button */}
+        <div className="flex flex-col items-center gap-2">
+          <Tip label="Settings & Engine">
+            <button
+              className={cn(
+                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
+                pathname.startsWith(SETTINGS_ROUTE)
+                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
+                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
+              )}
+              onClick={() => navigate(SETTINGS_ROUTE)}
+              type="button"
+            >
+              <Codicon name="settings-gear" size="1.05rem" />
+            </button>
+          </Tip>
+        </div>
+      </nav>
+
+      {/* Main Subzone Content (Explorer & Chat Sessions) */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
         <SidebarGroup className="shrink-0 p-0 pb-2 pt-[calc(var(--titlebar-height)+0.375rem)]">
           {/* Stellarium Sovereign Studio Brand Header */}
           <div className="mb-3 px-1 flex items-center justify-between pointer-events-auto select-none">
@@ -1993,6 +2086,7 @@ export function ChatSidebar({
           <ProfileRail />
         </div>
       </SidebarContent>
+      </div>
       <ProjectDialog />
       {/* One mount for the whole app. The header of WorktreeDialog tells why. */}
       <WorktreeDialog />
