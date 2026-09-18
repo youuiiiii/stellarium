@@ -180,94 +180,56 @@ export function Intro({ personality, seed }: IntroProps) {
       className="flex w-full min-w-0 flex-col items-center justify-center px-4 py-8 text-center text-muted-foreground sm:px-6 lg:px-8 animate-in fade-in duration-300"
       data-slot="aui_intro"
     >
-      <div className="w-full max-w-xl mx-auto flex flex-col items-center">
-        {/* Interactive Mascot Avatar */}
-        <div
-          className="relative mb-3 group cursor-pointer"
-          onClick={() => {
-            window.location.hash = '#/settings?tab=appearance'
-          }}
-          title="Click to customize avatar in Appearance settings"
-        >
-          <div className="size-20 rounded-2xl p-1 bg-gradient-to-br from-[#9d72ff]/40 via-purple-500/20 to-transparent border border-primary/30 shadow-[0_0_24px_rgba(157,114,255,0.3)] group-hover:scale-105 transition-all duration-300">
-            <img alt="Stella Mascot Avatar" className="size-full rounded-xl object-cover" src={mascotSrc} />
-          </div>
-          <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-[#9d72ff] text-[10px] text-white font-bold shadow-[0_0_8px_rgba(157,114,255,0.8)]">
+      <div className="w-full max-w-lg mx-auto flex flex-col items-center">
+        {/* Clean Studio Identity */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex size-7 items-center justify-center rounded-lg bg-[#7170ff]/15 border border-[#7170ff]/30 text-[#7170ff] text-xs font-bold shadow-[0_0_12px_rgba(113,112,255,0.2)]">
             ✦
+          </div>
+          <span className="font-mono text-[11px] font-semibold tracking-wider text-[#8a8f98] uppercase">
+            Autonomous Workspace
           </span>
+          <span className="size-1 rounded-full bg-[#10b981]" />
+          <span className="font-mono text-[10px] text-[#10b981]">Ready</span>
         </div>
 
-        {/* Modern Stellar Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#9d72ff]/10 border border-[#9d72ff]/30 text-xs font-semibold text-[#b794f6] mb-3 shadow-[0_0_20px_rgba(157,114,255,0.25)]">
-          <span>✦</span>
-          <span>STELLARIUM STUDIO · READY</span>
-          <span>✦</span>
-        </div>
-
-        {/* Hero Title */}
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-br from-white via-purple-100 to-purple-400 bg-clip-text text-transparent mb-2">
+        {/* Studio Heading */}
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#f7f8f8] mb-2 font-sans">
           Welcome back, Master Ilunaa
         </h1>
 
-        <p className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto leading-relaxed mb-8">
-          What shall we explore, build, or analyze together today? Drop a thought, code, or command to begin.
+        <p className="text-xs sm:text-sm text-[#8a8f98] max-w-md mx-auto leading-relaxed mb-6 font-sans">
+          Drop a task, code, or command to begin.
         </p>
 
-        {/* Modern Quick Starter Cards Grid */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-          <div
-            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
-            onClick={() => handleStarterPrompt('Inspect current repository architecture and run test builds.')}
+        {/* Compact Suggested Action Chips */}
+        <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg">
+          <button
+            className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-xs text-[#d0d6e0] transition-all hover:border-[#7170ff]/40 hover:bg-[#7170ff]/10 hover:text-white cursor-pointer"
+            onClick={() => handleStarterPrompt('Inspect repository architecture and verify test status.')}
+            type="button"
           >
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <span className="text-base p-1.5 rounded-lg bg-primary/10 text-primary">💻</span>
-              <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Coding Studio</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-normal">
-              Inspect code, debug errors, and run autonomous terminal builds.
-            </p>
-          </div>
+            <span className="text-[#7170ff]">⌥</span>
+            <span>Inspect repository status</span>
+          </button>
 
-          <div
-            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
-            onClick={() => handleStarterPrompt('Analyze documentation and summarize core architectural guidelines.')}
+          <button
+            className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-xs text-[#d0d6e0] transition-all hover:border-[#7170ff]/40 hover:bg-[#7170ff]/10 hover:text-white cursor-pointer"
+            onClick={() => handleStarterPrompt('Analyze system performance and daemon telemetry.')}
+            type="button"
           >
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <span className="text-base p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">🔍</span>
-              <span className="text-xs font-semibold text-foreground group-hover:text-emerald-400 transition-colors">Deep Research</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-normal">
-              Analyze long documents, crawl papers, and synthesize citations.
-            </p>
-          </div>
+            <span className="text-[#10b981]">⚡</span>
+            <span>Run system diagnostics</span>
+          </button>
 
-          <div
-            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
-            onClick={() => handleStarterPrompt('Brainstorm ideas and design concepts for Project Stella.')}
+          <button
+            className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-xs text-[#d0d6e0] transition-all hover:border-[#7170ff]/40 hover:bg-[#7170ff]/10 hover:text-white cursor-pointer"
+            onClick={() => handleStarterPrompt('Plan the next technical roadmap milestone.')}
+            type="button"
           >
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <span className="text-base p-1.5 rounded-lg bg-sky-500/10 text-sky-400">🎨</span>
-              <span className="text-xs font-semibold text-foreground group-hover:text-sky-400 transition-colors">Creative Sandbox</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-normal">
-              Brainstorm new concepts, design systems, and creative copy.
-            </p>
-          </div>
-
-          <div
-            className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-3.5 hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 cursor-pointer shadow-sm hover:shadow-[0_0_16px_rgba(157,114,255,0.15)]"
-            onClick={() => {
-              window.location.hash = '#/profiles'
-            }}
-          >
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <span className="text-base p-1.5 rounded-lg bg-amber-500/10 text-amber-400">⚡</span>
-              <span className="text-xs font-semibold text-foreground group-hover:text-amber-400 transition-colors">Agent Forge</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-normal">
-              Customize personas, manage memory vaults, and switch active roles.
-            </p>
-          </div>
+            <span className="text-[#38bdf8]">✦</span>
+            <span>Plan next milestone</span>
+          </button>
         </div>
       </div>
     </div>

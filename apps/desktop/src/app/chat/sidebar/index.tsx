@@ -1603,7 +1603,7 @@ export function ChatSidebar({
           </div>
 
           <SidebarGroupContent>
-            <SidebarMenu className="gap-px">
+            <SidebarMenu className="gap-0.5">
               {[...SIDEBAR_NAV, ...contributedNav].map(item => {
                 const isInteractive = Boolean(item.action) || Boolean(item.route)
 
@@ -1622,11 +1622,11 @@ export function ChatSidebar({
                     aria-current={active ? 'page' : undefined}
                     aria-disabled={!isInteractive}
                     className={cn(
-                      'flex h-8 w-full justify-start gap-2.5 rounded-lg border border-transparent px-2.5 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-all duration-150 [-webkit-app-region:no-drag] hover:bg-white/[0.04] hover:text-foreground',
+                      'flex h-7 w-full justify-start gap-2 rounded-md border border-transparent px-2 text-left text-xs font-medium text-[#8a8f98] transition-colors [-webkit-app-region:no-drag] hover:bg-white/[0.04] hover:text-[#f7f8f8]',
                       isNewSession &&
-                        'border-[#9d72ff]/30 bg-gradient-to-r from-[#9d72ff]/15 via-[#8b5cf6]/10 to-transparent text-foreground font-semibold shadow-[0_0_12px_rgba(157,114,255,0.12)] hover:border-[#9d72ff]/50 hover:bg-[#9d72ff]/20',
+                        'border-[#7170ff]/30 bg-[#7170ff]/10 text-[#f7f8f8] font-semibold hover:border-[#7170ff]/50 hover:bg-[#7170ff]/15',
                       active &&
-                        'border-primary/30 bg-primary/10! text-foreground! font-semibold! shadow-[0_0_12px_rgba(157,114,255,0.15)] hover:border-primary/40!',
+                        'border-white/[0.08] bg-white/[0.06] text-white font-medium',
                       !isInteractive &&
                         'cursor-default hover:border-transparent hover:bg-transparent hover:text-inherit'
                     )}
