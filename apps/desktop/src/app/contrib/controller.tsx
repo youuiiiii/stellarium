@@ -5,7 +5,6 @@ import type { CSSProperties, ReactElement, PointerEvent as ReactPointerEvent } f
 import { SessionDraftTitle } from '@/app/chat/session-draft-title'
 import { SessionStatusDot } from '@/app/chat/session-status-dot'
 import { PALETTE_AREA, type PaletteContribution, paletteToggle } from '@/app/command-palette/contrib'
-import { StellariumTopChrome } from '@/app/shell/stellarium-top-chrome'
 import { type StatusbarItem } from '@/app/shell/statusbar-controls'
 import { AskDirective } from '@/components/assistant-ui/ask-directive'
 import { InlinePreviewDirective } from '@/components/assistant-ui/inline-preview-directive'
@@ -805,10 +804,9 @@ export function ContribController() {
           // painted by <body> is the only thing between the page and the
           // vibrancy material.
           data-contrib-shell=""
-          style={{ '--titlebar-height': '0px' } as CSSProperties}
+          style={{ '--titlebar-height': '36px' } as CSSProperties}
         >
-          <StellariumTopChrome />
-          <LayoutTreeRoot titlebar={false} />
+          <LayoutTreeRoot titlebar />
 
           {/* "Close running tab?" — the busy/input-blocked tile close gate. */}
           <SessionTileCloseConfirm />

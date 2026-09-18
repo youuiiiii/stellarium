@@ -8,6 +8,7 @@ import { toggleLayoutEditMode } from '@/components/pane-shell/edit-mode'
 import { resetLayoutTree } from '@/components/pane-shell/tree/store'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Codicon } from '@/components/ui/codicon'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { Slot } from '@/contrib/react/slot'
 import { useContributions } from '@/contrib/react/use-contributions'
@@ -15,6 +16,7 @@ import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
 import { formatModifierToken } from '@/lib/keybinds/combo'
 import { cn } from '@/lib/utils'
+import { openCommandPalette } from '@/store/command-palette'
 import { toggleHud } from '@/store/hud'
 import {
   $fileBrowserOpen,
@@ -296,8 +298,27 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
   const visiblePaneTools = tools.filter(tool => !tool.hidden)
 
   return (
-    <>
-      <div aria-label={t.shell.windowControls} className={leftClusterClass} data-titlebar-cluster="left">
+    <header
+      className="fixed top-0 inset-x-0 h-9 z-50 flex items-center justify-between border-b border-white/[0.06] bg-[#07080a]/90 backdrop-blur-xl px-3 select-none [-webkit-app-region:drag]"
+      style={{
+        paddingLeft: 'max(0.75rem, var(--titlebar-content-inset, 0rem))',
+        paddingRight: 'var(--titlebar-tools-right, 140px)'
+      }}
+    >
+      {/* Left: Brand + Left Tools */}
+      <div aria-label={t.shell.windowControls} className="flex items-center gap-2.5 [-webkit-app-region:no-drag]" data-titlebar-cluster="left">
+        <div className="flex items-center gap-1.5 mr-1.5 pointer-events-auto">
+          <div className="flex size-4.5 items-center justify-center rounded-md bg-[#7170ff] text-white text-[9px] font-bold shadow-[0_0_8px_rgba(113,112,255,0.4)]">
+            ✦
+          </div>
+          <span className="text-[11px] font-bold tracking-wider text-white">
+            STELLARIUM
+          </span>
+          <span className="rounded bg-[#7170ff]/10 border border-[#7170ff]/20 px-1 py-0.2 text-[8px] text-[#7170ff] font-mono uppercase">
+            Studio
+          </span>
+        </div>
+
         {visibleLeftTools.map(tool => (
           <TitlebarToolButton key={tool.id} navigate={navigate} tool={tool} />
         ))}
@@ -305,25 +326,33 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
         <Slot area="titleBar.center" />
       </div>
 
-      {visiblePaneTools.length > 0 && (
-        <div
-          aria-label={t.shell.appControls}
-          className={cn(
-            titlebarToolClusterClass,
-            'top-[calc(var(--titlebar-controls-top)+var(--right-rail-top-inset,0px))] right-[calc(var(--titlebar-tools-right)+var(--shell-preview-toolbar-gap,0))]'
-          )}
+      {/* Center: Clean Omnibar Command Trigger */}
+      <div className="flex flex-1 justify-center max-w-xs px-2 [-webkit-app-region:no-drag]">
+        <button
+          className="flex h-6.5 w-full items-center justify-between rounded-full border border-white/[0.06] bg-white/[0.03] px-2.5 text-[11px] text-[#8a8f98] transition-colors hover:border-white/[0.12] hover:bg-white/[0.06] hover:text-[#d0d6e0] cursor-pointer"
+          onClick={() => openCommandPalette()}
+          type="button"
         >
-          {visiblePaneTools.map(tool => (
-            <TitlebarToolButton key={tool.id} navigate={navigate} tool={tool} />
-          ))}
-        </div>
-      )}
+          <span className="flex items-center gap-1.5">
+            <Codicon name="search" size="0.75rem" />
+            <span className="truncate">Search or command...</span>
+          </span>
+          <span className="font-mono text-[9px] rounded px-1.5 py-0.2 bg-white/[0.06] border border-white/[0.08] text-[#8a8f98]">
+            Ctrl K
+          </span>
+        </button>
+      </div>
 
-      <div
-        aria-label={t.shell.appControls}
-        className={cn(titlebarToolClusterClass, 'right-(--titlebar-tools-right) top-(--titlebar-controls-top)')}
-        data-titlebar-cluster="right"
-      >
+      {/* Right: Live Status & System Controls */}
+      <div aria-label={t.shell.appControls} className="flex items-center gap-1.5 [-webkit-app-region:no-drag]" data-titlebar-cluster="right">
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-medium text-emerald-400 mr-1">
+          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Online
+        </span>
+
+        {visiblePaneTools.map(tool => (
+          <TitlebarToolButton key={tool.id} navigate={navigate} tool={tool} />
+        ))}
         {visibleSystemTools.map(tool => (
           <TitlebarToolButton key={tool.id} navigate={navigate} tool={tool} />
         ))}
@@ -331,7 +360,7 @@ export function TitlebarControls({ leftTools = [], tools = [], onOpenSettings }:
         <TitlebarToolButton navigate={navigate} tool={rightSidebarTool} />
         <Slot area="titleBar.right" />
       </div>
-    </>
+    </header>
   )
 }
 
