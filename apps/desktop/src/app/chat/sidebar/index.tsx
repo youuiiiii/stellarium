@@ -1478,113 +1478,21 @@ export function ChatSidebar({
         // paints itself fully.
         'relative h-full min-w-0 overflow-hidden border-t-0 border-b-0 text-foreground transition-none',
         panesFlipped ? 'border-l border-r-0' : 'border-r border-l-0',
-        'border-(--sidebar-edge-border) bg-(--ui-sidebar-surface-background) opacity-100 flex flex-row'
+        'border-(--sidebar-edge-border) bg-(--ui-sidebar-surface-background) opacity-100'
       )}
       collapsible="none"
       data-tip-region=""
       data-tour="sessions-sidebar"
     >
-      {/* Suite Rail: Sovereign Studio Suites (Far Left) */}
-      <nav
-        aria-label="Stellarium Suites"
-        className="flex w-12 shrink-0 flex-col items-center justify-between border-r border-white/[0.08] bg-[#07060f]/90 py-3 backdrop-blur-xl z-20 [-webkit-app-region:no-drag]"
-      >
-        <div className="flex flex-col items-center gap-2">
-          {/* Studio Suite Button */}
-          <Tip label="Studio & Workspaces">
-            <button
-              className={cn(
-                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
-                pathname === '/' || pathname.startsWith('/s/')
-                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
-                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
-              )}
-              onClick={() => navigate('/')}
-              type="button"
-            >
-              <Codicon name="comment-discussion" size="1.05rem" />
-            </button>
-          </Tip>
-
-          {/* Agent Forge Suite Button */}
-          <Tip label="Agent Forge (Profiles)">
-            <button
-              className={cn(
-                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
-                pathname === PROFILES_ROUTE
-                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
-                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
-              )}
-              onClick={() => navigate(PROFILES_ROUTE)}
-              type="button"
-            >
-              <Codicon name="organization" size="1.05rem" />
-            </button>
-          </Tip>
-
-          {/* Skills & Tools Suite Button */}
-          <Tip label="Skills & Tools Ecosystem">
-            <button
-              className={cn(
-                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
-                pathname === SKILLS_ROUTE
-                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
-                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
-              )}
-              onClick={() => navigate(SKILLS_ROUTE)}
-              type="button"
-            >
-              <Codicon name="tools" size="1.05rem" />
-            </button>
-          </Tip>
-
-          {/* Automations Suite Button */}
-          <Tip label="Scheduled Automations (Cron)">
-            <button
-              className={cn(
-                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
-                pathname === CRON_ROUTE
-                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
-                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
-              )}
-              onClick={() => navigate(CRON_ROUTE)}
-              type="button"
-            >
-              <Codicon name="history" size="1.05rem" />
-            </button>
-          </Tip>
-        </div>
-
-        {/* Bottom Settings Button */}
-        <div className="flex flex-col items-center gap-2">
-          <Tip label="Settings & Engine">
-            <button
-              className={cn(
-                'flex size-8.5 items-center justify-center rounded-xl transition-all cursor-pointer',
-                pathname.startsWith(SETTINGS_ROUTE)
-                  ? 'border border-[#9d72ff]/40 bg-[#9d72ff]/20 text-white shadow-[0_0_12px_rgba(157,114,255,0.35)]'
-                  : 'text-muted-foreground hover:bg-white/[0.06] hover:text-white'
-              )}
-              onClick={() => navigate(SETTINGS_ROUTE)}
-              type="button"
-            >
-              <Codicon name="settings-gear" size="1.05rem" />
-            </button>
-          </Tip>
-        </div>
-      </nav>
-
-      {/* Main Subzone Content (Explorer & Chat Sessions) */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
+      <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
         <SidebarGroup className="shrink-0 p-0 pb-2 pt-[calc(var(--titlebar-height)+0.375rem)]">
           {/* Active Agent Card */}
           <div
-            className="mb-2.5 flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] p-2 transition-all duration-200 hover:border-[#9d72ff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_16px_rgba(157,114,255,0.12)] cursor-pointer group pointer-events-auto"
+            className="mb-2.5 flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] p-2 transition-all duration-200 hover:border-[#7170ff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_16px_rgba(113,112,255,0.12)] cursor-pointer group pointer-events-auto"
             onClick={() => navigate(PROFILES_ROUTE)}
             title="Switch or manage active Stella agent profile"
           >
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#9d72ff]/20 text-xs shadow-[0_0_10px_rgba(157,114,255,0.2)] border border-[#9d72ff]/40 group-hover:scale-105 transition-transform">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#7170ff]/20 text-xs shadow-[0_0_10px_rgba(113,112,255,0.2)] border border-[#7170ff]/40 group-hover:scale-105 transition-transform">
               🌟
             </div>
             <div className="min-w-0 flex-1">
@@ -1592,7 +1500,7 @@ export function ChatSidebar({
                 <span className="truncate text-[11px] font-semibold text-foreground">
                   {activeProfileDisplay}
                 </span>
-                <span className="text-[8.5px] font-medium text-[#9d72ff] uppercase px-1.5 py-0.2 rounded bg-[#9d72ff]/10 border border-[#9d72ff]/20">
+                <span className="text-[8.5px] font-medium text-[#7170ff] uppercase px-1.5 py-0.2 rounded bg-[#7170ff]/10 border border-[#7170ff]/20">
                   AGENT
                 </span>
               </div>
@@ -2061,11 +1969,10 @@ export function ChatSidebar({
 
         {!showSessionSections && <SidebarBlankState onNewProject={openProjectCreate} />}
 
-        <div className="shrink-0 px-0.5 pb-1 pt-0.5">
+        <div className="shrink-0 border-t border-white/[0.06] bg-[#090a0c]/80 px-2 py-2">
           <ProfileRail />
         </div>
       </SidebarContent>
-      </div>
       <ProjectDialog />
       {/* One mount for the whole app. The header of WorktreeDialog tells why. */}
       <WorktreeDialog />
