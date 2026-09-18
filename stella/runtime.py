@@ -29,7 +29,11 @@ def resolve_profile_home(
 
 def resolve_active_profile_home(root: Optional[Path | str] = None) -> Optional[Path]:
     """Resolve the active profile home without creating or mutating profiles."""
-    profile = get_active_profile(root=root)
+    manager = StellaProfileManager(root=root)
+    profile_id = manager.get_active_profile_id(auto_create_default=False)
+    if profile_id is None:
+        return None
+    profile = manager.get_profile(profile_id)
     return profile.path if profile else None
 
 

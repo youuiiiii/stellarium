@@ -156,6 +156,27 @@ class TestGetProcessHermesHome:
         monkeypatch.setenv("HERMES_HOME", str(home))
         assert get_process_hermes_home() == home
 
+    def test_stella_home_resolves_sticky_active_profile(self, tmp_path, monkeypatch):
+        from stella.profiles import StellaProfileManager
+
+        stella_root = tmp_path / "stella"
+        manager = StellaProfileManager(root=stella_root)
+        manager.ensure_root_layout(auto_create_default=True)
+        profile = manager.create_profile("Studio", profile_id="studio")
+        manager.set_active_profile(profile.id)
+        monkeypatch.setenv("STELLA_HOME", str(stella_root))
+        monkeypatch.delenv("HERMES_HOME", raising=False)
+
+        assert get_process_hermes_home() == profile.path
+
+    def test_explicit_hermes_home_wins_over_stella_home(self, tmp_path, monkeypatch):
+        stella_root = tmp_path / "stella"
+        hermes_home = tmp_path / "hermes-profile"
+        monkeypatch.setenv("STELLA_HOME", str(stella_root))
+        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+
+        assert get_process_hermes_home() == hermes_home
+
 
 
 
@@ -1181,3 +1202,27 @@ class TestHealAttemptFlagSemantics:
         # The flag is set, so the once-per-process budget is spent.
         assert heal_hermes_managed_node() is False
         assert calls["n"] == 1
+
+
+def test_stella_process_home_resolves_active_profile(tmp_path, monkeypatch):
+    from stella.profiles import StellaProfileManager
+
+    stella_root = tmp_path / "stella"
+    manager = StellaProfileManager(root=stella_root)
+    manager.ensure_root_layout(auto_create_default=True)
+    active = manager.create_profile("Studio", profile_id="studio")
+    manager.set_active_profile(active.id)
+
+    monkeypatch.setenv("STELLA_HOME", str(stella_root))
+    monkeypatch.delenv("HERMES_HOME", raising=False)
+
+    assert get_process_hermes_home() == active.path
+
+
+def test_explicit_hermes_home_wins_over_stella_home(tmp_path, monkeypatch):
+    stella_root = tmp_path / "stella"
+    hermes_home = tmp_path / "existing-hermes"
+    monkeypatch.setenv("STELLA_HOME", str(stella_root))
+    monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+
+    assert get_process_hermes_home() == hermes_home

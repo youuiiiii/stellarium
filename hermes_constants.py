@@ -15,6 +15,65 @@ from pathlib import Path
 _profile_fallback_warned: bool = False
 _UNSET = object()
 _HERMES_HOME_OVERRIDE: ContextVar[str | object] = ContextVar("_HERMES_HOME_OVERRIDE", default=_UNSET)
+_PROCESS_HOME_SNAPSHOT: Path | None = None
+_PROCESS_HOME_ENV_KEY: tuple[str, ...] | None = None
+_PROCESS_HOME_FROZEN = False
+
+
+def _process_home_env_key() -> tuple[str, ...]:
+    return tuple(
+        os.environ.get(name, "").strip()
+        for name in ("HERMES_HOME", "STELLA_HOME", "LOCALAPPDATA", "XDG_CONFIG_HOME", "HOME")
+    )
+
+
+def freeze_process_hermes_home() -> Path:
+    """Freeze the process identity home for startup-owned files."""
+    global _PROCESS_HOME_SNAPSHOT, _PROCESS_HOME_ENV_KEY, _PROCESS_HOME_FROZEN
+    if _PROCESS_HOME_SNAPSHOT is None:
+        _PROCESS_HOME_SNAPSHOT = _resolve_process_hermes_home()
+        _PROCESS_HOME_ENV_KEY = _process_home_env_key()
+    _PROCESS_HOME_FROZEN = True
+    return _PROCESS_HOME_SNAPSHOT
+
+
+def _resolve_process_hermes_home() -> Path:
+    explicit = os.environ.get("HERMES_HOME", "").strip()
+    if explicit:
+        return Path(explicit).expanduser().resolve(strict=False)
+    stella_home = os.environ.get("STELLA_HOME", "").strip()
+    if stella_home:
+        from stella.runtime import resolve_active_profile_home
+
+        return resolve_active_profile_home(Path(stella_home)) or Path(stella_home).expanduser().resolve(strict=False)
+    return _get_platform_default_hermes_home().resolve(strict=False)
+
+
+
+def _get_unfrozen_process_home() -> Path:
+    global _PROCESS_HOME_SNAPSHOT, _PROCESS_HOME_ENV_KEY
+    env_key = _process_home_env_key()
+    explicit = os.environ.get("HERMES_HOME", "").strip()
+    stella_home = os.environ.get("STELLA_HOME", "").strip()
+    root = (
+        Path(stella_home).expanduser().resolve(strict=False)
+        if stella_home
+        else _get_platform_default_hermes_home().resolve(strict=False)
+    )
+    if _PROCESS_HOME_SNAPSHOT is not None and _PROCESS_HOME_ENV_KEY == env_key:
+        # An empty Stella root may gain its first profile after an early import;
+        # do not freeze that root until an actual profile home is available.
+        if _PROCESS_HOME_SNAPSHOT != root or (not stella_home and root.name == ".hermes"):
+            return _PROCESS_HOME_SNAPSHOT
+    resolved = _resolve_process_hermes_home()
+    should_snapshot = bool(explicit) or resolved != root or (not stella_home and root.name == ".hermes")
+    if should_snapshot:
+        _PROCESS_HOME_SNAPSHOT = resolved
+        _PROCESS_HOME_ENV_KEY = env_key
+    else:
+        _PROCESS_HOME_SNAPSHOT = None
+        _PROCESS_HOME_ENV_KEY = None
+    return resolved
 
 # TUI busy-indicator styles (CLI /indicator, TUI gateway config, /help registry).
 # Keep in sync with INDICATOR_STYLES / DEFAULT_INDICATOR_STYLE in ui-tui/src/app/interfaces.ts.
@@ -148,36 +207,47 @@ def reset_hermes_home_key_cache() -> None:
 
 
 def get_process_hermes_home() -> Path:
-    """Hermes home of the running process, ignoring task overrides.
+    """Return the process home, binding Stella to its active profile when enabled.
 
-    For process-level assets (theme YAML, dashboard plugin manifests) that must stay visible while a
-    request is scoped to another profile (e.g. embedded ``/chat`` under ``--open-profile``).
+    An explicit ``HERMES_HOME`` always wins because it is the opt-in escape hatch
+    for an existing Hermes process. Otherwise the active Stella profile is the
+    process home; an uninitialised Stella root is retained until a profile is
+    created, so merely importing this module does not mutate the filesystem.
     """
-    val = os.environ.get("STELLA_HOME", "").strip() or os.environ.get("HERMES_HOME", "").strip()
-    return Path(val) if val else _get_platform_default_hermes_home()
+    if _PROCESS_HOME_FROZEN:
+        if _PROCESS_HOME_SNAPSHOT is None:
+            raise RuntimeError("process Hermes home was marked frozen without a value")
+        return _PROCESS_HOME_SNAPSHOT
+    return _get_unfrozen_process_home()
 
 
-# get_default_hermes_root() memo keyed on (native home, HERMES_HOME) so it stays
-# fresh when a test or plugin mutates HERMES_HOME; saves ~80us/call at 31+ sites.
-_default_hermes_root_memo: "tuple[str, str, Path] | None" = None
+# get_default_hermes_root() memo keyed on (native home, HERMES_HOME, STELLA_HOME)
+# so it stays fresh when a test or plugin mutates either home variable.
+_default_hermes_root_memo: "tuple[str, str, str, Path] | None" = None
 
 
 def get_default_hermes_root() -> Path:
-    """Root Hermes dir for profile-level ops: ``<root>`` when ``HERMES_HOME=<root>/profiles/<name>``."""
+    """Return the Hermes/Stella root for profile-level operations."""
     global _default_hermes_root_memo
-    native_home = _get_platform_default_hermes_home()
     env_home = os.environ.get("HERMES_HOME", "")
+    stella_home = os.environ.get("STELLA_HOME", "").strip()
+    native_home = (
+        Path(stella_home).expanduser()
+        if stella_home and not env_home
+        else _get_platform_default_hermes_home()
+    )
     memo = _default_hermes_root_memo
-    if memo is not None and memo[:2] == (str(native_home), env_home):
-        return memo[2]
+    memo_key = (str(native_home), env_home, stella_home)
+    if memo is not None and memo[:3] == memo_key:
+        return memo[3]
     result = native_home
     if env_home:
         env_path = Path(env_home)
         try:
-            env_path.resolve().relative_to(native_home.resolve())  # under ~/.hermes (normal or profile mode)
+            env_path.resolve().relative_to(native_home.resolve())  # under the configured root
         except ValueError:  # Docker/custom root: <root>/profiles/<name> -> <root>, else HERMES_HOME itself
             result = env_path.parent.parent if env_path.parent.name == "profiles" else env_path
-    _default_hermes_root_memo = (str(native_home), env_home, result)
+    _default_hermes_root_memo = (*memo_key, result)
     return result
 
 

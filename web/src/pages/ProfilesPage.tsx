@@ -760,6 +760,14 @@ export default function ProfilesPage() {
         <Button
           className="uppercase"
           size="sm"
+          outlined
+          onClick={() => navigate("/profiles/migrate")}
+        >
+          Import Hermes
+        </Button>
+        <Button
+          className="uppercase"
+          size="sm"
           onClick={() => setCreateModalOpen(true)}
         >
           {t.common.create}

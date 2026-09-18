@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple
 from agent.skill_utils import is_excluded_skill_path
 from hermes_cli.archive_safe import archive_root_dirs, make_targz, normalize_archive_parts, safe_extract_targz
 from hermes_constants import clear_named_profile_deleted, mark_named_profile_deleted, named_profile_is_deleted
+from stella.filesystem import assert_no_link_or_reparse
 
 logger = logging.getLogger(__name__)
 
@@ -1805,9 +1806,17 @@ def resolve_profile_env(profile_name: str) -> str:
         root = env_path.parent.parent if env_path.parent.name == "profiles" else env_path
     else:
         root = _get_default_hermes_home()
+    try:
+        assert_no_link_or_reparse(root, "Hermes profile root")
+    except (OSError, ValueError) as exc:
+        raise ValueError("Hermes profile root contains an unsafe link or reparse point") from exc
     if canon == "default":
         return str(root)
     profile_dir = root / "profiles" / canon
+    try:
+        assert_no_link_or_reparse(profile_dir, "Hermes profile")
+    except (OSError, ValueError) as exc:
+        raise ValueError("Hermes profile contains an unsafe link or reparse point") from exc
     if not profile_dir.is_dir() or named_profile_is_deleted(profile_dir):
         raise _missing_profile_error(canon)
     return str(profile_dir)

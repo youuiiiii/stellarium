@@ -92,6 +92,7 @@ import type { ProfileInfo } from '@/types/hermes'
 
 import { CreateProfileDialog } from '../../profiles/create-profile-dialog'
 import { DeleteProfileDialog } from '../../profiles/delete-profile-dialog'
+import { HermesMigrationDialog } from '../../profiles/hermes-migration-dialog'
 import { RenameProfileDialog } from '../../profiles/rename-profile-dialog'
 import { PROFILES_ROUTE, SETTINGS_ROUTE } from '../../routes'
 
@@ -160,6 +161,7 @@ export function ProfileRail() {
   const roster = useStore($fleetRoster)
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
+  const [migrationOpen, setMigrationOpen] = useState(false)
   const [pendingRename, setPendingRename] = useState<null | ProfileInfo>(null)
   const [pendingDelete, setPendingDelete] = useState<null | ProfileInfo>(null)
   const [pendingSoul, setPendingSoul] = useState<null | string>(null)
@@ -515,6 +517,7 @@ export function ProfileRail() {
 
           <AddProfileButton label={p.newProfile} onClick={() => setCreateOpen(true)} />
           <ImportProfileButton label={p.importProfile} />
+          <ImportHermesButton onClick={() => setMigrationOpen(true)} />
         </div>
       )}
 
@@ -546,6 +549,11 @@ export function ProfileRail() {
         }}
         open={createOpen}
         profiles={profiles}
+      />
+
+      <HermesMigrationDialog
+        onClose={() => setMigrationOpen(false)}
+        open={migrationOpen}
       />
 
       <RenameProfileDialog
@@ -696,6 +704,21 @@ function AddProfileButton({ label, onClick }: { label: string; onClick: () => vo
         type="button"
       >
         <Codicon name="add" size="0.75rem" />
+      </button>
+    </Tip>
+  )
+}
+
+function ImportHermesButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Tip label="Import Hermes into Stella">
+      <button
+        aria-label="Import Hermes into Stella"
+        className="grid size-5 shrink-0 place-items-center rounded-[3px] text-[#9d72ff] opacity-80 transition hover:bg-[#9d72ff]/15 hover:text-white hover:opacity-100"
+        onClick={onClick}
+        type="button"
+      >
+        <Codicon name="cloud-upload" size="0.75rem" />
       </button>
     </Tip>
   )

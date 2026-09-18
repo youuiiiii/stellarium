@@ -9,7 +9,47 @@ hermes_cli.config, no argparse). Exists so version-printing stops being reimplem
 from __future__ import annotations
 
 import os
+import re
 import sys
+from pathlib import Path
+
+_SAFE_PROFILE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
+_PROCESS_HOME: str | None = None
+_PROCESS_HOME_KEY: tuple[str, ...] | None = None
+
+
+def _stella_root() -> str:
+    """Return the platform-native Stella root without importing Hermes modules."""
+    explicit = os.environ.get("STELLA_HOME", "").strip()
+    if explicit:
+        return explicit
+    if sys.platform == "win32":
+        local_appdata = os.environ.get("LOCALAPPDATA", "").strip()
+        base = local_appdata or os.path.join(os.path.expanduser("~"), "AppData", "Local")
+        return os.path.join(base, "stella")
+    return os.path.join(os.path.expanduser("~"), ".stella")
+
+
+def _stella_process_home() -> str:
+    """Return an active Stella profile home without following reparse points."""
+    root = _stella_root()
+    root_path = Path(root)
+    try:
+        from stella.filesystem import assert_no_link_or_reparse
+
+        assert_no_link_or_reparse(root_path, "Stella startup root")
+    except (ImportError, OSError, ValueError):
+        return ""
+    active = (_read_text(os.path.join(root, "active_profile")) or "").strip()
+    if not _SAFE_PROFILE_ID_RE.fullmatch(active):
+        return root
+    profile_path = root_path / "profiles" / active
+    try:
+        assert_no_link_or_reparse(profile_path, "Stella startup profile")
+    except (OSError, ValueError):
+        return root
+    return os.fspath(profile_path) if profile_path.is_dir() else root
+
 
 __all__ = [
     "project_root_str", "ensure_project_root_on_path", "is_termux_env",
@@ -72,11 +112,23 @@ def active_profile_may_override_home(hermes_root: str) -> bool:
 
 
 def _default_home() -> str:
-    return os.path.join(os.path.expanduser("~"), ".hermes")
+    return _stella_process_home() or os.path.join(os.path.expanduser("~"), ".hermes")
+
+
+def _process_home_env_key() -> tuple[str, ...]:
+    return tuple(
+        os.environ.get(name, "").strip()
+        for name in ("HERMES_HOME", "STELLA_HOME", "LOCALAPPDATA", "HOME")
+    )
 
 
 def _resolved_home() -> str:
-    return os.environ.get("HERMES_HOME", "").strip() or _default_home()
+    global _PROCESS_HOME, _PROCESS_HOME_KEY
+    env_key = _process_home_env_key()
+    if _PROCESS_HOME is None or _PROCESS_HOME_KEY != env_key:
+        _PROCESS_HOME = os.environ.get("HERMES_HOME", "").strip() or _default_home()
+        _PROCESS_HOME_KEY = env_key
+    return _PROCESS_HOME
 
 
 def container_mode_may_be_active() -> bool:

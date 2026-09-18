@@ -9,13 +9,16 @@ def get_default_stella_home() -> Path:
     """Return platform-default Stella home path (e.g. %LOCALAPPDATA%/stella or ~/.stella)."""
     env_stella = os.environ.get("STELLA_HOME", "").strip()
     if env_stella:
-        return Path(env_stella).expanduser().resolve()
+        # Keep the lexical path here. Resolving before the profile manager
+        # checks it would follow a junction/reparse point and erase the
+        # boundary evidence that the manager is meant to reject.
+        return Path(os.path.abspath(os.fspath(Path(env_stella).expanduser())))
 
     if sys.platform == "win32":
         local_appdata = os.environ.get("LOCALAPPDATA", "").strip()
         base = Path(local_appdata) if local_appdata else Path.home() / "AppData" / "Local"
-        return (base / "stella").resolve()
-    return (Path.home() / ".stella").resolve()
+        return Path(os.path.abspath(os.fspath(base / "stella")))
+    return Path(os.path.abspath(os.fspath(Path.home() / ".stella")))
 
 
 STELLA_PROFILES_DIR_NAME = "profiles"
@@ -24,6 +27,7 @@ STELLA_CACHE_DIR_NAME = "cache"
 
 PROFILE_METADATA_FILE = "profile.json"
 MIGRATION_MANIFEST_FILE = "migration_manifest.json"
+STELLA_ACTIVE_PROFILE_FILE = "active_profile"
 
 DEFAULT_PRIMARY_PROFILE_ID = "stella"
 DEFAULT_PRIMARY_PROFILE_NAME = "Stella"

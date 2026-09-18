@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from stella.constants import MIGRATION_MANIFEST_FILE
 from stella.migration import HermesMigrationEngine
@@ -50,6 +50,13 @@ class MigrationPreviewRequest(BaseModel):
     target_profile_id: str = "stella"
     components: Optional[List[str]] = None
 
+    @field_validator("source_path")
+    @classmethod
+    def validate_source_path(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("source_path must not be empty")
+        return value
+
 
 class MigrationExecuteRequest(BaseModel):
     source_path: str
@@ -57,6 +64,13 @@ class MigrationExecuteRequest(BaseModel):
     components: Optional[List[str]] = None
     overwrite: bool = False
     import_named_profiles: bool = False
+
+    @field_validator("source_path")
+    @classmethod
+    def validate_source_path(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("source_path must not be empty")
+        return value
 
 
 class MigrationRollbackRequest(BaseModel):

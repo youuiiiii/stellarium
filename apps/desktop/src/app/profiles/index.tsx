@@ -9,7 +9,7 @@ import { ProfileGlyph } from '@/components/ui/profile-glyph'
 import { getProfileSoul, type ProfileInfo, updateProfileSoul } from '@/hermes'
 import { useI18n } from '@/i18n'
 import { displayPath } from '@/lib/display-path'
-import { AlertTriangle, Save } from '@/lib/icons'
+import { AlertTriangle, Download, Save } from '@/lib/icons'
 import { resolveProfileColor } from '@/lib/profile-color'
 import { normalize } from '@/lib/text'
 import { notify, notifyError } from '@/store/notifications'
@@ -33,6 +33,7 @@ import {
 
 import { CreateProfileDialog } from './create-profile-dialog'
 import { DeleteProfileDialog } from './delete-profile-dialog'
+import { HermesMigrationDialog } from './hermes-migration-dialog'
 import { RenameProfileDialog } from './rename-profile-dialog'
 
 interface ProfilesViewProps {
@@ -46,6 +47,7 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
   const [selectedName, setSelectedName] = useState<null | string>(null)
   const [query, setQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [migrationOpen, setMigrationOpen] = useState(false)
   const [pendingRename, setPendingRename] = useState<null | ProfileInfo>(null)
   const [pendingDelete, setPendingDelete] = useState<null | ProfileInfo>(null)
 
@@ -119,7 +121,30 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
         />
       ) : (
         <>
-          <PanelHeader subtitle={p.count(profiles.length)} title={p.title} />
+          <PanelHeader
+            actions={
+              <div className="flex items-center gap-2">
+                <Button
+                  className="gap-1.5 border-[#9d72ff]/40 bg-[#9d72ff]/10 text-white hover:bg-[#9d72ff]/20 text-xs"
+                  onClick={() => setMigrationOpen(true)}
+                  size="sm"
+                  variant="outline"
+                >
+                  <Download className="size-3.5 text-[#9d72ff]" />
+                  Import Hermes
+                </Button>
+                <Button
+                  className="gap-1.5 text-xs bg-primary text-primary-foreground hover:opacity-90"
+                  onClick={() => setCreateOpen(true)}
+                  size="sm"
+                >
+                  + {p.newProfile}
+                </Button>
+              </div>
+            }
+            subtitle={p.count(profiles.length)}
+            title={p.title}
+          />
           <PanelBody>
             <PanelList
               onSearchChange={setQuery}
@@ -185,6 +210,14 @@ export function ProfilesView({ onClose }: ProfilesViewProps) {
         }}
         open={pendingDelete !== null}
         profile={pendingDelete}
+      />
+
+      <HermesMigrationDialog
+        onClose={() => {
+          setMigrationOpen(false)
+          void refresh()
+        }}
+        open={migrationOpen}
       />
     </Panel>
   )

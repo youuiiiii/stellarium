@@ -88,6 +88,7 @@ const ModelsPage = lazy(() => import("@/pages/ModelsPage"));
 const CronPage = lazy(() => import("@/pages/CronPage"));
 const ProfilesPage = lazy(() => import("@/pages/ProfilesPage"));
 const ProfileBuilderPage = lazy(() => import("@/pages/ProfileBuilderPage"));
+const StellaMigrationPage = lazy(() => import("@/pages/StellaMigrationPage"));
 const SkillsPage = lazy(() => import("@/pages/SkillsPage"));
 const PluginsPage = lazy(() => import("@/pages/PluginsPage"));
 const McpPage = lazy(() => import("@/pages/McpPage"));
@@ -175,6 +176,7 @@ const BUILTIN_ROUTES_CORE: Record<string, ComponentType> = {
   "/system": SystemPage,
   "/profiles": ProfilesPage,
   "/profiles/new": ProfileBuilderPage,
+  "/profiles/migrate": StellaMigrationPage,
   "/config": ConfigPage,
   "/env": EnvPage,
   "/docs": DocsPage,

@@ -39,11 +39,13 @@ from stella.constants import (
     DEFAULT_PRIMARY_PROFILE_NAME,
     PROFILE_METADATA_FILE,
     STANDARD_PROFILE_SUBDIRS,
+    STELLA_ACTIVE_PROFILE_FILE,
     STELLA_CACHE_DIR_NAME,
     STELLA_PROFILES_DIR_NAME,
     STELLA_SHARED_DIR_NAME,
     get_default_stella_home,
 )
+from stella.filesystem import assert_no_link_or_reparse, is_link_or_reparse
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ def sanitize_profile_id(raw_id: str) -> str:
 
 def validate_profile_id(profile_id: str) -> None:
     """Ensure profile_id is valid and prevents directory traversal."""
-    if not _SAFE_ID_RE.match(profile_id):
+    if not isinstance(profile_id, str) or not _SAFE_ID_RE.fullmatch(profile_id):
         raise ValueError(
             f"Invalid profile ID {profile_id!r}. Must be 1-64 characters matching [a-z0-9][a-z0-9_-]*"
         )
@@ -96,7 +98,9 @@ class StellaProfileInfo:
     @classmethod
     def from_dict(cls, data: Dict[str, Any], path: Path) -> "StellaProfileInfo":
         return cls(
-            id=data.get("id", path.name),
+            # The directory name is the immutable identity. Metadata is
+            # user-editable and must never be allowed to retarget a profile.
+            id=path.name,
             display_name=data.get("display_name", path.name.capitalize()),
             path=path,
             is_primary=bool(data.get("is_primary", False)),
@@ -121,13 +125,7 @@ class StellaProfileManager:
     @staticmethod
     def _is_link_or_reparse(path: Path) -> bool:
         """Detect symlinks and Windows junction/reparse points."""
-        if path.is_symlink():
-            return True
-        if not path.exists():
-            return False
-        absolute = os.path.normcase(os.path.abspath(os.fspath(path)))
-        resolved = os.path.normcase(os.path.realpath(os.fspath(path)))
-        return absolute != resolved
+        return is_link_or_reparse(path)
 
     @staticmethod
     def _is_within(path: Path, root: Path) -> bool:
@@ -141,8 +139,7 @@ class StellaProfileManager:
         self, directory: Path, parent: Optional[Path] = None
     ) -> None:
         """Reject a directory that follows a link or leaves its parent."""
-        if self._is_link_or_reparse(directory):
-            raise ValueError(f"Stella directory may not be a symlink or junction: {directory}")
+        assert_no_link_or_reparse(directory, "Stella directory")
         if directory.exists() and not directory.is_dir():
             raise ValueError(f"Stella path is not a directory: {directory}")
         if parent is not None and not self._is_within(directory, parent):
@@ -150,8 +147,7 @@ class StellaProfileManager:
 
     def __init__(self, root: Optional[Path | str] = None) -> None:
         raw_root = Path(root).expanduser() if root else get_default_stella_home()
-        if self._is_link_or_reparse(raw_root):
-            raise ValueError(f"Stella home may not be a symlink or junction: {raw_root}")
+        assert_no_link_or_reparse(raw_root, "Stella home")
         self.root = raw_root.resolve()
         self.profiles_dir = self.root / STELLA_PROFILES_DIR_NAME
         self.shared_dir = self.root / STELLA_SHARED_DIR_NAME
@@ -205,6 +201,9 @@ class StellaProfileManager:
             if self._is_link_or_reparse(meta_file):
                 logger.warning("Ignoring linked profile metadata: %s", meta_file)
                 continue
+            if not _SAFE_ID_RE.fullmatch(entry.name):
+                logger.warning("Ignoring profile with unsafe directory name: %s", entry)
+                continue
             if meta_file.is_file():
                 try:
                     meta_data = json.loads(meta_file.read_text(encoding="utf-8"))
@@ -218,7 +217,7 @@ class StellaProfileManager:
                     )
 
             # Fallback if profile.json missing: synthesize entry
-            if _SAFE_ID_RE.match(entry.name):
+            if _SAFE_ID_RE.fullmatch(entry.name):
                 synthesized = StellaProfileInfo(
                     id=entry.name,
                     display_name=entry.name.capitalize(),
@@ -255,19 +254,34 @@ class StellaProfileManager:
             is_primary=(profile_id == DEFAULT_PRIMARY_PROFILE_ID),
         )
 
-    def get_primary_profile(self) -> Optional[StellaProfileInfo]:
+    def get_primary_profile(
+        self, auto_create_default: bool = True
+    ) -> Optional[StellaProfileInfo]:
         """Return the profile marked as primary, or the first profile if none explicitly marked."""
-        self.ensure_root_layout(auto_create_default=True)
+        if auto_create_default:
+            self.ensure_root_layout(auto_create_default=True)
         profiles = self.list_profiles()
         for p in profiles:
             if p.is_primary:
                 return p
         return profiles[0] if profiles else None
 
-    def get_active_profile_id(self) -> Optional[str]:
+    def get_active_profile_id(
+        self, auto_create_default: bool = True
+    ) -> Optional[str]:
         """Return sticky active profile ID, falling back to primary profile."""
-        self.ensure_root_layout(auto_create_default=True)
-        active_file = self.root / "active_profile"
+        if auto_create_default:
+            self.ensure_root_layout(auto_create_default=True)
+        elif not self.root.exists():
+            return None
+        else:
+            self._assert_safe_directory(self.root)
+
+        active_file = self.root / STELLA_ACTIVE_PROFILE_FILE
+        if self._is_link_or_reparse(active_file):
+            raise ValueError(
+                f"Active profile marker may not be a symlink or junction: {active_file}"
+            )
         if active_file.is_file():
             try:
                 candidate = active_file.read_text(encoding="utf-8").strip()
@@ -275,7 +289,7 @@ class StellaProfileManager:
                     return candidate
             except Exception:
                 pass
-        primary = self.get_primary_profile()
+        primary = self.get_primary_profile(auto_create_default=False)
         return primary.id if primary else None
 
     def set_active_profile(self, profile_id: str) -> StellaProfileInfo:
@@ -283,9 +297,11 @@ class StellaProfileManager:
         profile = self.get_profile(profile_id)
         if profile is None:
             raise FileNotFoundError(f"Profile not found: '{profile_id}'")
-        self.root.mkdir(parents=True, exist_ok=True)
-        active_file = self.root / "active_profile"
-        tmp_file = self.root / "active_profile.tmp"
+        self._assert_safe_directory(self.root)
+        active_file = self.root / STELLA_ACTIVE_PROFILE_FILE
+        tmp_file = self.root / f".{STELLA_ACTIVE_PROFILE_FILE}.tmp"
+        if self._is_link_or_reparse(active_file) or self._is_link_or_reparse(tmp_file):
+            raise ValueError("Active profile marker may not be a symlink or junction")
         tmp_file.write_text(profile.id + "\n", encoding="utf-8")
         tmp_file.replace(active_file)
         return profile

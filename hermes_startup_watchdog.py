@@ -99,15 +99,26 @@ _handle: Optional["StartupWatchdogHandle"] = None
 
 
 def _process_hermes_home() -> Path:
-    """HERMES_HOME for diagnostic files — stdlib-only replica of the hermes_constants default."""
-    val = os.environ.get("HERMES_HOME", "").strip()
-    if val:
-        return Path(val)
-    if sys.platform == "win32":
-        local_appdata = os.environ.get("LOCALAPPDATA", "").strip()
-        base = Path(local_appdata) if local_appdata else Path.home() / "AppData" / "Local"
-        return base / "hermes"
-    return Path.home() / ".hermes"
+    """Return the canonical process home without a top-level import.
+
+    The watchdog must stay import-light because it is armed before gateway
+    imports.  Resolve lazily once the function is called so an active Stella
+    profile can own diagnostic files; retain the old stdlib fallback only when
+    the canonical module cannot be imported during early startup.
+    """
+    try:
+        from hermes_constants import get_process_hermes_home
+
+        return get_process_hermes_home()
+    except ImportError:
+        val = os.environ.get("HERMES_HOME", "").strip()
+        if val:
+            return Path(val)
+        if sys.platform == "win32":
+            local_appdata = os.environ.get("LOCALAPPDATA", "").strip()
+            base = Path(local_appdata) if local_appdata else Path.home() / "AppData" / "Local"
+            return base / "hermes"
+        return Path.home() / ".hermes"
 
 
 def get_startup_watchdog_dump_path(home: Optional[Path] = None) -> Path:

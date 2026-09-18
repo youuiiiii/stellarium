@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple, Optional
 
-from hermes_constants import _get_platform_default_hermes_home, get_hermes_home
+from hermes_constants import get_hermes_home, get_process_hermes_home
 from utils import atomic_json_write
 
 if sys.platform == "win32":
@@ -85,11 +85,12 @@ def record_start_and_check_storm(
 
 
 def _get_process_hermes_home() -> Path:
-    """Launch-home HERMES_HOME for identity files (PID, lock, status, markers):
-    ``get_hermes_home()`` honors the per-session ``_HERMES_HOME_OVERRIDE`` and would misroute
-    them."""
-    val = os.environ.get("HERMES_HOME", "").strip()
-    return Path(val) if val else _get_platform_default_hermes_home()
+    """Return the canonical process home for gateway identity files.
+
+    Unlike ``get_hermes_home()``, this deliberately ignores per-turn overrides,
+    but it still follows the active Stella profile selected at process launch.
+    """
+    return get_process_hermes_home()
 
 
 def _canonical_hermes_home(path: Path | str) -> Path:
@@ -134,7 +135,7 @@ def _profile_label_for_home(home: Path | str) -> Optional[str]:
     if canonical.parent.name == "profiles" and _PROFILE_LABEL_RE.match(canonical.name):
         return canonical.name
     import hermes_constants
-    default_homes = (hermes_constants.get_default_hermes_root, _get_platform_default_hermes_home)
+    default_homes = (hermes_constants.get_default_hermes_root,)
     for default_home in default_homes:
         with contextlib.suppress(Exception):
             if _same_hermes_home(canonical, default_home()):
@@ -289,14 +290,13 @@ def _read_process_cmdline(pid: int) -> Optional[str]:
         raw = Path(f"/proc/{pid}/cmdline").read_bytes()
         if raw:
             return raw.replace(b"\x00", b" ").decode("utf-8", errors="ignore").strip()
-    if not _IS_WINDOWS:
-        with contextlib.suppress(OSError, subprocess.TimeoutExpired):
-            result = subprocess.run(
-                ["ps", "-p", str(pid), "-o", "command="],
-                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=5,
-            )
-            if result.returncode == 0 and result.stdout.strip():
-                return result.stdout.strip()
+    with contextlib.suppress(OSError, subprocess.TimeoutExpired):
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "command="],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
     with contextlib.suppress(Exception):
         import psutil  # type: ignore
         cmdline_parts = psutil.Process(pid).cmdline()
@@ -419,6 +419,17 @@ def _record_matches_live_gateway_pid(
     must also belong to that profile); unreadable cmdline (Windows/EACCES) -> persisted record."""
     live_cmdline = _read_process_cmdline(pid)
     if not live_cmdline:
+        if expected_home is not None:
+            persisted_home = record.get("hermes_home")
+            if not isinstance(persisted_home, str) or not persisted_home.strip():
+                return False
+            try:
+                if _canonical_hermes_home(persisted_home) != _canonical_hermes_home(
+                    expected_home
+                ):
+                    return False
+            except (OSError, RuntimeError, ValueError):
+                return False
         return _record_looks_like_gateway(record)
     if not looks_like_gateway_runtime_command_line(live_cmdline):
         return False

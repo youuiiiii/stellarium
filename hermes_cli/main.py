@@ -227,11 +227,10 @@ def _config_default_interface_early() -> str:
         return _EARLY_INTERFACE_CACHE[0]
     value = "cli"
     try:
-        home = os.environ.get("HERMES_HOME")
-        if home:
-            cfg_path = os.path.join(home, "config.yaml")
-        else:
-            cfg_path = os.path.join(os.path.expanduser("~"), ".hermes", "config.yaml")
+        from hermes_constants import get_process_hermes_home
+
+        home = get_process_hermes_home()
+        cfg_path = os.path.join(os.fspath(home), "config.yaml")
         if os.path.exists(cfg_path):
             import yaml as _yaml_iface
 
@@ -598,6 +597,9 @@ load_hermes_dotenv(
     project_env=PROJECT_ROOT / ".env",
     load_external_secrets=sys.argv[1:2] != ["update"],
 )
+
+# Freeze process-owned identity paths after all startup environment sources load.
+from hermes_constants import freeze_process_hermes_home
 
 # Bridge security.redact_secrets → HERMES_REDACT_SECRETS BEFORE hermes_logging
 # imports agent.redact, which snapshots the flag exactly once at import. A
@@ -3362,6 +3364,7 @@ def _default_to_chat(args) -> None:
 
 def main():
     """Main entry point for hermes CLI."""
+    freeze_process_hermes_home()
     _set_process_title()
     _advertise_agent_env()
 

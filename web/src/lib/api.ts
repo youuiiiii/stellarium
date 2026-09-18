@@ -736,6 +736,38 @@ export const api = {
     fetchJSON<{ command: string }>(
       `/api/profiles/${encodeURIComponent(name)}/setup-command`,
     ),
+  // Stella migration — explicit, selective Hermes -> Stella import.
+  detectStellaMigrations: () =>
+    fetchJSON<{ detected: StellaDetectedInstallation[] }>(
+      "/api/stella/migration/detect",
+    ),
+  previewStellaMigration: (body: StellaMigrationRequest) =>
+    fetchJSON<{ success: boolean; preview: StellaMigrationPreview }>(
+      "/api/stella/migration/preview",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    ),
+  executeStellaMigration: (body: StellaMigrationExecuteRequest) =>
+    fetchJSON<{ success: boolean; manifest: StellaMigrationManifest }>(
+      "/api/stella/migration/execute",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    ),
+  rollbackStellaMigration: (target_profile_id: string) =>
+    fetchJSON<{ success: boolean; target_profile_id: string }>(
+      "/api/stella/migration/rollback",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target_profile_id }),
+      },
+    ),
   getProfileSoul: (name: string) =>
     fetchJSON<{ content: string; exists: boolean }>(
       `/api/profiles/${encodeURIComponent(name)}/soul`,
@@ -2221,6 +2253,68 @@ export interface ProfileInfo {
   distribution_version: string | null;
   distribution_source: string | null;
   has_alias: boolean;
+}
+
+export interface StellaDetectedInstallation {
+  path: string;
+  is_valid: boolean;
+  version_hint: string;
+  has_config: boolean;
+  has_soul: boolean;
+  named_profiles: string[];
+  memory_count: number;
+  skill_count: number;
+  cron_count: number;
+  estimated_size_bytes: number;
+}
+
+export interface StellaMigrationComponentPreview {
+  name: string;
+  available: boolean;
+  file_count: number;
+  total_bytes: number;
+  sample_files: string[];
+  excluded_files: string[];
+  warnings: string[];
+}
+
+export interface StellaMigrationPreview {
+  source_path: string;
+  target_profile_id: string;
+  components: Record<string, StellaMigrationComponentPreview>;
+  conflicts: string[];
+  named_profiles: string[];
+  selected_components: string[];
+  excluded_files: string[];
+  warnings: string[];
+  can_proceed: boolean;
+}
+
+export interface StellaMigrationRequest {
+  source_path: string;
+  target_profile_id: string;
+  components: string[];
+}
+
+export interface StellaMigrationExecuteRequest extends StellaMigrationRequest {
+  overwrite: boolean;
+  import_named_profiles: boolean;
+}
+
+export interface StellaMigrationManifest {
+  migration_id: string;
+  source_path: string;
+  target_profile_id: string;
+  status: string;
+  copied_files: Array<{
+    relative_path: string;
+    size: number;
+    sha256: string;
+    destination_existed: boolean;
+  }>;
+  conflicts: string[];
+  warnings: string[];
+  child_migrations: Array<{ profile_id: string; migration_id: string }>;
 }
 
 export interface ModelsAnalyticsModelEntry {
