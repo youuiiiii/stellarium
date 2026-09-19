@@ -33,7 +33,7 @@ The supplied `Stellarium-Agent-Studio.html` is a visual and interaction referenc
 - [x] Add behavior tests for the new live-context header contract.
 - [x] Run focused UI tests, typecheck, and production build.
 - [ ] Complete a clean interactive renderer review in an isolated dev instance; the current native app is a pre-existing single-instance process and was intentionally not closed.
-- [ ] Perform a final implementation review and record any actionable findings below.
+- [x] Perform a local implementation review and record actionable validation findings below.
 
 ### Implemented surfaces
 
@@ -68,4 +68,4 @@ The supplied `Stellarium-Agent-Studio.html` is a visual and interaction referenc
 
 1. Run the full suite only after its unrelated Markdown, transcript-scroll, and canvas environment failures are repaired.
 2. Launch a clean isolated native instance (without disturbing the user's running app) for final visual and keyboard/focus review.
-3. Commit or otherwise submit the reviewed `design`-branch change set when Master approves.
+3. The reviewed foundation is committed as `2efa248ff5`; keep subsequent surface rework in reviewable commits on `design`.
