@@ -1752,6 +1752,99 @@ body.guest-pointer-lock :is(webview, iframe) {
   letter-spacing: 0.08em;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   STELLARIUM STUDIO
+
+   The product default is an operational skin, not an after-the-fact visual
+   overlay. The palette itself comes from `themes/presets.ts`; these are only
+   layout and hierarchy decisions that color tokens cannot express. Everything
+   is scoped to the skin so imported/user themes retain their own identity.
+   ───────────────────────────────────────────────────────────────────────── */
+:root[data-hermes-theme='stella'] {
+  --radius-scalar: 0.625;
+  --sidebar-width: 16rem;
+  --studio-rail-shadow: 0.75rem 0 2rem -1.5rem color-mix(in srgb, #000 45%, transparent);
+  --studio-canvas-rule: color-mix(in srgb, var(--ui-base) 5%, transparent);
+}
+
+:root[data-hermes-theme='stella'] [data-contrib-shell] {
+  background-image: linear-gradient(
+    90deg,
+    transparent calc(var(--sidebar-width) - 1px),
+    var(--studio-canvas-rule) var(--sidebar-width),
+    transparent calc(var(--sidebar-width) + 1px)
+  );
+}
+
+:root[data-hermes-theme='stella'] [data-slot='sidebar'] {
+  box-shadow: var(--studio-rail-shadow);
+}
+
+:root[data-hermes-theme='stella'] [data-chat-surface] {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ui-bg-chrome) 96%, var(--dt-primary)) 0,
+    var(--ui-chat-surface-background) 6rem
+  );
+}
+
+:root[data-hermes-theme='stella'] [data-slot='composer-surface'] {
+  border-color: color-mix(in srgb, var(--dt-composer-ring) 28%, var(--ui-stroke-secondary));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--dt-primary) 4%, transparent),
+    0 1rem 2.5rem -2rem color-mix(in srgb, #000 72%, transparent);
+}
+
+:root[data-hermes-theme='stella'] [data-slot='composer-surface']:focus-within {
+  border-color: color-mix(in srgb, var(--dt-composer-ring) 65%, var(--ui-stroke-primary));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--dt-primary) 14%, transparent),
+    0 1rem 2.5rem -2rem color-mix(in srgb, #000 72%, transparent);
+}
+
+:root[data-hermes-theme='stella'] [data-slot='aui_intro'] {
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
+:root[data-hermes-theme='stella'] .wordmark {
+  letter-spacing: 0.1em;
+}
+
+.studio-workspace-header__mark {
+  color: var(--dt-primary-solid-foreground);
+  background: var(--dt-primary-solid);
+  box-shadow: 0 0.375rem 1rem -0.625rem color-mix(in srgb, var(--dt-primary) 75%, transparent);
+}
+
+.studio-sidebar-brand__mark {
+  color: var(--dt-primary-solid-foreground);
+  background: color-mix(in srgb, var(--dt-primary-solid) 88%, var(--ui-bg-sidebar));
+  box-shadow: 0 0.375rem 1rem -0.75rem color-mix(in srgb, var(--dt-primary) 82%, transparent);
+}
+
+.studio-workspace-header__mark i {
+  background: currentColor;
+}
+
+.studio-workspace-header :is([data-slot='title-menu-trigger'], button) {
+  min-width: 0;
+}
+
+.studio-workspace-header [data-slot='title-menu-trigger'] {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 52rem) {
+  .studio-workspace-header__runtime {
+    display: none;
+  }
+}
+
 .fit-text > [aria-hidden] {
   visibility: hidden;
 }

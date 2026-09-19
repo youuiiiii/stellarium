@@ -72,6 +72,7 @@ import { useRuntimeMessageRepository } from './runtime-repository'
 import { ScrollToBottomButton } from './scroll-to-bottom-button'
 import { useSessionView } from './session-view'
 import { SessionActionsMenu } from './sidebar/session-actions-menu'
+import { type StudioRuntimeStatus, StudioWorkspaceHeader } from './studio-workspace-header'
 import { routedSessionIsLoading, threadLoadingState } from './thread-loading'
 import {
   backfillOlderTranscriptPage,
@@ -118,17 +119,25 @@ interface ChatViewProps extends Omit<React.ComponentProps<'div'>, 'onSubmit'> {
 interface ChatHeaderProps {
   activeSessionId: null | string
   isRoutedSessionView: boolean
+  model: null | string
   onDeleteSelectedSession: () => void
   onToggleSelectedPin: () => void
+  provider: null | string
   selectedSessionId: null | string
+  status: StudioRuntimeStatus
+  workspace: null | string
 }
 
 function ChatHeader({
   activeSessionId,
   isRoutedSessionView,
+  model,
   onDeleteSelectedSession,
   onToggleSelectedPin,
-  selectedSessionId
+  provider,
+  selectedSessionId,
+  status,
+  workspace
 }: ChatHeaderProps) {
   const sessions = useStore($sessions)
   const pinnedSessionIds = useStore($pinnedSessionIds)
@@ -162,26 +171,34 @@ function ChatHeader({
 
   return (
     <header className={cn(titlebarHeaderBaseClass, isRoutedSessionView && titlebarHeaderShadowClass)}>
-      <div
-        className={cn(titlebarHeaderTitleClass, showProfileTag && 'flex items-center')}
-        style={{
-          maxWidth:
-            'calc(100vw - var(--titlebar-content-inset,0px) - var(--titlebar-tools-right) - var(--titlebar-tools-width) - 1.5rem)'
-        }}
+      <StudioWorkspaceHeader
+        className={titlebarHeaderTitleClass}
+        model={model}
+        provider={provider}
+        status={status}
+        workspace={workspace}
       >
-        {showProfileTag && <ProfileTag className="pointer-events-auto mr-1.5" profile={activeStoredSession?.profile} />}
-        <SessionActionsMenu
-          align="start"
-          onDelete={selectedSessionId ? onDeleteSelectedSession : undefined}
-          onPin={selectedSessionId ? onToggleSelectedPin : undefined}
-          pinned={selectedIsPinned}
-          sessionId={selectedSessionId || activeSessionId || ''}
-          sideOffset={8}
-          title={title}
+        <div
+          className={cn('min-w-0', showProfileTag && 'flex items-center')}
+          style={{
+            maxWidth:
+              'calc(100vw - var(--titlebar-content-inset,0px) - var(--titlebar-tools-right) - var(--titlebar-tools-width) - 1.5rem)'
+          }}
         >
-          <TitleMenuTrigger>{title}</TitleMenuTrigger>
-        </SessionActionsMenu>
-      </div>
+          {showProfileTag && <ProfileTag className="pointer-events-auto mr-1.5" profile={activeStoredSession?.profile} />}
+          <SessionActionsMenu
+            align="start"
+            onDelete={selectedSessionId ? onDeleteSelectedSession : undefined}
+            onPin={selectedSessionId ? onToggleSelectedPin : undefined}
+            pinned={selectedIsPinned}
+            sessionId={selectedSessionId || activeSessionId || ''}
+            sideOffset={8}
+            title={title}
+          >
+            <TitleMenuTrigger>{title}</TitleMenuTrigger>
+          </SessionActionsMenu>
+        </div>
+      </StudioWorkspaceHeader>
     </header>
   )
 }
@@ -692,9 +709,13 @@ const ChatViewContent = memo(function ChatViewContent({
         <ChatHeader
           activeSessionId={activeSessionId}
           isRoutedSessionView={isRoutedSessionView}
+          model={currentModel}
           onDeleteSelectedSession={onDeleteSelectedSession}
           onToggleSelectedPin={onToggleSelectedPin}
+          provider={currentProvider}
           selectedSessionId={selectedSessionId}
+          status={busy ? 'working' : gatewayOpen ? 'ready' : 'offline'}
+          workspace={currentCwd}
         />
       )}
 

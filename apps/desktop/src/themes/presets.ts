@@ -331,6 +331,116 @@ export const nousAltTheme: DesktopTheme = {
 }
 
 /**
+ * Stella — Stellarium's operational studio skin. It is deliberately built
+ * around dark, quiet field surfaces with a single indigo signal colour rather
+ * than gradients or decorative glow: the transcript, agent state, and files
+ * are the information, not the chrome.
+ */
+export const stellaTheme: DesktopTheme = {
+  name: 'stella',
+  label: 'Stellarium Studio',
+  description: 'Calm operational surfaces with an indigo signal accent',
+  colors: {
+    background: '#F5F7FB',
+    foreground: '#172033',
+    card: '#FFFFFF',
+    cardForeground: '#172033',
+    muted: '#EEF1F7',
+    mutedForeground: '#64718A',
+    popover: '#FFFFFF',
+    popoverForeground: '#172033',
+    primary: '#5B5CE2',
+    primaryForeground: '#FFFFFF',
+    secondary: '#EEF0FF',
+    secondaryForeground: '#38399A',
+    accent: '#E8EBFF',
+    accentForeground: '#292A77',
+    border: '#DDE2EC',
+    input: '#C7CEDD',
+    ring: '#5B5CE2',
+    midground: '#5B5CE2',
+    midgroundForeground: '#FFFFFF',
+    composerRing: '#5B5CE2',
+    destructive: '#C83E5B',
+    destructiveForeground: '#FFFFFF',
+    sidebarBackground: '#F0F3F9',
+    sidebarBorder: '#DDE2EC',
+    userBubble: '#EEF0FF',
+    userBubbleBorder: '#C9CFFD'
+  },
+  darkColors: {
+    background: '#0B0E14',
+    foreground: '#EEF2F8',
+    card: '#141923',
+    cardForeground: '#EEF2F8',
+    muted: '#1A202C',
+    mutedForeground: '#9AA6BA',
+    popover: '#1A202C',
+    popoverForeground: '#EEF2F8',
+    primary: '#9394FF',
+    primaryForeground: '#101220',
+    secondary: '#1B2140',
+    secondaryForeground: '#CFD0FF',
+    accent: '#20274A',
+    accentForeground: '#E0E1FF',
+    border: '#2A3343',
+    input: '#394459',
+    ring: '#A8A8FF',
+    midground: '#9394FF',
+    midgroundForeground: '#101220',
+    composerRing: '#A8A8FF',
+    destructive: '#F17791',
+    destructiveForeground: '#260A10',
+    sidebarBackground: '#10151F',
+    sidebarBorder: '#293345',
+    userBubble: '#1B2140',
+    userBubbleBorder: '#39456B'
+  },
+  typography: {
+    fontSans: SYSTEM_SANS,
+    fontMono: `"JetBrains Mono", ${SYSTEM_MONO}`
+  },
+  terminal: {
+    foreground: '#172033',
+    black: '#253047',
+    red: '#C83E5B',
+    green: '#1C8465',
+    yellow: '#9B6812',
+    blue: '#4B4CC9',
+    magenta: '#8657B6',
+    cyan: '#277C91',
+    white: '#8A96AB',
+    brightBlack: '#64718A',
+    brightRed: '#DF5974',
+    brightGreen: '#2A9A78',
+    brightYellow: '#AE7A21',
+    brightBlue: '#6263E9',
+    brightMagenta: '#9C70CC',
+    brightCyan: '#3594A9',
+    brightWhite: '#F7F9FC'
+  },
+  darkTerminal: {
+    foreground: '#DCE3EE',
+    black: '#171D29',
+    red: '#F17791',
+    green: '#66C7A5',
+    yellow: '#D7AF5E',
+    blue: '#A8A8FF',
+    magenta: '#C59AF1',
+    cyan: '#73C4DA',
+    white: '#AAB5C7',
+    brightBlack: '#6E7C91',
+    brightRed: '#FF9BAE',
+    brightGreen: '#8CDEC1',
+    brightYellow: '#E8C978',
+    brightBlue: '#C1C1FF',
+    brightMagenta: '#DDBBFF',
+    brightCyan: '#9AD8E8',
+    brightWhite: '#F7F9FC'
+  }
+}
+
+/**
  * Midnight — deep blue-violet, near-monotone. Dark only: it has no light
  * palette because the whole idea is the dark end of the spectrum.
  */
@@ -394,6 +504,7 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
   everforest: everforestTheme,
   solarized: solarizedTheme,
   'nous-alt': nousAltTheme,
+  stella: stellaTheme,
   midnight: midnightTheme,
   ember: emberTheme,
   mono: monoTheme,
@@ -404,4 +515,4 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
 export const BUILTIN_THEME_LIST = Object.values(BUILTIN_THEMES)
 
 /** Skin used when nothing is persisted or the persisted name is retired. */
-export const DEFAULT_SKIN_NAME = 'nous'
+export const DEFAULT_SKIN_NAME = 'stella'

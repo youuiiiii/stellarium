@@ -1472,7 +1472,21 @@ export function ChatSidebar({
       data-tour="sessions-sidebar"
     >
       <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
-        <SidebarGroup className="shrink-0 p-0 pb-2 pt-[calc(var(--titlebar-height)+0.375rem)]">
+        <div
+          className="studio-sidebar-brand flex shrink-0 items-center gap-2 px-1.5 pt-[calc(var(--titlebar-height)+0.5rem)]"
+          data-studio-sidebar-brand=""
+        >
+          <span aria-hidden="true" className="studio-sidebar-brand__mark grid size-6 place-items-center rounded-md">
+            <Codicon name="robot" size="0.875rem" />
+          </span>
+          <span className="min-w-0 leading-none">
+            <span className="block truncate text-[0.6875rem] font-semibold tracking-[0.15em] text-foreground">STELLARIUM</span>
+            <span className="mt-0.75 block truncate text-[0.5625rem] font-medium uppercase tracking-[0.13em] text-(--ui-text-quaternary)">
+              Agent Studio
+            </span>
+          </span>
+        </div>
+        <SidebarGroup className="shrink-0 p-0 pb-2 pt-2">
           <SidebarGroupContent>
             <SidebarMenu className="gap-px">
               {[...SIDEBAR_NAV, ...contributedNav].map(item => {
@@ -1492,7 +1506,6 @@ export function ChatSidebar({
                   <SidebarMenuButton
                     aria-current={active ? 'page' : undefined}
                     aria-disabled={!isInteractive}
-                    isActive={active}
                     className={cn(
                       // no-drag: these rows sit directly under the titlebar's
                       // [-webkit-app-region:drag] strips (app-shell.tsx), with only
@@ -1510,6 +1523,7 @@ export function ChatSidebar({
                     // A tip anchored to the label points at the end of the
                     // word; the row is what it's actually about.
                     data-tip-region=""
+                    isActive={active}
                     onClick={() => {
                       // A plain new session lands in whatever profile the live
                       // gateway is on (= the active switcher context). null →
