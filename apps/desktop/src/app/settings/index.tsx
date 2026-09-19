@@ -54,6 +54,7 @@ import { movedSettingsTabRedirect } from './moved-tabs'
 import { NotificationsSettings } from './notifications-settings'
 import { PROVIDER_VIEWS, ProvidersSettings, type ProviderView } from './providers-settings'
 import { SessionsSettings } from './sessions-settings'
+import { deriveSettingsStudioView } from './studio-view'
 import type { SettingsPageProps, SettingsView as SettingsViewId } from './types'
 import { vaultOwnerKey, VaultSettings } from './vault-settings'
 
@@ -104,6 +105,7 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
   // sub-view is deep-linkable and survives a refresh.
   const [providerView, setProviderView] = useRouteEnumParam<ProviderView>('pview', PROVIDER_VIEWS, 'accounts')
   const [keysView] = useRouteEnumParam<KeysView>('kview', KEYS_VIEWS, 'tools')
+  const studioView = deriveSettingsStudioView(activeView, providerView, keysView)
 
   // Jump to a section + its sub-view in one navigate. Two sequential setters
   // would each read the same stale `search` and the second would clobber the
@@ -440,7 +442,7 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
 
   return (
     <OverlayView closeLabel={t.settings.closeSettings} edgeBadge={searchPill} onClose={onClose}>
-      <OverlaySplitLayout>
+      <OverlaySplitLayout data-studio-settings-surface="" data-studio-settings-view={studioView}>
         <OverlayNav footer={navFooter} groups={navGroups} />
 
         <OverlayMain className="px-0 pb-0">{activeSettingsContent}</OverlayMain>

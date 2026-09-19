@@ -43,6 +43,7 @@ The supplied `Stellarium-Agent-Studio.html` is a visual and interaction referenc
 - **Navigation and empty state** — the actual sidebar gains the Stellarium Agent Studio identity; the actual empty-chat wordmark/copy identifies the product as `STELLARIUM`. Existing nav, project, profile, session, drag-to-split, command, and provider flows remain the original real controls.
 - **Live session hierarchy treatment** — session rows now expose their genuine selected and in-flight state to the Studio skin. The selected row gets a calm tokenized surface; an active run gets a narrow signal rail. No title heuristics, duplicated controls, or changes to resume/archive/delete/pin/drag behavior.
 - **Composer readiness treatment** — the actual composer now carries a tested `working` / `ready` / `unavailable` state derived from real `busy` and `disabled` inputs. Studio emphasizes active work at the dock boundary while preserving the existing stop, queue, steer, attachment, and accessibility controls.
+- **Settings management frame** — the real settings overlay now carries a tested route-derived Studio identity. Configuration collapses into one calm management canvas; provider and credentials subviews remain distinct because they represent different live tasks. The existing deep links, narrow-screen dropdown, settings scope, search palette, import/export/reset, and all original actions remain unchanged.
 
 ## Baseline evidence
 

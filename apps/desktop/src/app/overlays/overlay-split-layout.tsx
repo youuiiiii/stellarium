@@ -1,4 +1,4 @@
-import { Fragment, memo, type ReactNode } from 'react'
+import { type ComponentProps, Fragment, memo, type ReactNode } from 'react'
 
 import { TabDropdown } from '@/components/ui/tab-dropdown'
 import type { IconComponent } from '@/lib/icons'
@@ -13,9 +13,8 @@ import { OVERLAY_TOP_CLEARANCE } from './overlay-view'
 const RAIL_HIDDEN = 'max-[47.5rem]:hidden'
 const BAR_HIDDEN = 'hidden max-[47.5rem]:flex'
 
-interface OverlaySplitLayoutProps {
+interface OverlaySplitLayoutProps extends ComponentProps<'div'> {
   children: ReactNode
-  className?: string
 }
 
 interface OverlaySidebarProps {
@@ -41,9 +40,10 @@ interface OverlayNavItemProps {
   trailing?: ReactNode
 }
 
-export function OverlaySplitLayout({ children, className }: OverlaySplitLayoutProps) {
+export function OverlaySplitLayout({ children, className, ...props }: OverlaySplitLayoutProps) {
   return (
     <div
+      {...props}
       className={cn(
         // Narrow: one column, and pin rows to [nav-bar auto | main 1fr] — without
         // an explicit template the grid's default align-content:stretch splits the

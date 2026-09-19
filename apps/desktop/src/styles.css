@@ -1840,6 +1840,27 @@ body.guest-pointer-lock :is(webview, iframe) {
   border-color: color-mix(in srgb, var(--ui-stroke-secondary) 88%, transparent);
 }
 
+/* Settings is a genuine management surface, not a second chat canvas. Its
+   route-derived marker lets Studio carry a single calm frame across config,
+   provider, credentials, and gateway work while still showing the real view
+   identity to the renderer and tests. */
+:root[data-hermes-theme='stella'] [data-studio-settings-surface] {
+  background: color-mix(in srgb, var(--ui-bg-chrome) 60%, transparent);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-settings-surface] > [data-tour='overlay-nav'] {
+  border-right: 1px solid color-mix(in srgb, var(--dt-primary) 13%, var(--ui-stroke-tertiary));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-sidebar) 96%, var(--dt-primary)) 0, var(--ui-bg-sidebar) 12rem);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-settings-surface] > main {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-chrome) 74%, var(--dt-primary)) 0, transparent 9rem);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-settings-surface][data-studio-settings-view^='providers'] > main {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-chrome) 66%, var(--dt-primary)) 0, transparent 11rem);
+}
+
 :root[data-hermes-theme='stella'] [data-slot='aui_intro'] {
   max-width: 48rem;
   margin-inline: auto;
