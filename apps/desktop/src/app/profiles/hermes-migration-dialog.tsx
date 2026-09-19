@@ -140,12 +140,12 @@ export function HermesMigrationDialog({
           }
         })
         setResult(resp)
-        notify('Hermes data migrated successfully into Stella profile!')
+        notify({ message: 'Hermes data migrated successfully into Stella profile!' })
         await refreshProfiles()
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Migration failed.')
-      notifyError('Migration failed')
+      notifyError(err, 'Migration failed')
     } finally {
       setMigrating(false)
     }
@@ -253,8 +253,9 @@ export function HermesMigrationDialog({
 
               <SanitizedInput
                 className="mt-1 font-mono text-xs bg-black/40 border-white/[0.08]"
-                onChange={e => setSelectedSource(e.target.value)}
+                onValueChange={(val: string) => setSelectedSource(val)}
                 placeholder="C:\Users\...\.hermes"
+                sanitize={v => v}
                 value={selectedSource}
               />
             </div>

@@ -24,15 +24,19 @@ export function SidebarSessionSkeletons() {
 }
 
 export function SidebarBlankState({ onNewProject }: { onNewProject: () => void }) {
+  const { t } = useI18n()
+  const s = t.sidebar
+
   return (
-    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-      <div className="flex size-8 items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.06] text-[#8a8f98] mb-2">
-        <Codicon name="comment-discussion" size="1rem" />
+    <div className="grid min-h-0 flex-1 place-items-center px-4 text-center">
+      <div className="flex flex-col items-center gap-2">
+        <Codicon className="text-(--ui-text-quaternary)" name="root-folder" size="1.25rem" />
+        <p className="text-xs text-(--ui-text-tertiary)">{s.noSessions}</p>
+        <Button className="mt-0.5 text-(--ui-text-secondary)" onClick={onNewProject} size="sm" variant="ghost">
+          <Codicon name="add" size="0.75rem" />
+          {s.projects.newButton}
+        </Button>
       </div>
-      <p className="text-xs font-medium text-[#8a8f98]">No active sessions</p>
-      <p className="text-[11px] text-[#62666d] max-w-[190px] mt-0.5 leading-relaxed">
-        Start a new chat above to begin your workspace with Stella.
-      </p>
     </div>
   )
 }

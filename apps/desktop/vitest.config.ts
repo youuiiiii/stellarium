@@ -13,8 +13,7 @@ const reactUi: TestProjectConfiguration = {
     // and the monolithic suite contends heavily on Windows. 30s gives cold
     // starts and legitimate UI work headroom without removing a real bound on
     // genuinely hung tests.
-    testTimeout: 30_000,
-    maxWorkers: 4
+    testTimeout: 30_000
   }
 }
 

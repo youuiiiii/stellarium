@@ -804,7 +804,7 @@ export function ContribController() {
           // painted by <body> is the only thing between the page and the
           // vibrancy material.
           data-contrib-shell=""
-          style={{ '--titlebar-height': '36px' } as CSSProperties}
+          style={{ '--titlebar-height': '0px' } as CSSProperties}
         >
           <LayoutTreeRoot titlebar />
 

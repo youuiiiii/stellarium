@@ -387,49 +387,7 @@ export const slateTheme: DesktopTheme = {
   }
 }
 
-/**
- * Stella — the signature Project Stella & Stellarium identity.
- * Astral Midnight cosmic obsidian background with star lavender & violet accents.
- */
-export const stellaTheme: DesktopTheme = {
-  name: 'stella',
-  label: 'Stellarium',
-  description: 'Stellarium Precision Studio — Linear-engineered deep obsidian and violet luminance',
-  colors: {
-    background: '#08090a',
-    foreground: '#f7f8f8',
-    card: '#121316',
-    cardForeground: '#f7f8f8',
-    muted: '#18191c',
-    mutedForeground: '#8a8f98',
-    popover: '#191a1d',
-    popoverForeground: '#f7f8f8',
-    primary: '#7170ff',
-    primaryForeground: '#ffffff',
-    secondary: '#1e1f24',
-    secondaryForeground: '#d0d6e0',
-    accent: '#24252e',
-    accentForeground: '#f7f8f8',
-    border: 'rgba(255, 255, 255, 0.07)',
-    input: '#0d0e10',
-    ring: '#7170ff',
-    midground: '#7170ff',
-    destructive: '#f43f5e',
-    destructiveForeground: '#ffffff',
-    sidebarBackground: '#0c0d0e',
-    sidebarBorder: 'rgba(255, 255, 255, 0.06)',
-    userBubble: '#151619',
-    userBubbleBorder: 'rgba(255, 255, 255, 0.08)'
-  },
-  typography: {
-    fontSans: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif, ${EMOJI_FALLBACK}`,
-    fontMono: `"JetBrains Mono", ${SYSTEM_MONO}`,
-    fontUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap'
-  }
-}
-
 export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
-  stella: stellaTheme,
   nous: nousTheme,
   github: githubTheme,
   catppuccin: catppuccinTheme,
@@ -446,4 +404,4 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
 export const BUILTIN_THEME_LIST = Object.values(BUILTIN_THEMES)
 
 /** Skin used when nothing is persisted or the persisted name is retired. */
-export const DEFAULT_SKIN_NAME = 'stella'
+export const DEFAULT_SKIN_NAME = 'nous'

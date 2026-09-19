@@ -3,7 +3,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { useStore } from '@nanostores/react'
 import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useLocation } from 'react-router'
 
 import { PlatformAvatar } from '@/app/messaging/platform-icon'
 import { Button } from '@/components/ui/button'
@@ -74,14 +74,12 @@ import {
 } from '@/store/layout'
 import { notifyError } from '@/store/notifications'
 import {
-  $activeGatewayProfile,
   $newChatProfile,
   $profiles,
   $profileScope,
   ALL_PROFILES,
   messagingTotalsKey,
   normalizeProfileKey,
-  profileLabel,
   sidebarProfileForScope
 } from '@/store/profile'
 import {
@@ -139,8 +137,6 @@ import {
   ARTIFACTS_ROUTE,
   CRON_ROUTE,
   MESSAGING_ROUTE,
-  PROFILES_ROUTE,
-  SETTINGS_ROUTE,
   SIDEBAR_NAV_AREA,
   type SidebarNavContribution,
   SKILLS_ROUTE
@@ -343,15 +339,6 @@ export function ChatSidebar({
   const { t } = useI18n()
   const s = t.sidebar
   const { pathname } = useLocation()
-  const navigate = useNavigate()
-  const activeGatewayProf = useStore($activeGatewayProfile)
-  const currentProfiles = useStore($profiles)
-
-  const activeProfileDisplay = useMemo(() => {
-    if (!activeGatewayProf) return 'Stella'
-    const match = currentProfiles?.find(p => p.name === activeGatewayProf)
-    return match ? profileLabel(match) : activeGatewayProf
-  }, [activeGatewayProf, currentProfiles])
   // Contributed nav rows (plugins pairing a page with a sidebar entry) render
   // below the built-ins with the same chrome; active = at their route.
   const navContributions = useContributions(SIDEBAR_NAV_AREA)
@@ -1486,32 +1473,8 @@ export function ChatSidebar({
     >
       <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
         <SidebarGroup className="shrink-0 p-0 pb-2 pt-[calc(var(--titlebar-height)+0.375rem)]">
-          {/* Active Agent Card */}
-          <div
-            className="mb-2.5 flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] p-2 transition-all duration-200 hover:border-[#7170ff]/40 hover:bg-white/[0.06] hover:shadow-[0_0_16px_rgba(113,112,255,0.12)] cursor-pointer group pointer-events-auto"
-            onClick={() => navigate(PROFILES_ROUTE)}
-            title="Switch or manage active Stella agent profile"
-          >
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#7170ff]/20 text-xs shadow-[0_0_10px_rgba(113,112,255,0.2)] border border-[#7170ff]/40 group-hover:scale-105 transition-transform">
-              🌟
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <span className="truncate text-[11px] font-semibold text-foreground">
-                  {activeProfileDisplay}
-                </span>
-                <span className="text-[8.5px] font-medium text-[#7170ff] uppercase px-1.5 py-0.2 rounded bg-[#7170ff]/10 border border-[#7170ff]/20">
-                  AGENT
-                </span>
-              </div>
-              <p className="truncate text-[9.5px] text-muted-foreground">
-                Autonomous Personal Companion
-              </p>
-            </div>
-          </div>
-
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5">
+            <SidebarMenu className="gap-px">
               {[...SIDEBAR_NAV, ...contributedNav].map(item => {
                 const isInteractive = Boolean(item.action) || Boolean(item.route)
 
@@ -1529,19 +1492,24 @@ export function ChatSidebar({
                   <SidebarMenuButton
                     aria-current={active ? 'page' : undefined}
                     aria-disabled={!isInteractive}
+                    isActive={active}
                     className={cn(
-                      'flex h-7 w-full justify-start gap-2 rounded-md border border-transparent px-2 text-left text-xs font-medium text-[#8a8f98] transition-colors [-webkit-app-region:no-drag] hover:bg-white/[0.04] hover:text-[#f7f8f8]',
-                      isNewSession &&
-                        'border-[#7170ff]/30 bg-[#7170ff]/10 text-[#f7f8f8] font-semibold hover:border-[#7170ff]/50 hover:bg-[#7170ff]/15',
+                      // no-drag: these rows sit directly under the titlebar's
+                      // [-webkit-app-region:drag] strips (app-shell.tsx), with only
+                      // 6px of clearance. Drag regions win hit-testing over DOM
+                      // (pointer-events can't override), and on Linux/WSLg the
+                      // resolved region has been observed to swallow clicks on the
+                      // top rows. Same carve-out as USER_BUBBLE_BASE_CLASS in
+                      // thread.tsx.
+                      'flex h-7 w-full justify-start gap-2 rounded-md border border-transparent px-2 text-left text-[0.8125rem] font-medium text-(--ui-text-secondary) transition-colors duration-100 ease-out [-webkit-app-region:no-drag] hover:bg-(--ui-control-hover-background) hover:text-foreground hover:transition-none',
                       active &&
-                        'border-white/[0.08] bg-white/[0.06] text-white font-medium',
+                        'border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) text-foreground shadow-none hover:border-(--ui-stroke-tertiary)!',
                       !isInteractive &&
                         'cursor-default hover:border-transparent hover:bg-transparent hover:text-inherit'
                     )}
                     // A tip anchored to the label points at the end of the
                     // word; the row is what it's actually about.
                     data-tip-region=""
-                    isActive={active}
                     onClick={() => {
                       // A plain new session lands in whatever profile the live
                       // gateway is on (= the active switcher context). null →
@@ -1969,7 +1937,7 @@ export function ChatSidebar({
 
         {!showSessionSections && <SidebarBlankState onNewProject={openProjectCreate} />}
 
-        <div className="shrink-0 border-t border-white/[0.06] bg-[#090a0c]/80 px-2 py-2">
+        <div className="shrink-0 px-0.5 pb-1 pt-0.5">
           <ProfileRail />
         </div>
       </SidebarContent>

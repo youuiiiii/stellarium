@@ -2804,17 +2804,17 @@ export const en: Translations = {
   composer: {
     message: 'Message',
     wakingProfile: profile => `Waking up ${profile}…`,
-    placeholderStarting: 'Starting Stellarium...',
-    placeholderReconnecting: 'Reconnecting to Stellarium…',
+    placeholderStarting: 'Starting Hermes...',
+    placeholderReconnecting: 'Reconnecting to Hermes…',
     placeholderFollowUp: 'Send follow-up',
     newSessionPlaceholders: [
-      'What are we building together?',
-      'Ask Stella anything, or drop code/files here...',
-      "What's on your mind, Master?",
+      'What are we building?',
+      'Give Hermes a task',
+      "What's on your mind?",
       'Describe what you need',
-      'What should we tackle today?',
+      'What should we tackle?',
       'Ask anything',
-      'Start with a goal or plan'
+      'Start with a goal'
     ],
     followUpPlaceholders: [
       'Send a follow-up',

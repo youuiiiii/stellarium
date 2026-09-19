@@ -1,11 +1,9 @@
-import { useStore } from '@nanostores/react'
 import { useState } from 'react'
-import { useAui } from '@assistant-ui/react'
 
 import { capitalize, normalize } from '@/lib/text'
-import { $activeMascotId, $customMascotData, resolveMascotSrc } from '@/store/mascot'
 
 import introCopyJsonl from './intro-copy.jsonl?raw'
+import { Wordmark } from './wordmark'
 
 type IntroCopy = {
   headline: string
@@ -33,7 +31,7 @@ const FALLBACK_COPY: IntroCopy[] = [
     body: "Bring the code, question, or stuck part. I'll read the room before making changes."
   },
   {
-    headline: 'What should Stella look at?',
+    headline: 'What should Hermes look at?',
     body: "Send the task, failing path, or half-formed plan. I'll help turn it into action."
   },
   {
@@ -125,7 +123,7 @@ function fallbackCopyForPersonality(personalityKey: string): IntroCopy[] {
       body: "Send the task, file, or rough idea. I'll use your configured voice and keep the work grounded in this repo."
     },
     {
-      headline: `What does ${label} Stella need to see?`,
+      headline: `What does ${label} Hermes need to see?`,
       body: "Bring the context or the stuck part. I'll adapt to your configured personality."
     },
     {
@@ -133,7 +131,7 @@ function fallbackCopyForPersonality(personalityKey: string): IntroCopy[] {
       body: "Send the problem, file, or idea. I'll follow the personality you've configured."
     },
     {
-      headline: `What should ${label} Stella tackle?`,
+      headline: `What should ${label} Hermes tackle?`,
       body: "Drop the task here. I'll keep the work grounded in the repo."
     },
     {
@@ -147,7 +145,7 @@ function pickCopy(copies: IntroCopy[], seed = 0): IntroCopy {
   return copies[Math.abs(seed) % copies.length] || FALLBACK_COPY[0]
 }
 
-const WORDMARK = 'STELLARIUM'
+const WORDMARK = 'HERMES AGENT'
 
 function resolveCopy(personality?: string, seed?: number): IntroCopy {
   const personalityKey = normalizeKey(personality)
@@ -162,75 +160,16 @@ function resolveCopy(personality?: string, seed?: number): IntroCopy {
 export function Intro({ personality, seed }: IntroProps) {
   const [mountSeed] = useState(() => Math.floor(Math.random() * 100000))
   const copy = resolveCopy(personality, mountSeed + (seed ?? 0))
-  const activeMascot = useStore($activeMascotId)
-  const customMascot = useStore($customMascotData)
-  const mascotSrc = resolveMascotSrc(activeMascot, customMascot)
-  const aui = useAui()
-
-  const handleStarterPrompt = (prompt: string) => {
-    try {
-      aui.composer().setText(prompt)
-    } catch {
-      // safe fallback
-    }
-  }
 
   return (
     <div
-      className="flex w-full min-w-0 flex-col items-center justify-center px-4 py-8 text-center text-muted-foreground sm:px-6 lg:px-8 animate-in fade-in duration-300"
+      className="pointer-events-none flex w-full min-w-0 flex-col items-center justify-center px-0.5 py-6 text-center text-muted-foreground sm:px-6 lg:px-8"
       data-slot="aui_intro"
     >
-      <div className="w-full max-w-lg mx-auto flex flex-col items-center">
-        {/* Clean Studio Identity */}
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex size-7 items-center justify-center rounded-lg bg-[#7170ff]/15 border border-[#7170ff]/30 text-[#7170ff] text-xs font-bold shadow-[0_0_12px_rgba(113,112,255,0.2)]">
-            ✦
-          </div>
-          <span className="font-mono text-[11px] font-semibold tracking-wider text-[#8a8f98] uppercase">
-            Autonomous Workspace
-          </span>
-          <span className="size-1 rounded-full bg-[#10b981]" />
-          <span className="font-mono text-[10px] text-[#10b981]">Ready</span>
-        </div>
+      <div className="w-full min-w-0">
+        <Wordmark className="mb-1" text={WORDMARK} />
 
-        {/* Studio Heading */}
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#f7f8f8] mb-2 font-sans">
-          Welcome back, Master Ilunaa
-        </h1>
-
-        <p className="text-xs sm:text-sm text-[#8a8f98] max-w-md mx-auto leading-relaxed mb-6 font-sans">
-          Drop a task, code, or command to begin.
-        </p>
-
-        {/* Compact Suggested Action Chips */}
-        <div className="flex flex-wrap items-center justify-center gap-2 max-w-lg">
-          <button
-            className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-xs text-[#d0d6e0] transition-all hover:border-[#7170ff]/40 hover:bg-[#7170ff]/10 hover:text-white cursor-pointer"
-            onClick={() => handleStarterPrompt('Inspect repository architecture and verify test status.')}
-            type="button"
-          >
-            <span className="text-[#7170ff]">⌥</span>
-            <span>Inspect repository status</span>
-          </button>
-
-          <button
-            className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-xs text-[#d0d6e0] transition-all hover:border-[#7170ff]/40 hover:bg-[#7170ff]/10 hover:text-white cursor-pointer"
-            onClick={() => handleStarterPrompt('Analyze system performance and daemon telemetry.')}
-            type="button"
-          >
-            <span className="text-[#10b981]">⚡</span>
-            <span>Run system diagnostics</span>
-          </button>
-
-          <button
-            className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-xs text-[#d0d6e0] transition-all hover:border-[#7170ff]/40 hover:bg-[#7170ff]/10 hover:text-white cursor-pointer"
-            onClick={() => handleStarterPrompt('Plan the next technical roadmap milestone.')}
-            type="button"
-          >
-            <span className="text-[#38bdf8]">✦</span>
-            <span>Plan next milestone</span>
-          </button>
-        </div>
+        <p className="m-0 text-center leading-normal tracking-tight">{copy.body}</p>
       </div>
     </div>
   )
