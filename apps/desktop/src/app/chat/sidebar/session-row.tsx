@@ -357,7 +357,7 @@ function SidebarSessionRowImpl({
           // metadata / preview lines below need the extra rows (#68119).
           !card && density !== 'compact' && 'min-h-[2.75rem]',
           !card && density === 'detailed' && 'min-h-[3.875rem]',
-          isSelected && 'bg-primary/10 border border-primary/25 text-foreground font-medium shadow-[0_0_12px_rgba(157,114,255,0.12)]',
+          isSelected && 'border border-primary/25 bg-primary/10 text-foreground font-medium',
           // Open in another pane: the SAME band, just weaker. Its own mixed
           // token rather than row opacity — dimming the whole row would take
           // the title and the status dot down with it.
@@ -371,6 +371,7 @@ function SidebarSessionRowImpl({
         )}
         data-glass-opaque={dragging ? '' : undefined}
         data-selected={isSelected ? 'true' : 'false'}
+        data-studio-session-row=""
         data-working={liveTurn ? 'true' : undefined}
         // The row runs BOTH drags off one press, and each declines outside its
         // own region — so no timing/arbitration rule is needed and neither can

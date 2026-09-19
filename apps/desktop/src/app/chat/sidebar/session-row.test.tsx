@@ -197,6 +197,31 @@ describe('SidebarSessionRow running arc', () => {
     expect(arc(container)).toBeTruthy()
   })
 
+  it('exposes the real selected and working state to the Studio skin', () => {
+    act(() => {
+      publishSessionState('rt1', { ...createClientSessionState('s1'), busy: true })
+    })
+
+    const { container } = render(
+      <SidebarSessionRow
+        isPinned={false}
+        isSelected
+        onArchive={noop}
+        onDelete={noop}
+        onPin={noop}
+        onResume={noop}
+        onToggleUnread={noop}
+        session={makeSession({ title: 'Working session' })}
+        unread={false}
+      />
+    )
+
+    const row = container.querySelector('[data-studio-session-row]')
+    expect(row).toBeTruthy()
+    expect(row?.getAttribute('data-selected')).toBe('true')
+    expect(row?.getAttribute('data-working')).toBe('true')
+  })
+
   // The row owns its status subscription so a turn starting repaints that row
   // and nothing else — not its siblings, and not the list around them. Rows
   // render once per fiber, so counting `sessionTitle` counts repaints.
