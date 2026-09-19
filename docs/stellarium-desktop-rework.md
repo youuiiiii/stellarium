@@ -42,6 +42,7 @@ The supplied `Stellarium-Agent-Studio.html` is a visual and interaction referenc
 - **Operational hierarchy** — scoped CSS changes only layout hierarchy the token layer cannot express: rail separation, transcript canvas, composer focus treatment, responsive status suppression, and restrained elevation. No global `!important` skin.
 - **Navigation and empty state** — the actual sidebar gains the Stellarium Agent Studio identity; the actual empty-chat wordmark/copy identifies the product as `STELLARIUM`. Existing nav, project, profile, session, drag-to-split, command, and provider flows remain the original real controls.
 - **Live session hierarchy treatment** — session rows now expose their genuine selected and in-flight state to the Studio skin. The selected row gets a calm tokenized surface; an active run gets a narrow signal rail. No title heuristics, duplicated controls, or changes to resume/archive/delete/pin/drag behavior.
+- **Composer readiness treatment** — the actual composer now carries a tested `working` / `ready` / `unavailable` state derived from real `busy` and `disabled` inputs. Studio emphasizes active work at the dock boundary while preserving the existing stop, queue, steer, attachment, and accessibility controls.
 
 ## Baseline evidence
 

@@ -1826,6 +1826,20 @@ body.guest-pointer-lock :is(webview, iframe) {
     0 1rem 2.5rem -2rem color-mix(in srgb, #000 72%, transparent);
 }
 
+/* The composer already owns the real stop/queue/steer controls. Studio only
+   reinforces that real state at its boundary: working stays visible while the
+   transcript moves; unavailable becomes quietly non-inviting. */
+:root[data-hermes-theme='stella'] [data-studio-composer-state='working'] [data-slot='composer-surface']:not(:focus-within) {
+  border-color: color-mix(in srgb, var(--dt-primary) 52%, var(--ui-stroke-secondary));
+  box-shadow:
+    inset 0.125rem 0 0 var(--dt-primary),
+    0 1rem 2.5rem -2rem color-mix(in srgb, #000 72%, transparent);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-composer-state='unavailable'] [data-slot='composer-surface'] {
+  border-color: color-mix(in srgb, var(--ui-stroke-secondary) 88%, transparent);
+}
+
 :root[data-hermes-theme='stella'] [data-slot='aui_intro'] {
   max-width: 48rem;
   margin-inline: auto;
