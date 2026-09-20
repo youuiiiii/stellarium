@@ -19,9 +19,10 @@ describe('SidebarDateDivider', () => {
   })
 
   it('stays a static caption when it is not collapsible', () => {
-    render(<SidebarDateDivider label="Yesterday" />)
+    const { container } = render(<SidebarDateDivider label="Yesterday" />)
 
     expect(screen.queryByRole('button')).toBeNull()
     expect(screen.getByText('Yesterday')).toBeTruthy()
+    expect(container.querySelector('[data-studio-date-divider]')).toBeTruthy()
   })
 })

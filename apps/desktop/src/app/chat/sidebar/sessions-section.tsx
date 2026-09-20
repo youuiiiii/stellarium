@@ -80,7 +80,10 @@ function SidebarSectionHeader({
   )
 
   return (
-    <div className="group/section flex shrink-0 items-center justify-between gap-1 pb-1 pt-1.5">
+    <div
+      className="group/section flex shrink-0 items-center justify-between gap-1 pb-1 pt-1.5"
+      data-studio-section-header=""
+    >
       {collapsible ? (
         <button
           // min-w-0 lets the label truncate at narrow sidebar widths instead of
@@ -606,7 +609,7 @@ export function SidebarSessionsSection({
   const resolvedContentClassName = cn(contentClassName, flatVirtualized && 'overflow-visible')
 
   return (
-    <SidebarGroup className={rootClassName}>
+    <SidebarGroup className={rootClassName} data-studio-session-section="">
       <SidebarSectionHeader
         action={headerAction}
         collapsible={collapsible}

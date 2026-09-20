@@ -369,9 +369,14 @@ function SidebarSessionRowImpl({
           dragging && 'z-10 cursor-grabbing bg-(--ui-sidebar-surface-background)',
           className
         )}
+        data-archived={session.archived ? 'true' : undefined}
+        data-density={card ? 'card' : density}
         data-glass-opaque={dragging ? '' : undefined}
+        data-open-unfocused={openUnfocused ? 'true' : undefined}
+        data-pinned={isPinned ? 'true' : undefined}
         data-selected={isSelected ? 'true' : 'false'}
         data-studio-session-row=""
+        data-unread={unread ? 'true' : undefined}
         data-working={liveTurn ? 'true' : undefined}
         // The row runs BOTH drags off one press, and each declines outside its
         // own region — so no timing/arbitration rule is needed and neither can

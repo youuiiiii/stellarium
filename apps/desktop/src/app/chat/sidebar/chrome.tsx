@@ -142,7 +142,11 @@ export function SidebarDateDivider({
   return (
     // group/workspace: a divider heads a group the same way a repo header does,
     // so it borrows the header's hover-revealed "+" verbatim.
-    <div className={cn('group/workspace flex select-none items-center gap-2 px-2 pb-0.5 pt-2', className)} {...props}>
+    <div
+      className={cn('group/workspace flex select-none items-center gap-2 px-2 pb-0.5 pt-2', className)}
+      data-studio-date-divider=""
+      {...props}
+    >
       {toggle ? (
         <button
           aria-expanded={toggle.open}

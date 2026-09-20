@@ -60,6 +60,8 @@ The supplied `Stellarium-Agent-Studio.html` is the **canonical visual and struct
 - `[x]` Live session selected/in-flight state (`selected` / `busy`).
 - `[x]` Composer `working` / `ready` / `unavailable` state (`busy` / `disabled`).
 - `[x]` Settings route frame plus project/worktree creation lifecycle states.
+- `[x]` Session row density/state attributes (`density`, `unread`, `pinned`, `archived`) and section headers/date dividers.
+- `[x]` Composer dock capsule layout and runtime state (`data-studio-composer-dock`, `layout`, `state`).
 
 These supporting commits remain valid, but **they do not advance the active shell-composition phase.**
 
@@ -81,7 +83,8 @@ These supporting commits remain valid, but **they do not advance the active shel
 - **Stellarium Studio skin** — a tokenized, default `stella` theme supplies light and dark palettes, terminal colours, typography, density, and an indigo signal colour. It remains selectable alongside imported/user skins rather than overriding them.
 - **Operational hierarchy** — scoped CSS changes only layout hierarchy the token layer cannot express: rail separation, transcript canvas, composer focus treatment, responsive status suppression, and restrained elevation. No global `!important` skin.
 - **Navigation and empty state** — the actual sidebar gains the Stellarium Agent Studio identity; the actual empty-chat wordmark/copy identifies the product as `STELLARIUM`. Existing nav, project, profile, session, drag-to-split, command, and provider flows remain the original real controls.
-- **Live session hierarchy treatment** — session rows now expose their genuine selected and in-flight state to the Studio skin. The selected row gets a calm tokenized surface; an active run gets a narrow signal rail. No title heuristics, duplicated controls, or changes to resume/archive/delete/pin/drag behavior.
+- **Live session hierarchy treatment** — session rows now expose their genuine selected, in-flight, density (`compact`, `comfortable`, `detailed`, `card`), unread, pinned, and archived states to the Studio skin. Sidebar section headers and date dividers carry tokenized typography and hover affordances. Sorting, virtual list thresholds, and drag/split gestures remain untouched.
+- **Composer dock capsule** — the actual composer dock container exposes its layout mode (`docked` vs `floating`) and tested runtime state (`working`, `ready`, `unavailable`). Studio styles center the floating capsule geometry (clamped to 900px max width matching the Studio specification) with subtle elevation and responsive padding.
 - **Composer readiness treatment** — the actual composer now carries a tested `working` / `ready` / `unavailable` state derived from real `busy` and `disabled` inputs. Studio emphasizes active work at the dock boundary while preserving the existing stop, queue, steer, attachment, and accessibility controls.
 - **Settings management frame** — the real settings overlay now carries a tested route-derived Studio identity. Configuration collapses into one calm management canvas; provider and credentials subviews remain distinct because they represent different live tasks. The existing deep links, narrow-screen dropdown, settings scope, search palette, import/export/reset, and all original actions remain unchanged.
 
@@ -96,6 +99,12 @@ These supporting commits remain valid, but **they do not advance the active shel
 
 | Gate | Status | Evidence |
 | --- | --- | --- |
+| Session row density & state behavior tests | Passed | Tested in `session-row.test.tsx` (14 passed) verifying `data-density`, `data-unread`, `data-pinned`, `data-archived`, `data-open-unfocused`. |
+| Composer dock layout & state unit tests | Passed | Tested in `studio-state.test.ts` (4 passed) verifying `composerDockStudioState` resolution of docked/floating layout and working/ready/unavailable states. |
+| Section header & date divider tests | Passed | Tested in `sessions-section.test.tsx` (3 passed) and `chrome.test.tsx` (2 passed) verifying `data-studio-session-section`, `data-studio-section-header`, and `data-studio-date-divider`. |
+| Typecheck | Passed | `npm run typecheck` (`tsc -p . --noEmit && tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.e2e.json --noEmit`) exited 0. |
+| Scoped lint | Passed | `npx eslint` reported 0 errors and 0 warnings across all 9 touched files. |
+| Production build | Passed | `vite build` completed successfully in 1m 48s with 0 errors. |
 | Behavior tests written before Studio header implementation | Passed | New test initially failed because `studio-workspace-header` did not exist; it now covers path labels and live working/offline state. |
 | Typecheck | Passed | `npm run typecheck` exited 0 after the changes. |
 | Focused UI test | Passed | `npx vitest run --project ui src/themes/presets.test.ts src/app/chat/studio-workspace-header.test.tsx`: **22 passed**. |

@@ -82,7 +82,7 @@ import {
 import { useComposerScope } from './scope'
 import { ComposerStatusStack } from './status-stack'
 import { CodingStatusRow } from './status-stack/coding-row'
-import { composerStudioState } from './studio-state'
+import { composerDockStudioState, composerStudioState } from './studio-state'
 import { SuggestionPills } from './suggestion-pills'
 import { extractClipboardImageBlobs, openDirectiveScope } from './text-utils'
 import { ComposerTriggerPopover } from './trigger-popover'
@@ -1193,6 +1193,8 @@ export function ChatBar({
     </div>
   )
 
+  const studioDock = composerDockStudioState({ busy, disabled, poppedOut })
+
   return (
     <>
       {dragging && poppedOut && (
@@ -1232,6 +1234,9 @@ export function ChatBar({
           )}
           data-popped-out={poppedOut ? '' : undefined}
           data-slot="composer-dock"
+          data-studio-composer-dock=""
+          data-studio-composer-layout={studioDock.layout}
+          data-studio-composer-state={studioDock.state}
           data-thread-scrolled-up={scrolledUp ? '' : undefined}
           // Measured for the thread's bottom clearance: the dock is the box
           // that contains the strips, the status stack, AND the composer, so

@@ -222,6 +222,52 @@ describe('SidebarSessionRow running arc', () => {
     expect(row?.getAttribute('data-working')).toBe('true')
   })
 
+  it('exposes density, unread, pinned, and archived states to the Studio skin', () => {
+    const { container, rerender } = render(
+      <SidebarSessionRow
+        isPinned
+        isSelected={false}
+        onArchive={noop}
+        onDelete={noop}
+        onPin={noop}
+        onResume={noop}
+        onToggleUnread={noop}
+        session={makeSession({ archived: true, title: 'Archived pinned session' })}
+        unread
+      />
+    )
+
+    const row = container.querySelector('[data-studio-session-row]')
+    expect(row).toBeTruthy()
+    expect(row?.getAttribute('data-density')).toBe('compact')
+    expect(row?.getAttribute('data-unread')).toBe('true')
+    expect(row?.getAttribute('data-pinned')).toBe('true')
+    expect(row?.getAttribute('data-archived')).toBe('true')
+    expect(row?.getAttribute('data-selected')).toBe('false')
+
+    rerender(
+      <SidebarSessionRow
+        card
+        isPinned={false}
+        isSelected
+        onArchive={noop}
+        onDelete={noop}
+        onPin={noop}
+        onResume={noop}
+        onToggleUnread={noop}
+        session={makeSession({ archived: false, title: 'Card session' })}
+        unread={false}
+      />
+    )
+
+    const cardRow = container.querySelector('[data-studio-session-row]')
+    expect(cardRow?.getAttribute('data-density')).toBe('card')
+    expect(cardRow?.getAttribute('data-unread')).toBeNull()
+    expect(cardRow?.getAttribute('data-pinned')).toBeNull()
+    expect(cardRow?.getAttribute('data-archived')).toBeNull()
+    expect(cardRow?.getAttribute('data-selected')).toBe('true')
+  })
+
   // The row owns its status subscription so a turn starting repaints that row
   // and nothing else — not its siblings, and not the list around them. Rows
   // render once per fiber, so counting `sessionTitle` counts repaints.

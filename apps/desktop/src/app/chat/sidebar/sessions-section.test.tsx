@@ -181,4 +181,29 @@ describe('SidebarSessionsSection memoization & virtualizer stability', () => {
     const thirdRowsRef = mockVirtualListPropsHistory[2].rows
     expect(thirdRowsRef).not.toBe(secondRowsRef)
   })
+
+  it('exposes studio session section and header attributes', () => {
+    const { container } = render(
+      <SidebarSessionsSection
+        activeSessionId={null}
+        emptyState={<div>Empty</div>}
+        label="Pinned Sessions"
+        onArchiveSession={noop}
+        onDeleteSession={noop}
+        onResumeSession={noop}
+        onToggle={noop}
+        onTogglePin={noop}
+        onToggleUnread={noop}
+        open={true}
+        pinned={true}
+        sessions={generateSessions(2)}
+      />
+    )
+
+    const section = container.querySelector('[data-studio-session-section]')
+    expect(section).toBeTruthy()
+
+    const header = container.querySelector('[data-studio-section-header]')
+    expect(header).toBeTruthy()
+  })
 })
