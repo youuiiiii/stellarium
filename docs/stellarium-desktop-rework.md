@@ -14,6 +14,7 @@ The supplied `Stellarium-Agent-Studio.html` is the **canonical visual and struct
 
 ## Non-negotiable constraints
 
+- **UI/UX first:** every structural decision must make the desktop clearer, calmer, faster, and more coherent for real work. Architecture exists to protect the experience—not to excuse inherited visual debt.
 - Preserve real runtime data and actions. No decorative metrics, fake agent state, or dead controls.
 - Reuse the existing contribution, pane-tree, theme, provider onboarding, profile, and session systems rather than introducing a parallel architecture.
 - Keep keyboard, screen-reader, reduced-motion, loading, empty, offline, and error states explicit.
