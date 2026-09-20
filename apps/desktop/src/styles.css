@@ -1762,7 +1762,8 @@ body.guest-pointer-lock :is(webview, iframe) {
    ───────────────────────────────────────────────────────────────────────── */
 :root[data-hermes-theme='stella'] {
   --radius-scalar: 0.625;
-  --sidebar-width: 16rem;
+  --sidebar-width: 19.75rem;
+  --sidebar-width-icon: 3.5rem;
   --studio-rail-shadow: 0.75rem 0 2rem -1.5rem color-mix(in srgb, #000 45%, transparent);
   --studio-canvas-rule: color-mix(in srgb, var(--ui-base) 5%, transparent);
 }
@@ -1918,8 +1919,64 @@ body.guest-pointer-lock :is(webview, iframe) {
 }
 
 :root[data-hermes-theme='stella'] [data-studio-global-rail] [data-slot='sidebar-menu-button'] {
+  min-height: 2.25rem;
   justify-content: center;
   padding-inline: 0;
+  color: var(--ui-text-secondary);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-global-rail] [data-slot='sidebar-menu-button']:hover {
+  color: var(--ui-text-primary);
+  background: color-mix(in srgb, var(--dt-primary) 12%, var(--ui-control-hover-background));
+}
+
+/* Collapsing the navigation preserves the global rail and removes only the
+   workspace/session column, rather than crushing both columns together. */
+:root[data-hermes-theme='stella'] [data-slot='sidebar'][data-collapsible='icon'] .studio-sidebar-layout > div {
+  display: none;
+}
+
+:root[data-hermes-theme='stella'] [data-slot='sidebar'][data-collapsible='icon'] .studio-global-rail {
+  width: 100%;
+  border-right: 0;
+}
+
+:root[data-hermes-theme='stella'] [data-tour='sessions-sidebar'] [data-sidebar='content'] > div > [class*='text-[0.6875rem]'] {
+  letter-spacing: 0.1em;
+  color: var(--ui-text-secondary);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workspaces] {
+  margin-inline: 0.125rem;
+  padding: 0.375rem 0.25rem;
+  border-radius: 0.75rem;
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workspaces] button[aria-pressed='true'] {
+  border-color: rgba(157, 114, 255, 0.35);
+  background: rgba(157, 114, 255, 0.14);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-agent-pill] {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid color-mix(in srgb, var(--ui-stroke-tertiary) 80%, transparent);
+  transition: all 0.15s ease;
+}
+
+:root[data-hermes-theme='stella'] [data-studio-agent-pill]:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: color-mix(in srgb, var(--dt-primary) 35%, var(--ui-stroke-secondary));
+}
+
+:root[data-hermes-theme='stella'] [data-studio-sidebar-footer] {
+  border-top: 1px solid color-mix(in srgb, var(--ui-stroke-tertiary) 60%, transparent);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-sidebar-empty] {
+  margin-inline: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px dashed color-mix(in srgb, var(--ui-stroke-tertiary) 82%, transparent);
+  background: color-mix(in srgb, var(--ui-bg-raised) 55%, transparent);
 }
 
 /* The primary workbench has one calm operational plane: contextual header,

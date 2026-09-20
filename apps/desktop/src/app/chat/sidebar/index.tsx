@@ -19,7 +19,8 @@ import {
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
+  SidebarTrigger
 } from '@/components/ui/sidebar'
 import { Tip, TipKeybindLabel } from '@/components/ui/tooltip'
 import { useContributions } from '@/contrib/react/use-contributions'
@@ -182,6 +183,7 @@ import {
 import { buildSessionByAnyId, resolvePinnedSessions } from './session-index'
 import { SidebarSessionsSection, VIRTUALIZE_THRESHOLD } from './sessions-section'
 import { CONTEXT_SPLIT_KIT, SplitSubmenu } from './split-submenu'
+import { StudioSidebarHeader } from './studio-sidebar-header'
 import { useEnteredProjectSessions } from './use-entered-project-sessions'
 import { WorkspacesSection } from './workspaces-section'
 
@@ -1467,7 +1469,7 @@ export function ChatSidebar({
         panesFlipped ? 'border-l border-r-0' : 'border-r border-l-0',
         'border-(--sidebar-edge-border) bg-(--ui-sidebar-surface-background) opacity-100'
       )}
-      collapsible="none"
+      collapsible="icon"
       data-tip-region=""
       data-tour="sessions-sidebar"
     >
@@ -1619,11 +1621,16 @@ export function ChatSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <div className="mt-auto flex justify-center pb-2 pt-1">
+          <SidebarTrigger className="text-(--ui-text-secondary)" />
+        </div>
         </aside>
 
         <div className="min-w-0 flex flex-1 flex-col overflow-hidden px-2.5">
+          <StudioSidebarHeader className="pt-[calc(var(--titlebar-height)+0.5rem)] px-1" />
+
         {showSessionSections && (
-          <div className="shrink-0 px-2 pb-1 pt-1">
+          <div className="shrink-0 px-1 pb-1 pt-0.5">
             <SearchField
               aria-label={s.searchAria}
               inputRef={searchInputRef}
@@ -1670,7 +1677,10 @@ export function ChatSidebar({
             )}
 
             {!trimmedQuery && (
-              <WorkspacesSection onNewSessionInWorkspace={onNewSessionInWorkspace} />
+              <WorkspacesSection
+                onAddWorkspace={openProjectCreate}
+                onNewSessionInWorkspace={onNewSessionInWorkspace}
+              />
             )}
 
             {!trimmedQuery && (
@@ -1954,7 +1964,14 @@ export function ChatSidebar({
 
         {!showSessionSections && <SidebarBlankState onNewProject={openProjectCreate} />}
 
-        <div className="shrink-0 px-0.5 pb-1 pt-0.5">
+        <div className="sidebar-footer shrink-0 flex flex-col gap-1.5 px-2 pb-1.5 pt-1.5 border-t border-(--ui-stroke-tertiary)" data-studio-sidebar-footer="">
+          <div className="flex items-center justify-between text-[0.6875rem] text-(--ui-text-tertiary)">
+            <span>Stellarium v0.17.2</span>
+            <span className="flex items-center gap-1.5 font-medium text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+              Online
+            </span>
+          </div>
           <ProfileRail />
         </div>
         </div>

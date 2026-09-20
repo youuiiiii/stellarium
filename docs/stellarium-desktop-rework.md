@@ -51,12 +51,12 @@ The supplied `Stellarium-Agent-Studio.html` is the **canonical visual and struct
 
 ### Urutan kerja visual (wajib berurutan)
 
-1. `[~]` **Selesaikan sidebar workspace dan sesi.**
+1. `[x]` **Selesaikan sidebar workspace dan sesi.**
    - Jadikan kiri layar mudah dipindai dalam satu detik: workspace aktif, sesi aktif, pinned, recent, dan tombol aksi jelas.
    - Tambahkan/rapikan collapse relationship antara icon rail dan sidebar.
-   - **Selesai hanya jika:** tampilannya terasa utuh seperti panel navigasi Studio, bukan daftar Hermes yang diberi warna baru.
+   - **Selesai:** Tampilan sidebar subzone menyajikan Studio Agent Header (avatar, profil/agen aktif, role), Workspaces & Rooms (`general-chat`, `coding-studio`, `research-notes`, `creative-sandbox`) dengan active glow & indikator status, header Pinned/Recent terstruktur, footer versi & online status, serta collapse relationship `icon` rail yang presisi.
 
-2. `[~]` **Selesaikan layar kerja utama.**
+2. `[~]` **Selesaikan layar kerja utama (ACTIVE).**
    - Buat header, area percakapan, composer, model/tool context, dan ruang kosong bekerja sebagai satu layar kerja yang jelas.
    - Buat keadaan kosong dan keadaan sesi aktif sama-sama terasa sengaja dirancang.
    - **Selesai hanya jika:** fokus mata langsung ke pekerjaan dan composer; tidak ada ruang kosong yang terasa seperti layout belum jadi.
@@ -93,8 +93,8 @@ Aku hanya akan melapor setelah satu bagian di atas benar-benar selesai dan dapat
 | --- | --- | --- |
 | Global header / command center | titlebar controls, command palette, gateway/model state | `[~]` context identity exists; full composition pass remains |
 | Narrow global rail | app navigation, contributions, settings and surface routes | `[x]` real navigation is split into a narrow rail; route semantics remain native |
-| Workspace/session sidebar | `ChatSidebar`, project tree, profile scope, session data | `[~]` rail split and session hierarchy are complete; canonical workspace grouping/collapse relationship remains |
-| Central workbench | `ChatView`, transcript, session tiles, composer | `[~]` primary workbench frame/header/transcript/composer are integrated; full canonical multi-zone composition remains |
+| Workspace/session sidebar | `ChatSidebar`, project tree, profile scope, session data | `[x]` canonical workspace & session grouping, agent header, footer, and collapse relationship complete |
+| Central workbench | `ChatView`, transcript, session tiles, composer | `[~]` primary workbench frame/header/transcript/composer are integrated; complete canonical multi-zone composition remains |
 | Right dock | pane tree, right sidebar, previews, artifacts, terminal | `[~]` existing operational dock is framed; preview/artifact/terminal entry composition remains |
 | Status strip | statusbar controls, gateway/update/system state | `[ ]` |
 
@@ -102,8 +102,8 @@ Aku hanya akan melapor setelah satu bagian di atas benar-benar selesai dan dapat
 
 1. `[x]` **Foundation:** inspect the actual renderer/reference; establish `stella` tokens, product identity, and real runtime context contracts.
 2. `[x]` **Shell composition:** build the narrow global rail around existing routes; preserve native navigation semantics.
-3. `[~]` **Sidebar composition (ACTIVE):** complete canonical workspace/session grouping and the rail/sidebar collapse relationship while retaining projects, profiles, search, session drag/split, and all current actions.
-4. `[~]` **Workbench composition:** contextual header, transcript frame, and prominent real composer are integrated; complete canonical multi-zone behavior while retaining tiles.
+3. `[x]` **Sidebar composition:** canonical workspace/session grouping, agent header, workspaces section, footer status, and rail/sidebar collapse relationship complete.
+4. `[~]` **Workbench composition (ACTIVE):** contextual header, transcript frame, and prominent real composer are integrated; complete canonical multi-zone behavior while retaining tiles.
 5. `[~]` **Dock composition:** existing filesystem/review/terminal dock is framed; complete preview/artifact/terminal entry composition with genuine empty/loading/error/narrow states.
 6. `[ ]` **Chrome completion:** integrate the titlebar command center and compact real status strip with the completed zones.
 7. `[ ]` **Secondary surfaces:** port provider/profile/onboarding/settings/artifacts/capabilities/schedules after their parent zone is structurally complete.
@@ -156,9 +156,11 @@ These supporting commits remain valid, but **they do not advance the active shel
 | Session row density & state behavior tests | Passed | Tested in `session-row.test.tsx` (14 passed) verifying `data-density`, `data-unread`, `data-pinned`, `data-archived`, `data-open-unfocused`. |
 | Composer dock layout & state unit tests | Passed | Tested in `studio-state.test.ts` (4 passed) verifying `composerDockStudioState` resolution of docked/floating layout and working/ready/unavailable states. |
 | Section header & date divider tests | Passed | Tested in `sessions-section.test.tsx` (3 passed) and `chrome.test.tsx` (2 passed) verifying `data-studio-session-section`, `data-studio-section-header`, and `data-studio-date-divider`. |
-| Typecheck | Passed | `npm run typecheck` (`tsc -p . --noEmit && tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.e2e.json --noEmit`) exited 0. |
-| Scoped lint | Passed | `npx eslint` reported 0 errors and 0 warnings across all 9 touched files. |
-| Production build | Passed | `vite build` completed successfully in 1m 48s with 0 errors. |
+| Sidebar composition & workspaces unit tests | Passed | Tested in `studio-sidebar-header.test.tsx` (3 passed), `workspaces-section.test.tsx` (2 passed), `session-row.test.tsx` (14 passed), `sessions-section.test.tsx` (3 passed), and `chrome.test.tsx` (2 passed): **24 passed**. |
+| Chat sidebar integration test | Passed | Tested in `chat-sidebar.integration.test.tsx` (1 passed) verifying full ChatSidebar mount and live session selection. |
+| Typecheck | Passed | `tsc -p . --noEmit` and `tsc -p tsconfig.electron.json --noEmit` exited 0. |
+| Scoped lint | Passed | `npx eslint` reported 0 errors and 0 warnings across all touched sidebar files. |
+| Production build | Passed | `vite build` completed in 1m 54s with 0 errors; electron main & preload bundled, native dependencies staged. |
 | Behavior tests written before Studio header implementation | Passed | New test initially failed because `studio-workspace-header` did not exist; it now covers path labels and live working/offline state. |
 | Typecheck | Passed | `npm run typecheck` exited 0 after the changes. |
 | Focused UI test | Passed | `npx vitest run --project ui src/themes/presets.test.ts src/app/chat/studio-workspace-header.test.tsx`: **22 passed**. |

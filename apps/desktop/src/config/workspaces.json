@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "title": "Stellarium Default Workspaces",
+  "title": "WORKSPACES",
   "categories": [
     {
       "id": "workspace",
-      "name": "─── ✦ WORKSPACE ✦ ───",
+      "name": "Workspace",
       "rooms": [
         {
           "id": "general",
