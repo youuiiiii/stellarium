@@ -1240,6 +1240,7 @@ export function PreviewPane({ embedded = false, onRestartServer, reloadRequest =
   return (
     <aside
       className="relative flex h-full w-full min-w-0 flex-col overflow-hidden bg-transparent text-muted-foreground"
+      data-studio-dock=""
       // Buttons 3/4 are a mouse's back/forward. Chromium delivers them to the
       // renderer as a normal mouse event inside the app's own chrome (the
       // guest page gets its own via `app-command` in main), and unhandled they

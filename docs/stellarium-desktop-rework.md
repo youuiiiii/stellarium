@@ -104,8 +104,8 @@ Aku hanya akan melapor setelah satu bagian di atas benar-benar selesai dan dapat
 2. `[x]` **Shell composition:** build the narrow global rail around existing routes; preserve native navigation semantics.
 3. `[x]` **Sidebar composition:** canonical workspace/session grouping, agent header, workspaces section, footer status, and rail/sidebar collapse relationship complete.
 4. `[x]` **Workbench composition:** contextual header, workspace/room breadcrumb, topic divider, glass message cards, glowing wordmark empty state, and prominent floating composer capsule integrated.
-5. `[~]` **Dock composition (ACTIVE):** existing filesystem/review/terminal dock is framed; complete preview/artifact/terminal entry composition with genuine empty/loading/error/narrow states.
-6. `[ ]` **Chrome completion:** integrate the titlebar command center and compact real status strip with the completed zones.
+- `[x]` **Dock composition (ACTIVE):** existing filesystem/review/terminal dock is framed; complete preview/artifact/terminal entry composition with genuine empty/loading/error/narrow states.
+6. `[~]` **Chrome completion (ACTIVE):** integrate the titlebar command center and compact real status strip with the completed zones.
 7. `[ ]` **Secondary surfaces:** port provider/profile/onboarding/settings/artifacts/capabilities/schedules after their parent zone is structurally complete.
 8. `[ ]` **Visual and interaction acceptance:** responsive geometry, resizable pane behavior, focus order, keyboard use, reduced motion, interactive renderer pass, then full-suite disposition.
 

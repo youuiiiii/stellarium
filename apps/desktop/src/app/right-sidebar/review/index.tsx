@@ -68,6 +68,7 @@ export function ReviewPane() {
   return (
     <aside
       aria-label={c.review}
+      data-studio-dock=""
       className={cn(
         'before:pointer-events-none relative flex h-full w-full min-w-0 flex-col overflow-hidden border-(--ui-stroke-secondary) bg-(--ui-sidebar-surface-background) pt-(--titlebar-height) text-(--ui-text-tertiary)',
         panesFlipped

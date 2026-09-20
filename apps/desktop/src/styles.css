@@ -1989,10 +1989,20 @@ body.guest-pointer-lock :is(webview, iframe) {
    their data and actions remain native, while the boundary reads as a distinct zone. */
 :root[data-hermes-theme='stella'] [data-studio-dock] {
   background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-sidebar) 92%, var(--dt-primary)) 0, var(--ui-bg-sidebar) 10rem);
+  border-left: 1px solid color-mix(in srgb, var(--dt-primary) 15%, var(--ui-stroke-tertiary));
+}
+
+:root[data-hermes-theme='stella'] [data-studio-dock] header,
+:root[data-hermes-theme='stella'] [data-studio-dock] [data-slot='sidebar-panel-header'] {
+  border-bottom: 1px solid color-mix(in srgb, var(--dt-primary) 12%, var(--ui-stroke-tertiary));
+  background: color-mix(in srgb, var(--ui-bg-chrome) 85%, var(--dt-primary));
 }
 
 :root[data-hermes-theme='stella'] [data-studio-dock] [data-slot='sidebar-panel-label'] {
   color: color-mix(in srgb, var(--ui-text-secondary) 90%, var(--dt-primary));
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 :root[data-hermes-theme='stella'] [data-studio-workbench] > header {
