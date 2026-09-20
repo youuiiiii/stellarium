@@ -47,4 +47,20 @@ describe('StudioWorkspaceHeader', () => {
     expect(screen.getByText('Unscoped workspace')).toBeTruthy()
     expect(screen.queryByText('Model unavailable')).toBeNull()
   })
+
+  it('renders room topic when provided', () => {
+    render(
+      <StudioWorkspaceHeader
+        model="gpt-5.6-terra"
+        provider="Local Antigravity"
+        status="ready"
+        topic="General assistance, brainstorming, and daily questions"
+        workspace="D:\\10_Projects\\Project_Stella\\stellarium"
+      >
+        <span># general-chat</span>
+      </StudioWorkspaceHeader>
+    )
+
+    expect(screen.getByText('General assistance, brainstorming, and daily questions')).toBeTruthy()
+  })
 })

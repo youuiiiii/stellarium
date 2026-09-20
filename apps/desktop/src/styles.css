@@ -2059,10 +2059,72 @@ body.guest-pointer-lock :is(webview, iframe) {
   letter-spacing: 0.08em;
 }
 
+:root[data-hermes-theme='stella'] [data-slot='aui_intro'] .wordmark span > span {
+  background: linear-gradient(135deg, #ffffff 20%, color-mix(in srgb, var(--dt-primary) 85%, #fff) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 24px color-mix(in srgb, var(--dt-primary) 40%, transparent));
+}
+
 :root[data-hermes-theme='stella'] [data-slot='aui_intro'] p:last-child {
   max-width: 34rem;
   font-size: 0.9375rem;
   line-height: 1.55;
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workspace-header] {
+  padding-inline: 1rem;
+  height: 3.25rem;
+}
+
+:root[data-hermes-theme='stella'] .studio-workspace-header .model-status-pill {
+  background: color-mix(in srgb, var(--dt-primary) 10%, var(--ui-bg-secondary));
+  border-color: color-mix(in srgb, var(--dt-primary) 25%, transparent);
+  color: color-mix(in srgb, var(--dt-primary) 85%, var(--ui-text-primary));
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] [data-slot='composer-dock'] {
+  bottom: 1.25rem;
+  max-width: min(100%, 56rem);
+  margin-inline: auto;
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] [data-slot='composer-dock'] [data-slot='composer-input-scroller'] {
+  background: color-mix(in srgb, var(--ui-bg-raised) 92%, var(--dt-primary));
+  backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--dt-primary) 22%, var(--ui-stroke-tertiary));
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 20px color-mix(in srgb, var(--dt-primary) 16%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] [data-slot='composer-dock'] [data-slot='composer-input-scroller']:focus-within {
+  border-color: var(--dt-primary);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 24px color-mix(in srgb, var(--dt-primary) 32%, transparent);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] [data-slot='aui_assistant-message-content'] {
+  background: color-mix(in srgb, var(--ui-bg-raised) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, 255 255 255 / 0.06, var(--ui-stroke-tertiary));
+  border-radius: 0.25rem 1rem 1rem 1rem;
+  padding: 0.875rem 1.125rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] [data-slot='aui_user-message-root'] .composer-human-message {
+  background: color-mix(in srgb, var(--dt-primary) 14%, var(--ui-bg-secondary));
+  border-color: color-mix(in srgb, var(--dt-primary) 30%, transparent);
+  border-radius: 1rem 0.25rem 1rem 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] [data-slot='code-card'] {
+  background: rgba(10, 8, 20, 0.85);
+  border: 1px solid color-mix(in srgb, var(--dt-primary) 16%, var(--ui-stroke-tertiary));
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .studio-workspace-header__mark {

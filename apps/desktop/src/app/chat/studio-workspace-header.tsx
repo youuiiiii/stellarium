@@ -28,6 +28,7 @@ interface StudioWorkspaceHeaderProps {
   model: null | string
   provider: null | string
   status: StudioRuntimeStatus
+  topic?: null | string
   workspace: null | string | undefined
 }
 
@@ -42,6 +43,7 @@ export function StudioWorkspaceHeader({
   model,
   provider,
   status,
+  topic,
   workspace
 }: StudioWorkspaceHeaderProps) {
   const state = STATUS_COPY[status]
@@ -49,44 +51,57 @@ export function StudioWorkspaceHeader({
 
   return (
     <div
-      className={cn('studio-workspace-header flex min-w-0 flex-1 items-center gap-3', className)}
+      className={cn('studio-workspace-header flex min-w-0 flex-1 items-center justify-between gap-3', className)}
       data-studio-workspace-header=""
     >
-      <div aria-hidden="true" className="studio-workspace-header__mark grid size-6 shrink-0 place-items-center rounded-md">
-        <span className="grid grid-cols-2 gap-[2px]">
-          <i className="size-[4px] rounded-[1px]" />
-          <i className="size-[4px] rounded-[1px]" />
-          <i className="size-[4px] rounded-[1px]" />
-          <i className="size-[4px] rounded-[1px]" />
-        </span>
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-center gap-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-(--ui-text-quaternary)">
-          <span>Stellarium</span>
-          <Codicon aria-hidden="true" className="size-2.5 shrink-0" name="chevron-right" />
-          <span className="truncate" title={workspace ?? undefined}>
-            {workspaceName}
+      <div className="header-context flex min-w-0 flex-1 items-center gap-2.5">
+        <div aria-hidden="true" className="studio-workspace-header__mark grid size-6 shrink-0 place-items-center rounded-md">
+          <span className="grid grid-cols-2 gap-[2px]">
+            <i className="size-[4px] rounded-[1px]" />
+            <i className="size-[4px] rounded-[1px]" />
+            <i className="size-[4px] rounded-[1px]" />
+            <i className="size-[4px] rounded-[1px]" />
           </span>
         </div>
-        <div className="min-w-0 text-[0.8125rem] font-medium leading-5 text-(--ui-text-primary)">{children}</div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-(--ui-text-quaternary)">
+            <span>Stellarium</span>
+            <Codicon aria-hidden="true" className="size-2.5 shrink-0" name="chevron-right" />
+            <span className="truncate" title={workspace ?? undefined}>
+              {workspaceName}
+            </span>
+          </div>
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="min-w-0 text-[0.8125rem] font-medium leading-5 text-(--ui-text-primary)">{children}</div>
+            {topic && (
+              <div
+                className="current-room-topic hidden max-w-sm truncate border-l border-(--ui-stroke-tertiary) pl-2.5 text-[0.75rem] text-(--ui-text-tertiary) xl:inline-block"
+                title={topic}
+              >
+                {topic}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="studio-workspace-header__runtime hidden min-w-0 items-center gap-2 lg:flex">
+      <div className="studio-workspace-header__runtime hidden min-w-0 items-center gap-2.5 lg:flex">
         <span
           aria-label={`Agent status: ${state.label}`}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-(--ui-stroke-tertiary) bg-(--ui-bg-secondary) px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.09em] text-(--ui-text-secondary)"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-(--ui-stroke-tertiary) bg-(--ui-bg-secondary) px-2.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.09em] text-(--ui-text-secondary)"
         >
           <i aria-hidden="true" className={cn('size-1.5 rounded-full', state.tone)} />
           {state.label}
         </span>
         {(model || provider) && (
-          <span
-            className="max-w-52 truncate text-[0.6875rem] text-(--ui-text-tertiary)"
+          <div
+            className="model-status-pill flex items-center gap-1.5 rounded-full border border-(--ui-stroke-tertiary) bg-(--ui-control-active-background) px-2.5 py-0.5 text-[0.6875rem] text-(--ui-text-secondary)"
             title={[provider, model].filter(Boolean).join(' · ')}
           >
-            {model}
-          </span>
+            <span className="size-1.5 rounded-full bg-(--dt-primary)" />
+            <span className="max-w-44 truncate">{model}</span>
+          </div>
         )}
         {provider && <span className="sr-only">{provider}</span>}
       </div>

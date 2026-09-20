@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import { ActionStatus } from '@/components/ui/action-status'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,9 +9,8 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
-import { Field, FieldHint } from '@/components/ui/field'
 import { SanitizedInput } from '@/components/ui/sanitized-input'
-import { AlertCircle, AlertTriangle, CheckCircle2, Download, Loader2, RefreshCw, ShieldLock } from '@/lib/icons'
+import { AlertCircle, CheckCircle2, Download, Loader2, RefreshCw, ShieldLock } from '@/lib/icons'
 import { notify, notifyError } from '@/store/notifications'
 import { refreshProfiles } from '@/store/profile'
 
@@ -211,12 +209,12 @@ export function HermesMigrationDialog({
                 <div className="grid gap-2">
                   {detected.map(item => (
                     <div
-                      key={item.path}
                       className={`flex items-start justify-between p-3 rounded-xl border transition-all cursor-pointer ${
                         selectedSource === item.path
                           ? 'border-[#9d72ff]/50 bg-[#9d72ff]/10 shadow-[0_0_12px_rgba(157,114,255,0.15)]'
                           : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
                       }`}
+                      key={item.path}
                       onClick={() => setSelectedSource(item.path)}
                     >
                       <div className="grid gap-1">
@@ -268,12 +266,12 @@ export function HermesMigrationDialog({
                   const active = selectedComponents.includes(comp.id)
                   return (
                     <div
-                      key={comp.id}
                       className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition-all cursor-pointer ${
                         active
                           ? 'border-[#9d72ff]/40 bg-[#9d72ff]/10 text-white'
                           : 'border-white/[0.05] bg-white/[0.02] text-muted-foreground hover:bg-white/[0.04]'
                       }`}
+                      key={comp.id}
                       onClick={() => toggleComponent(comp.id)}
                     >
                       <input

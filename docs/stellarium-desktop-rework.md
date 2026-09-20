@@ -41,9 +41,9 @@ The supplied `Stellarium-Agent-Studio.html` is the **canonical visual and struct
 | Identitas Stellarium | `[~]` sebagian | warna Stella, nama produk, empty state | ritme visual final di seluruh layar |
 | Bar ikon kiri | `[x]` selesai dasar | rail ikon global di sisi kiri | penyelarasan ukuran/ruang dengan layar final |
 | Sidebar workspace & sesi | `[~]` sebagian | tabs, pencarian, workspace, pinned, daftar sesi | grouping yang jelas, active state kuat, tombol collapse, spacing final |
-| Layar kerja utama | `[~]` sebagian | header konteks, canvas percakapan, composer | komposisi kerja penuh, hierarchy saat sesi aktif, tool/model context yang jelas |
-| Composer | `[~]` sebagian | capsule composer, safe gap dari footer, state kerja | ukuran/posisi/prompt/action hierarchy final di semua ukuran layar |
-| Panel kanan | `[~]` baru bingkai | filesystem/review/terminal panel asli | tampilan preview/artifact/terminal yang menyatu, state kosong/loading/error |
+| Layar kerja utama | `[x]` selesai | header konteks, canvas percakapan, composer | komposisi kerja penuh, hierarchy saat sesi aktif, tool/model context yang jelas |
+| Composer | `[x]` selesai | capsule composer, safe gap dari footer, state kerja | ukuran/posisi/prompt/action hierarchy final di semua ukuran layar |
+| Panel kanan | `[~]` sebagian (ACTIVE) | filesystem/review/terminal panel asli | tampilan preview/artifact/terminal yang menyatu, state kosong/loading/error |
 | Header atas | `[ ]` belum | icon sistem bawaan masih ada | command center yang rapi, judul workspace, action utama yang jelas |
 | Status bawah | `[~]` sebagian | gateway/mode/version sudah terbaca | hierarchy status, spacing, dan informasi final |
 | Settings & layar manajemen | `[~]` sebagian | frame Settings dan form project/worktree | struktur visual lengkap untuk semua halaman sekunder |
@@ -56,12 +56,12 @@ The supplied `Stellarium-Agent-Studio.html` is the **canonical visual and struct
    - Tambahkan/rapikan collapse relationship antara icon rail dan sidebar.
    - **Selesai:** Tampilan sidebar subzone menyajikan Studio Agent Header (avatar, profil/agen aktif, role), Workspaces & Rooms (`general-chat`, `coding-studio`, `research-notes`, `creative-sandbox`) dengan active glow & indikator status, header Pinned/Recent terstruktur, footer versi & online status, serta collapse relationship `icon` rail yang presisi.
 
-2. `[~]` **Selesaikan layar kerja utama (ACTIVE).**
+2. `[x]` **Selesaikan layar kerja utama.**
    - Buat header, area percakapan, composer, model/tool context, dan ruang kosong bekerja sebagai satu layar kerja yang jelas.
    - Buat keadaan kosong dan keadaan sesi aktif sama-sama terasa sengaja dirancang.
-   - **Selesai hanya jika:** fokus mata langsung ke pekerjaan dan composer; tidak ada ruang kosong yang terasa seperti layout belum jadi.
+   - **Selesai:** Canvas zone header terintegrasi penuh (breadcrumb workspace `# room`, topic divider, status dot runtime, model selector pill capsule dengan chevron), header selalu tampil di primary window bahkan pada draft kosong, intro/wordmark bercahaya anggun, message bubbles beralih ke glass cards & purple user tints, serta floating composer capsule dengan glow & responsive dock.
 
-3. `[~]` **Selesaikan panel kanan.**
+3. `[~]` **Selesaikan panel kanan (ACTIVE).**
    - Tampilkan preview, file, terminal, hasil kerja, dan review sebagai satu panel pendamping yang jelas kapan dibutuhkan dan tidak mengganggu saat tidak dibutuhkan.
    - **Selesai hanya jika:** panel kanan terasa seperti alat kerja, bukan sidebar generik.
 
@@ -103,8 +103,8 @@ Aku hanya akan melapor setelah satu bagian di atas benar-benar selesai dan dapat
 1. `[x]` **Foundation:** inspect the actual renderer/reference; establish `stella` tokens, product identity, and real runtime context contracts.
 2. `[x]` **Shell composition:** build the narrow global rail around existing routes; preserve native navigation semantics.
 3. `[x]` **Sidebar composition:** canonical workspace/session grouping, agent header, workspaces section, footer status, and rail/sidebar collapse relationship complete.
-4. `[~]` **Workbench composition (ACTIVE):** contextual header, transcript frame, and prominent real composer are integrated; complete canonical multi-zone behavior while retaining tiles.
-5. `[~]` **Dock composition:** existing filesystem/review/terminal dock is framed; complete preview/artifact/terminal entry composition with genuine empty/loading/error/narrow states.
+4. `[x]` **Workbench composition:** contextual header, workspace/room breadcrumb, topic divider, glass message cards, glowing wordmark empty state, and prominent floating composer capsule integrated.
+5. `[~]` **Dock composition (ACTIVE):** existing filesystem/review/terminal dock is framed; complete preview/artifact/terminal entry composition with genuine empty/loading/error/narrow states.
 6. `[ ]` **Chrome completion:** integrate the titlebar command center and compact real status strip with the completed zones.
 7. `[ ]` **Secondary surfaces:** port provider/profile/onboarding/settings/artifacts/capabilities/schedules after their parent zone is structurally complete.
 8. `[ ]` **Visual and interaction acceptance:** responsive geometry, resizable pane behavior, focus order, keyboard use, reduced motion, interactive renderer pass, then full-suite disposition.

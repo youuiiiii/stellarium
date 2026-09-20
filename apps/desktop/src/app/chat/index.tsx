@@ -52,6 +52,7 @@ import {
 import { $focusedStoredSessionId, $sessionStates, sessionTileDelegate } from '@/store/session-states'
 import { $transcriptTailBySessionId, transcriptTailState } from '@/store/transcript-tail'
 import { isAuxiliaryWindow, isWatchWindow } from '@/store/windows'
+import { $activeRoomId, $workspacesConfig } from '@/store/workspaces'
 
 import { primaryRouteSelectedSessionId, routeSessionId } from '../routes'
 import { titlebarHeaderBaseClass, titlebarHeaderShadowClass, titlebarHeaderTitleClass } from '../shell/titlebar'
@@ -146,7 +147,17 @@ function ChatHeader({
   const activeStoredSession =
     (selectedSessionId && sessions.find(session => sessionMatchesStoredId(session, selectedSessionId))) || null
 
-  const title = activeStoredSession ? sessionTitle(activeStoredSession) : NEW_SESSION_TITLE
+  const workspacesConfig = useStore($workspacesConfig)
+  const activeRoomId = useStore($activeRoomId)
+  const activeRoom = workspacesConfig?.categories?.flatMap(c => c.rooms).find(r => r.id === activeRoomId)
+
+  const title = activeStoredSession
+    ? sessionTitle(activeStoredSession)
+    : activeRoom
+      ? `# ${activeRoom.name}`
+      : NEW_SESSION_TITLE
+
+  const topic = activeRoom?.topic || null
 
   // Which agent/persona owns this chat — glanceable in the header once a
   // second profile exists, so the open session's ownership is never ambiguous
@@ -162,10 +173,12 @@ function ChatHeader({
       ? pinnedSessionIds.includes(selectedSessionId)
       : false
 
+  const sessionMenuId = selectedSessionId || activeSessionId
+
   // Secondary windows (new-session scratch, subagent watch, cmd-click pop-out)
   // are compact side panels — they drop the session-actions header + border
-  // entirely. A brand-new draft has nothing to pin/delete/rename either.
-  if (isAuxiliaryWindow() || (!selectedSessionId && !activeSessionId && !isRoutedSessionView)) {
+  // entirely.
+  if (isAuxiliaryWindow()) {
     return null
   }
 
@@ -176,6 +189,7 @@ function ChatHeader({
         model={model}
         provider={provider}
         status={status}
+        topic={topic}
         workspace={workspace}
       >
         <div
@@ -186,17 +200,23 @@ function ChatHeader({
           }}
         >
           {showProfileTag && <ProfileTag className="pointer-events-auto mr-1.5" profile={activeStoredSession?.profile} />}
-          <SessionActionsMenu
-            align="start"
-            onDelete={selectedSessionId ? onDeleteSelectedSession : undefined}
-            onPin={selectedSessionId ? onToggleSelectedPin : undefined}
-            pinned={selectedIsPinned}
-            sessionId={selectedSessionId || activeSessionId || ''}
-            sideOffset={8}
-            title={title}
-          >
-            <TitleMenuTrigger>{title}</TitleMenuTrigger>
-          </SessionActionsMenu>
+          {sessionMenuId ? (
+            <SessionActionsMenu
+              align="start"
+              onDelete={selectedSessionId ? onDeleteSelectedSession : undefined}
+              onPin={selectedSessionId ? onToggleSelectedPin : undefined}
+              pinned={selectedIsPinned}
+              sessionId={sessionMenuId}
+              sideOffset={8}
+              title={title}
+            >
+              <TitleMenuTrigger>{title}</TitleMenuTrigger>
+            </SessionActionsMenu>
+          ) : (
+            <span className="block truncate" data-studio-empty-workspace-title="">
+              {title}
+            </span>
+          )}
         </div>
       </StudioWorkspaceHeader>
     </header>
