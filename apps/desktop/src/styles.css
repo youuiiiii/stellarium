@@ -1928,6 +1928,16 @@ body.guest-pointer-lock :is(webview, iframe) {
   background: var(--ui-bg-chrome);
 }
 
+/* The existing filesystem/review/terminal panes form Studio's operational dock;
+   their data and actions remain native, while the boundary reads as a distinct zone. */
+:root[data-hermes-theme='stella'] [data-studio-dock] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-sidebar) 92%, var(--dt-primary)) 0, var(--ui-bg-sidebar) 10rem);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-dock] [data-slot='sidebar-panel-label'] {
+  color: color-mix(in srgb, var(--ui-text-secondary) 90%, var(--dt-primary));
+}
+
 :root[data-hermes-theme='stella'] [data-studio-workbench] > header {
   border-bottom: 1px solid color-mix(in srgb, var(--dt-primary) 12%, var(--ui-stroke-tertiary));
   background: color-mix(in srgb, var(--ui-bg-chrome) 88%, var(--dt-primary));

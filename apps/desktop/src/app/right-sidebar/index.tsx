@@ -82,6 +82,7 @@ export function RightSidebarPane({ onActivateFile, onActivateFolder }: RightSide
           ? 'border-r shadow-[inset_-0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
           : 'border-l shadow-[inset_0.0625rem_0_0_color-mix(in_srgb,white_18%,transparent)]'
       )}
+      data-studio-dock=""
     >
       <FilesystemTab
         canCollapse={canCollapse}
