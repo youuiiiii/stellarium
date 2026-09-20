@@ -1864,15 +1864,18 @@ body.guest-pointer-lock :is(webview, iframe) {
 /* Project creation is a brief operational checkpoint. The state is derived
    from the real form and write lifecycle, so incomplete work stays restrained
    and only a ready or in-flight project gets an affirmative Studio signal. */
-:root[data-hermes-theme='stella'] [data-studio-project-dialog] {
+:root[data-hermes-theme='stella'] [data-studio-project-dialog],
+:root[data-hermes-theme='stella'] [data-studio-worktree-dialog] {
   background-image: linear-gradient(160deg, color-mix(in srgb, var(--ui-bg-raised) 92%, var(--dt-primary)) 0, var(--ui-bg-raised) 10rem);
 }
 
-:root[data-hermes-theme='stella'] [data-studio-project-dialog][data-studio-project-state='ready'] {
+:root[data-hermes-theme='stella'] [data-studio-project-dialog][data-studio-project-state='ready'],
+:root[data-hermes-theme='stella'] [data-studio-worktree-dialog][data-studio-worktree-state='ready'] {
   border-color: color-mix(in srgb, var(--dt-primary) 30%, var(--ui-stroke-secondary));
 }
 
-:root[data-hermes-theme='stella'] [data-studio-project-dialog][data-studio-project-state='working'] {
+:root[data-hermes-theme='stella'] [data-studio-project-dialog][data-studio-project-state='working'],
+:root[data-hermes-theme='stella'] [data-studio-worktree-dialog][data-studio-worktree-state='working'] {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--dt-primary) 36%, transparent), var(--ui-shadow-floating);
 }
 

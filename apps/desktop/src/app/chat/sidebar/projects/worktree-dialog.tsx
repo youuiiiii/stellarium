@@ -32,6 +32,7 @@ import {
 } from '@/store/projects'
 
 import { BaseBranchPicker } from './base-branch-picker'
+import { deriveWorktreeDialogStudioState } from './worktree-dialog-state'
 
 interface BranchActionCopy {
   branchCreateWorktree: string
@@ -215,9 +216,11 @@ export function WorktreeDialog() {
     void loadBranches()
   }
 
+  const studioState = deriveWorktreeDialogStudioState({ convertMode, name, pending, repoPath })
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" data-studio-worktree-dialog="" data-studio-worktree-state={studioState}>
         <DialogHeader>
           <DialogTitle>{convertMode ? p.convertBranchTitle : p.newWorktreeTitle}</DialogTitle>
           <DialogDescription>{convertMode ? p.convertBranchDesc : p.newWorktreeDesc}</DialogDescription>
