@@ -71,7 +71,8 @@ export const FILES_PANE_ID = 'files'
 export type RightRailTabId = `artifact:${string}` | `file:${string}` | `url:${string}`
 
 ensurePaneRegistered(CHAT_SIDEBAR_PANE_ID, { open: true })
-ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: false })
+ensurePaneRegistered(FILE_BROWSER_PANE_ID, { open: true })
+ensurePaneRegistered(FILES_PANE_ID, { open: true })
 
 export const $sidebarOpen: ReadableAtom<boolean> = computed(
   $paneStates,
@@ -80,7 +81,7 @@ export const $sidebarOpen: ReadableAtom<boolean> = computed(
 
 export const $fileBrowserOpen: ReadableAtom<boolean> = computed(
   $paneStates,
-  states => states[FILE_BROWSER_PANE_ID]?.open ?? false
+  states => (states[FILE_BROWSER_PANE_ID]?.open ?? states[FILES_PANE_ID]?.open ?? true)
 )
 
 // Persisted so a relaunch reopens the same rail tab. Null when the rail has no

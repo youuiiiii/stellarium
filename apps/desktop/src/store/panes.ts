@@ -14,6 +14,17 @@ export interface PaneRegisterDefaults {
 
 const STORAGE_KEY = 'hermes.desktop.paneStates.v1'
 
+const PANE_CANONICAL_ALIASES: Record<string, string[]> = {
+  sessions: ['chat-sidebar'],
+  'chat-sidebar': ['sessions'],
+  files: ['file-browser'],
+  'file-browser': ['files']
+}
+
+function resolveAliases(id: string): string[] {
+  return [id, ...(PANE_CANONICAL_ALIASES[id] ?? [])]
+}
+
 function isSnapshot(value: unknown): value is PaneStateSnapshot {
   if (!value || typeof value !== 'object') {
     return false
@@ -51,6 +62,17 @@ function load(): Record<string, PaneStateSnapshot> {
         for (const [id, value] of Object.entries(parsed as Record<string, unknown>)) {
           if (isSnapshot(value)) {
             out[id] = { open: value.open, widthOverride: value.widthOverride, heightOverride: value.heightOverride }
+          }
+        }
+
+        // Reconcile and synchronize canonical aliases
+        for (const [canonical, aliases] of Object.entries(PANE_CANONICAL_ALIASES)) {
+          const allKeys = [canonical, ...aliases]
+          const source = allKeys.map(k => out[k]).find(Boolean)
+          if (source) {
+            for (const k of allKeys) {
+              out[k] = { ...source }
+            }
           }
         }
 
@@ -109,51 +131,87 @@ export const $paneHeightOverride = (id: string) => memoized(heightCache, id, s =
 
 export function ensurePaneRegistered(id: string, defaults: PaneRegisterDefaults) {
   const current = $paneStates.get()
+  const targets = resolveAliases(id)
+  const existing = targets.map(k => current[k]).find(Boolean)
+  let changed = false
+  const next = { ...current }
 
-  if (current[id] !== undefined) {
-    return
+  for (const k of targets) {
+    if (next[k] === undefined) {
+      next[k] = existing
+        ? { ...existing }
+        : { open: defaults.open, widthOverride: defaults.widthOverride }
+      changed = true
+    }
   }
 
-  $paneStates.set({ ...current, [id]: { open: defaults.open, widthOverride: defaults.widthOverride } })
+  if (changed) {
+    $paneStates.set(next)
+  }
 }
 
 export function setPaneOpen(id: string, open: boolean) {
   const current = $paneStates.get()
-  const existing = current[id]
+  const targets = resolveAliases(id)
+  let changed = false
+  const next = { ...current }
 
-  if (existing?.open === open) {
-    return
+  for (const k of targets) {
+    const existing = next[k]
+    if (existing?.open !== open) {
+      next[k] = { ...existing, open }
+      changed = true
+    }
   }
 
-  $paneStates.set({ ...current, [id]: { ...existing, open } })
+  if (changed) {
+    $paneStates.set(next)
+  }
 }
 
 export function togglePane(id: string) {
   const current = $paneStates.get()
-  const existing = current[id]
-  $paneStates.set({ ...current, [id]: { ...existing, open: !(existing?.open ?? false) } })
+  const targets = resolveAliases(id)
+  const targetOpen = !(current[id]?.open ?? targets.map(k => current[k]?.open).find(v => v !== undefined) ?? false)
+  setPaneOpen(id, targetOpen)
 }
 
 export function setPaneWidthOverride(id: string, width: number | undefined) {
   const current = $paneStates.get()
-  const existing = current[id] ?? { open: false }
+  const targets = resolveAliases(id)
+  let changed = false
+  const next = { ...current }
 
-  if (existing.widthOverride === width) {
-    return
+  for (const k of targets) {
+    const existing = next[k] ?? { open: false }
+    if (existing.widthOverride !== width) {
+      next[k] = { ...existing, widthOverride: width }
+      changed = true
+    }
   }
 
-  $paneStates.set({ ...current, [id]: { ...existing, widthOverride: width } })
+  if (changed) {
+    $paneStates.set(next)
+  }
 }
 
 export function setPaneHeightOverride(id: string, height: number | undefined) {
   const current = $paneStates.get()
-  const existing = current[id] ?? { open: false }
+  const targets = resolveAliases(id)
+  let changed = false
+  const next = { ...current }
 
-  if (existing.heightOverride === height) {
-    return
+  for (const k of targets) {
+    const existing = next[k] ?? { open: false }
+    if (existing.heightOverride !== height) {
+      next[k] = { ...existing, heightOverride: height }
+      changed = true
+    }
   }
 
-  $paneStates.set({ ...current, [id]: { ...existing, heightOverride: height } })
+  if (changed) {
+    $paneStates.set(next)
+  }
 }
 
 export const clearPaneWidthOverride = (id: string) => setPaneWidthOverride(id, undefined)

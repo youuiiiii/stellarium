@@ -48,6 +48,15 @@ import { tabStripVisibleForZone } from './renderer/strip-visibility'
 // assignment (chat could land in a corner cell). Retire them wholesale.
 const STORAGE_KEY = 'hermes.desktop.layoutTree.v2'
 
+const PANE_CANONICAL_MAP: Record<string, string> = {
+  'file-browser': 'files',
+  'chat-sidebar': 'sessions'
+}
+
+export function canonicalPaneId(id: string): string {
+  return PANE_CANONICAL_MAP[id] ?? id
+}
+
 writeKey('hermes.desktop.layoutTree.v1', null)
 
 let defaultTree: LayoutNode | null = null
@@ -132,7 +141,8 @@ function toggledSet<T>(set: ReadonlySet<T>, item: T, present: boolean): Set<T> |
   return next
 }
 
-export function setTreePaneHidden(paneId: string, hidden: boolean) {
+export function setTreePaneHidden(rawPaneId: string, hidden: boolean) {
+  const paneId = canonicalPaneId(rawPaneId)
   const next = toggledSet($hiddenTreePanes.get(), paneId, hidden)
 
   if (!next) {
@@ -156,7 +166,8 @@ export function setTreePaneHidden(paneId: string, hidden: boolean) {
 /** Make `paneId` the active tab in its group without touching side collapse
  *  or zone-minimized state — the safe "make it visible next time the column
  *  is shown" primitive that reactive unhides need. */
-function frontPaneInGroup(paneId: string) {
+function frontPaneInGroup(rawPaneId: string) {
+  const paneId = canonicalPaneId(rawPaneId)
   const tree = $layoutTree.get()
   const group = tree ? findGroupOfPane(tree, paneId) : null
 
@@ -1102,15 +1113,16 @@ export function bindTreeSideVisibility(
 }
 
 /** The physical column's chrome toggle; main columns never side-collapse. */
-export function treeSideOfPane(paneId: string): TreeSide | null {
-  return paneRootSide(paneId)
+export function treeSideOfPane(rawPaneId: string): TreeSide | null {
+  return paneRootSide(canonicalPaneId(rawPaneId))
 }
 
 /**
  * App intent "show pane X" (a preview target landed, ⌘G opened review, …):
  * open its side, unhide it, and bring it to the front of its group.
  */
-export function revealTreePane(paneId: string) {
+export function revealTreePane(rawPaneId: string) {
+  const paneId = canonicalPaneId(rawPaneId)
   // Reveal beats a Close: un-dismiss and let adoption put the pane back.
   if ($dismissedPanes.get().has(paneId)) {
     setDismissed(paneId, false)
@@ -1731,10 +1743,10 @@ export function setTreeGroupMinimized(groupId: string, minimized: boolean) {
 }
 
 /** The group hosting `paneId`, or null. */
-function paneGroup(paneId: string) {
+function paneGroup(rawPaneId: string) {
   const tree = $layoutTree.get()
 
-  return tree ? findGroupOfPane(tree, paneId) : null
+  return tree ? findGroupOfPane(tree, canonicalPaneId(rawPaneId)) : null
 }
 
 /** Collapse/restore a pane's ZONE to a minimized rail — its tab stays visible.
@@ -1808,7 +1820,8 @@ export function restoreTreePane(paneId: string) {
 /** Is a pane actually ON SCREEN? In the tree, not dismissed, not chrome
  *  hidden, its zone un-minimized, and holding its stack's active slot.
  *  True for every pane class — tool panels and hide-style panes alike. */
-export function isPaneVisible(paneId: string): boolean {
+export function isPaneVisible(rawPaneId: string): boolean {
+  const paneId = canonicalPaneId(rawPaneId)
   if ($dismissedPanes.get().has(paneId) || $hiddenTreePanes.get().has(paneId)) {
     return false
   }
@@ -1849,20 +1862,27 @@ export function $paneVisible(paneId: string): ReadableAtom<boolean> {
  * itself re-asserting a value it already held.
  */
 export function bindPaneVisibility(
-  paneId: string,
+  rawPaneId: string,
   $open: { get(): boolean; listen(fn: (open: boolean) => void): void },
   close?: () => void,
   open?: () => void
 ) {
+  const paneId = canonicalPaneId(rawPaneId)
   setTreePaneHidden(paneId, !$open.get())
   $open.listen(isOpen => setTreePaneHidden(paneId, !isOpen))
 
   if (close) {
     registerPaneCloser(paneId, close)
+    if (rawPaneId !== paneId) {
+      registerPaneCloser(rawPaneId, close)
+    }
   }
 
   if (open) {
     registerPaneOpener(paneId, open)
+    if (rawPaneId !== paneId) {
+      registerPaneOpener(rawPaneId, open)
+    }
   }
 }
 
