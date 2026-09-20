@@ -30,6 +30,59 @@ The supplied `Stellarium-Agent-Studio.html` is the **canonical visual and struct
 | Conversation surface | Prioritize reading, steering, action visibility, and the composer; preserve the existing real streaming and tool workflow. |
 | Secondary surfaces | Make sessions, projects, profiles, artifacts, skills, schedules, and settings discoverable but visually subordinate. |
 
+## Visual UI/UX workflow — the only progress tracker that matters
+
+**Aturan kerja:** satu bagian layar harus dibuat terlihat utuh di aplikasi nyata, diperiksa lewat screenshot/live renderer, lalu diperbaiki sampai rapi sebelum pindah ke bagian berikutnya. Perubahan di balik layar tidak dihitung sebagai kemajuan desain.
+
+### Gambaran progres saat ini
+
+| Bagian yang terlihat | Status nyata | Yang sudah bisa dilihat | Yang masih harus dibuat terlihat |
+| --- | --- | --- | --- |
+| Identitas Stellarium | `[~]` sebagian | warna Stella, nama produk, empty state | ritme visual final di seluruh layar |
+| Bar ikon kiri | `[x]` selesai dasar | rail ikon global di sisi kiri | penyelarasan ukuran/ruang dengan layar final |
+| Sidebar workspace & sesi | `[~]` sebagian | tabs, pencarian, workspace, pinned, daftar sesi | grouping yang jelas, active state kuat, tombol collapse, spacing final |
+| Layar kerja utama | `[~]` sebagian | header konteks, canvas percakapan, composer | komposisi kerja penuh, hierarchy saat sesi aktif, tool/model context yang jelas |
+| Composer | `[~]` sebagian | capsule composer, safe gap dari footer, state kerja | ukuran/posisi/prompt/action hierarchy final di semua ukuran layar |
+| Panel kanan | `[~]` baru bingkai | filesystem/review/terminal panel asli | tampilan preview/artifact/terminal yang menyatu, state kosong/loading/error |
+| Header atas | `[ ]` belum | icon sistem bawaan masih ada | command center yang rapi, judul workspace, action utama yang jelas |
+| Status bawah | `[~]` sebagian | gateway/mode/version sudah terbaca | hierarchy status, spacing, dan informasi final |
+| Settings & layar manajemen | `[~]` sebagian | frame Settings dan form project/worktree | struktur visual lengkap untuk semua halaman sekunder |
+| Responsif & final check | `[ ]` belum | — | layar sempit, resize, keyboard, dan screenshot final semua state |
+
+### Urutan kerja visual (wajib berurutan)
+
+1. `[~]` **Selesaikan sidebar workspace dan sesi.**
+   - Jadikan kiri layar mudah dipindai dalam satu detik: workspace aktif, sesi aktif, pinned, recent, dan tombol aksi jelas.
+   - Tambahkan/rapikan collapse relationship antara icon rail dan sidebar.
+   - **Selesai hanya jika:** tampilannya terasa utuh seperti panel navigasi Studio, bukan daftar Hermes yang diberi warna baru.
+
+2. `[~]` **Selesaikan layar kerja utama.**
+   - Buat header, area percakapan, composer, model/tool context, dan ruang kosong bekerja sebagai satu layar kerja yang jelas.
+   - Buat keadaan kosong dan keadaan sesi aktif sama-sama terasa sengaja dirancang.
+   - **Selesai hanya jika:** fokus mata langsung ke pekerjaan dan composer; tidak ada ruang kosong yang terasa seperti layout belum jadi.
+
+3. `[~]` **Selesaikan panel kanan.**
+   - Tampilkan preview, file, terminal, hasil kerja, dan review sebagai satu panel pendamping yang jelas kapan dibutuhkan dan tidak mengganggu saat tidak dibutuhkan.
+   - **Selesai hanya jika:** panel kanan terasa seperti alat kerja, bukan sidebar generik.
+
+4. `[ ]` **Selesaikan header atas dan status bawah.**
+   - Header menjadi command center yang mudah dipahami.
+   - Footer menjadi status ringkas yang terbaca dan tidak mengganggu.
+   - **Selesai hanya jika:** semua informasi penting jelas tanpa harus membaca teks kecil atau menebak ikon.
+
+5. `[ ]` **Selesaikan layar pendukung.**
+   - Settings, provider/model, profile, project/worktree, artifacts, skills, schedules, dan onboarding.
+   - **Selesai hanya jika:** semuanya terlihat berasal dari produk yang sama, bukan halaman lama yang hanya diwarnai ulang.
+
+6. `[ ]` **Polish dan acceptance visual.**
+   - Periksa light/dark mode, layar kecil/besar, resize panel, keyboard, focus, empty/loading/error/working states.
+   - Ambil screenshot dari layar nyata dan perbaiki semua perbedaan yang masih jelas terhadap HTML referensi.
+   - **Selesai hanya jika:** seluruh aplikasi terasa konsisten, cepat dipahami, dan siap dipakai harian.
+
+### Cara aku melapor setelah ini
+
+Aku hanya akan melapor setelah satu bagian di atas benar-benar selesai dan dapat dilihat. Formatnya akan selalu: **bagian layar yang selesai → apa yang berubah secara visual → screenshot/validasi live → bagian berikutnya.**
+
 ## Execution tracker — source of truth
 
 **Legend:** `[x]` integrated and verified · `[~]` partially integrated · `[ ]` not started. This is an engineering execution ledger, not a release-note list. Work only advances from the first unfinished phase; a later checkbox may not be used as a substitute for an earlier structural one.
