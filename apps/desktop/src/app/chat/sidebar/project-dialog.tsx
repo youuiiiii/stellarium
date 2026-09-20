@@ -33,6 +33,8 @@ import {
   renameProject
 } from '@/store/projects'
 
+import { deriveProjectDialogStudioState } from './project-dialog-state'
+
 // Single dialog mounted once in the sidebar; it renders create / rename /
 // add-folder flows driven by the $projectDialog atom. Folders are chosen via
 // the native directory picker (reused from the default-project-dir setting).
@@ -177,10 +179,16 @@ export function ProjectDialog() {
   }
 
   const title = mode === 'rename' ? p.renameTitle : mode === 'add-folder' ? p.addFolderTitle : p.createTitle
+  const studioState = deriveProjectDialogStudioState({ folders, mode, name, submitting })
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-md" onInteractOutside={event => event.preventDefault()}>
+      <DialogContent
+        className="max-w-md"
+        data-studio-project-dialog=""
+        data-studio-project-state={studioState}
+        onInteractOutside={event => event.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {mode === 'create' && <DialogDescription>{p.createDesc}</DialogDescription>}
