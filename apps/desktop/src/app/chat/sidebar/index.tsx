@@ -1471,9 +1471,10 @@ export function ChatSidebar({
       data-tip-region=""
       data-tour="sessions-sidebar"
     >
-      <SidebarContent className="gap-0 overflow-hidden bg-transparent px-2.5">
-        <div
-          className="studio-sidebar-brand flex shrink-0 items-center gap-2 px-1.5 pt-[calc(var(--titlebar-height)+0.5rem)]"
+      <SidebarContent className="studio-sidebar-layout flex-row gap-0 overflow-hidden bg-transparent px-0">
+        <aside className="studio-global-rail flex h-full w-14 shrink-0 flex-col border-r border-(--sidebar-edge-border) px-1.5" data-studio-global-rail="">
+          <div
+            className="studio-sidebar-brand flex shrink-0 items-center gap-2 px-1.5 pt-[calc(var(--titlebar-height)+0.5rem)]"
           data-studio-sidebar-brand=""
         >
           <span aria-hidden="true" className="studio-sidebar-brand__mark grid size-6 place-items-center rounded-md">
@@ -1618,7 +1619,9 @@ export function ChatSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        </aside>
 
+        <div className="min-w-0 flex flex-1 flex-col overflow-hidden px-2.5">
         {showSessionSections && (
           <div className="shrink-0 px-2 pb-1 pt-1">
             <SearchField
@@ -1953,6 +1956,7 @@ export function ChatSidebar({
 
         <div className="shrink-0 px-0.5 pb-1 pt-0.5">
           <ProfileRail />
+        </div>
         </div>
       </SidebarContent>
       <ProjectDialog />

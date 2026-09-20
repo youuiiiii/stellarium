@@ -1902,6 +1902,26 @@ body.guest-pointer-lock :is(webview, iframe) {
    route-derived marker lets Studio carry a single calm frame across config,
    provider, credentials, and gateway work while still showing the real view
    identity to the renderer and tests. */
+:root[data-hermes-theme='stella'] [data-studio-global-rail] {
+  background: color-mix(in srgb, var(--ui-bg-sidebar) 86%, var(--ui-bg-chrome));
+}
+
+:root[data-hermes-theme='stella'] [data-studio-global-rail] .studio-sidebar-brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+:root[data-hermes-theme='stella'] [data-studio-global-rail] .studio-sidebar-brand > span:last-child,
+:root[data-hermes-theme='stella'] [data-studio-global-rail] [data-tour^='sidebar-nav-'],
+:root[data-hermes-theme='stella'] [data-studio-global-rail] kbd {
+  display: none;
+}
+
+:root[data-hermes-theme='stella'] [data-studio-global-rail] [data-slot='sidebar-menu-button'] {
+  justify-content: center;
+  padding-inline: 0;
+}
+
 :root[data-hermes-theme='stella'] [data-studio-settings-surface] {
   background: color-mix(in srgb, var(--ui-bg-chrome) 60%, transparent);
 }
