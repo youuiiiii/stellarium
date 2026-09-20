@@ -1922,6 +1922,21 @@ body.guest-pointer-lock :is(webview, iframe) {
   padding-inline: 0;
 }
 
+/* The primary workbench has one calm operational plane: contextual header,
+   transcript canvas, then the real composer dock. Tiles keep their own chrome. */
+:root[data-hermes-theme='stella'] [data-studio-workbench] {
+  background: var(--ui-bg-chrome);
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] > header {
+  border-bottom: 1px solid color-mix(in srgb, var(--dt-primary) 12%, var(--ui-stroke-tertiary));
+  background: color-mix(in srgb, var(--ui-bg-chrome) 88%, var(--dt-primary));
+}
+
+:root[data-hermes-theme='stella'] [data-studio-workbench] [data-slot='composer-bounds'] {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-chrome) 76%, var(--dt-primary)) 0, transparent 10rem);
+}
+
 :root[data-hermes-theme='stella'] [data-studio-settings-surface] {
   background: color-mix(in srgb, var(--ui-bg-chrome) 60%, transparent);
 }

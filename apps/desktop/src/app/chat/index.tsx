@@ -701,6 +701,7 @@ const ChatViewContent = memo(function ChatViewContent({
       data-composer-surface-id={composerSurfaceId}
       data-composer-target={composerScope.target}
       data-session-anchor={sessionAnchor}
+      data-studio-workbench={isPrimary ? '' : undefined}
     >
       <Backdrop />
       {/* Tiles get their chrome from the layout zone (chip strip); the modal
