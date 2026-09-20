@@ -38,21 +38,21 @@ The supplied `Stellarium-Agent-Studio.html` is the **canonical visual and struct
 | Canonical HTML zone | Real Stellarium source of truth | Port state |
 | --- | --- | --- |
 | Global header / command center | titlebar controls, command palette, gateway/model state | `[~]` context identity exists; full composition pass remains |
-| Narrow global rail | app navigation, contributions, settings and surface routes | `[ ]` |
-| Workspace/session sidebar | `ChatSidebar`, project tree, profile scope, session data | `[~]` real data is intact; reference hierarchy/layout remains |
-| Central workbench | `ChatView`, transcript, session tiles, composer | `[~]` real header/composer states exist; canonical workspace composition remains |
-| Right dock | pane tree, right sidebar, previews, artifacts, terminal | `[ ]` |
+| Narrow global rail | app navigation, contributions, settings and surface routes | `[x]` real navigation is split into a narrow rail; route semantics remain native |
+| Workspace/session sidebar | `ChatSidebar`, project tree, profile scope, session data | `[~]` rail split and session hierarchy are complete; canonical workspace grouping/collapse relationship remains |
+| Central workbench | `ChatView`, transcript, session tiles, composer | `[~]` primary workbench frame/header/transcript/composer are integrated; full canonical multi-zone composition remains |
+| Right dock | pane tree, right sidebar, previews, artifacts, terminal | `[~]` existing operational dock is framed; preview/artifact/terminal entry composition remains |
 | Status strip | statusbar controls, gateway/update/system state | `[ ]` |
 
 ### B. Ordered implementation plan
 
 1. `[x]` **Foundation:** inspect the actual renderer/reference; establish `stella` tokens, product identity, and real runtime context contracts.
-2. `[ ]` **Shell composition (ACTIVE):** build the narrow global rail around existing routes; preserve navigation semantics and provide a clear sidebar-collapse relationship.
-3. `[ ]` **Sidebar composition:** reshape `ChatSidebar` into the canonical workspace/session hierarchy while retaining projects, profiles, search, session drag/split, and all current actions.
-4. `[ ]` **Workbench composition:** place contextual conversation header, transcript, real model controls, and prominent composer within the canonical central zone; retain multi-pane/tile behavior.
-5. `[ ]` **Dock composition:** surface existing preview/artifact/terminal/inspection capabilities in the right dock, including genuine empty, loading, error, and narrow-window states.
+2. `[x]` **Shell composition:** build the narrow global rail around existing routes; preserve native navigation semantics.
+3. `[~]` **Sidebar composition (ACTIVE):** complete canonical workspace/session grouping and the rail/sidebar collapse relationship while retaining projects, profiles, search, session drag/split, and all current actions.
+4. `[~]` **Workbench composition:** contextual header, transcript frame, and prominent real composer are integrated; complete canonical multi-zone behavior while retaining tiles.
+5. `[~]` **Dock composition:** existing filesystem/review/terminal dock is framed; complete preview/artifact/terminal entry composition with genuine empty/loading/error/narrow states.
 6. `[ ]` **Chrome completion:** integrate the titlebar command center and compact real status strip with the completed zones.
-7. `[ ]` **Secondary surfaces:** port provider/profile/onboarding/settings/artifacts/capabilities/schedules only after their parent zone is structurally complete.
+7. `[ ]` **Secondary surfaces:** port provider/profile/onboarding/settings/artifacts/capabilities/schedules after their parent zone is structurally complete.
 8. `[ ]` **Visual and interaction acceptance:** responsive geometry, resizable pane behavior, focus order, keyboard use, reduced motion, interactive renderer pass, then full-suite disposition.
 
 ### C. Already-integrated supporting work
